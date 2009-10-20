@@ -111,6 +111,12 @@ repl.dive = function(id,elts) {
     return repl.wrapResults(obj)
 }
 
+repl.callMethod = function(id,fn,args) { 
+    var obj = repl.getLink(id);
+    fn = obj[fn];
+    return repl.wrapResults( fn.apply(obj, args));
+};
+
 })([% rn %]);
 JS
 
@@ -164,6 +170,16 @@ sub js_call_to_perl_struct {
     $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
     my $d = to_perl($repl->execute($js));
     $d->{result}
+};
+
+sub unwrap_json_result {
+    my ($self,$data) = @_;
+    if ($data->{type}) {
+        #warn $data->{type};
+        return ($self->link_ids( $data->{result} ))[0]
+    } else {
+        return $data->{result}
+    };
 };
 
 sub install_bridge {
@@ -237,21 +253,11 @@ sub AUTOLOAD {
     $fn = quotemeta $fn;
     my $rn = $repl->repl;
     local $" = ',';
-    # XXX Should go into object bridge
     my $js = <<JS;
-    (function(repl,id,fn,args) { 
-        var obj = repl.getLink(id);
-        fn = obj[fn];
-        return repl.wrapResults( fn.apply(obj, args));
-    })($rn,$id,"$fn",[@_])
+$rn.callMethod($id,"$fn",[@_])
 JS
     my $data = js_call_to_perl_struct($js);
-    if ($data->{type}) {
-        #warn $data->{type};
-        return ($self->link_ids( $data->{result} ))[0]
-    } else {
-        return $data->{result}
-    };
+    return $self->unwrap_json_result($data);
 }
 
 sub __attr {
@@ -263,12 +269,7 @@ sub __attr {
     my $data = js_call_to_perl_struct(<<JS);
 $rn.getAttr($id,"$attr")
 JS
-    if ($data->{type}) {
-        #warn $data->{type};
-        return ($self->link_ids( $data->{result} ))[0]
-    } else {
-        return $data->{result}
-    };
+    return $self->unwrap_json_result($data);
 }
 
 sub __setAttr {
@@ -279,7 +280,7 @@ sub __setAttr {
     my $rn = $repl->repl;
     my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
     // __setAttr
-    $rn.getLink($id)["$attr"]="$value"
+$rn.getLink($id)["$attr"]="$value"
 JS
 }
 
@@ -312,11 +313,7 @@ sub __dive {
     my $data = js_call_to_perl_struct(<<JS);
 $rn.dive($id,[$path])
 JS
-    if ($data->{type}) {
-        return ($self->link_ids( $data->{result} ))[0]
-    } else {
-        return $data->{result}
-    };
+    return $self->unwrap_json_result($data);
 }
 
 sub __inspect {
@@ -486,12 +483,7 @@ sub expr {
         return repl.wrapResults(eval(code))
     })($rn,"$js")
 JS
-    if ($data->{type}) {
-        #warn $data->{type};
-        return ($package->link_ids( $data->{result} ))[0]
-    } else {
-        return $data->{result}
-    };
+    return $package->unwrap_json_result($data);
 }
 
 sub activeObjects {
