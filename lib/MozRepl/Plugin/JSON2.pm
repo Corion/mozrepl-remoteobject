@@ -6,7 +6,7 @@ use vars '$VERSION';
 
 =head1 NAME
 
-MozRepl::Plugin::JSON2 - use a 7bit safe json2 for MozRepl/JS serialization
+MozRepl::Plugin::JSON2 - use a 7bit safe json2.js for MozRepl/JS serialization
 
 =cut
 
@@ -33,6 +33,36 @@ sub execute {
 }
 
 1;
+
+=head1 json2.js
+
+    http://www.JSON.org/json2.js
+    2009-09-29
+
+    Public Domain.
+
+    NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
+
+    See http://www.JSON.org/js.html
+
+=head1 REPOSITORY
+
+The public repository of this module is 
+L<http://github.com/Corion/mozrepl-remoteobject>.
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+=head1 COPYRIGHT (c)
+
+Copyright 2009 by Max Maischein C<corion@cpan.org>.
+
+=head1 LICENSE
+
+This module is released under the same terms as Perl itself.
+
+=cut
 
 __DATA__
 __execute__

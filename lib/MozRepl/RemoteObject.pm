@@ -640,3 +640,24 @@ These would be executed by the receiving Perl side.
 =cut
 
 1;
+
+__END__
+
+=head1 REPOSITORY
+
+The public repository of this module is 
+L<http://github.com/Corion/mozrepl-remoteobject>.
+
+=head1 AUTHOR
+
+Max Maischein C<corion@cpan.org>
+
+=head1 COPYRIGHT (c)
+
+Copyright 2009 by Max Maischein C<corion@cpan.org>.
+
+=head1 LICENSE
+
+This module is released under the same terms as Perl itself.
+
+=cut
