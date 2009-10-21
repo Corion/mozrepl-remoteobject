@@ -126,28 +126,12 @@ sub to_perl($) {
     s/^"//;
     s/"$//;
     my $res;
-    # reraise JS errors
+    # reraise JS errors from perspective of caller
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
-    #$_ = decode('ISO-8859-1',$_); # hardcoded
     $_ = decode('utf-8',$_); # hardcoded
-    #(my $dump = $_) =~ s/([\x00-\x1F])/sprintf '%02x', ord($1)/ge;;
-    #warn "[[$dump]]";
-    if (! eval {
-        $res = from_json($_);
-        1
-    }) {
-        my $err = $@;
-        #warn $err;
-        #warn substr $_, 400, 100;
-        #while (/(.{32})\t\t\r?\n\r?\n/gms) {
-        #    warn pos;
-        #    warn "[$1]";
-        #};
-        die $err;
-    };
-    $res
+    from_json($_);
 };
 
 =head2 C<< js_call_to_perl_struct $js >>
@@ -573,6 +557,11 @@ sub NEXTKEY {
 =head1 TODO
 
 =over 4
+
+=item *
+
+Consider whether MozRepl actually always delivers
+UTF-8 as output, make charset configurable.
 
 =item *
 
