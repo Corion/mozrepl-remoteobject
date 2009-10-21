@@ -591,7 +591,7 @@ This is an optimization and hence gets postponed.
 
 =item *
 
-Add stringification overloading.
+Add proper stringification overloading.
 
 =item *
 
@@ -599,25 +599,6 @@ Add proper event wrappers and find a mechanism to send such events.
 
 Having C<< __click() >> is less than desireable. Maybe blindly adding
 the C<< click() >> method is preferrable.
-
-=item *
-
-Document the ways how to call methods on the JS side when you have a
-Perl method of the same name.
-
-=item *
-
-Implement fetching of more than one property at once through __attr()
-
-=item *
-
-Implement automatic reblessing of JS objects into Perl objects
-based on a typemap.
-
-=item *
-
-Spin off HTML::Display::MozRepl as soon as I find out how I can
-load an arbitrary document via MozRepl into a C<document>.
 
 =item *
 
@@ -636,6 +617,22 @@ synchronous MozRepl implementation.
 Implement Perl-side event listeners as callbacks.
 
 These would be executed by the receiving Perl side.
+
+=item *
+
+Document the ways how to call methods on the JS side when you have a
+Perl method of the same name.
+
+=item *
+
+Implement fetching of more than one property at once through __attr()
+
+=item *
+
+Implement automatic reblessing of JS objects into Perl objects
+based on a typemap.
+
+=back
 
 =cut
 
