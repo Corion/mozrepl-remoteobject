@@ -461,7 +461,6 @@ sub expr {
     $js =~ s/\s/ /g;
     $js =~ s/(["'\\])/"\\$1"/ge;
     my $rn = $repl->repl;
-    # XXX should this become a static method as well?
     my $data = js_call_to_perl_struct(<<JS);
     (function(repl,code) {
         return repl.wrapResults(eval(code))
