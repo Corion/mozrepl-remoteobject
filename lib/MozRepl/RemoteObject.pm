@@ -134,10 +134,12 @@ sub to_perl($) {
     from_json($_);
 };
 
-=head2 C<< js_call_to_perl_struct $js >>
+=head2 C<< js_call_to_perl_struct $js, $repl >>
 
 Takes a scalar with JS code, executes it, and returns
 the result as a Perl structure.
+
+C<$repl> is optional and defaults to $MozRepl::RemoteObject::repl.
 
 This will not (yet?) cope with objects on the remote side, so you
 will need to make sure to call C<< $rn.link() >> on all objects
@@ -151,8 +153,10 @@ to properly wrap objects but leave other values alone.
 
 sub js_call_to_perl_struct {
     my $js = shift;
+    my ($js,$_repl) = @_;
+    $_repl ||= $repl;
     $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
-    my $d = to_perl($repl->execute($js));
+    my $d = to_perl($_repl->execute($js));
     $d->{result}
 };
 
