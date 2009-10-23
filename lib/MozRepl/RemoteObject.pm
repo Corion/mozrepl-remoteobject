@@ -2,15 +2,16 @@ package MozRepl::RemoteObject;
 use strict;
 
 use vars qw[$repl $objBridge];      # this should become configurable, some day
-use Scalar::Util qw(weaken); # this should become a soft dependency
+use Scalar::Util qw(blessed); # this should become a soft dependency
 use File::Basename;
 use Encode qw(decode);
 use JSON;
-use Carp qw(croak);
+use Carp qw(croak cluck);
 use MozRepl;
 
 use overload '%{}' => '__as_hash',
              '@{}' => '__as_array',
+             '=='  => '__object_identity',
              '""'  => sub { overload::StrVal $_[0] };
 
 =head1 NAME
@@ -171,6 +172,8 @@ sub unwrap_json_result {
 
 sub install_bridge {
     my ($package, $_repl) = @_;
+    cluck "Overwriting existing object bridge"
+        if $repl and (refaddr $repl != refaddr $_repl);
     $repl = $_repl;
     
     my $rn = $repl->repl;
@@ -225,17 +228,98 @@ JS
 JS
 }
 
+=head1 CALLING METHODS
+
+Calling methods on a Javascript object is supported.
+
+All arguments will be autoquoted if they contain anything
+other than ASCII digits (C<< [0-9] >>). There currently
+is no way to specify that you want an all-digit parameter
+to be put in between double quotes.
+
+Passing MozRepl::RemoteObject objects as parameters in Perl
+passes the proxied Javascript object as parameter to the Javascript method.
+
+Complex datastructures like (references to) arrays or hashes
+are not yet supported.
+
+=cut
+
 sub AUTOLOAD {
-    my $self = shift;
-    my $id = $self->__id;
-    die unless $self->__id;
     my $fn = $MozRepl::RemoteObject::AUTOLOAD;
     $fn =~ s/.*:://;
+    my $self = shift;
+    return $self->__invoke($fn,@_)
+}
+
+=head2 C<< $obj->__invoke(METHOD, ARGS)
+
+The C<< ->__invoke() >> object method is an alternate way to
+invoke Javascript methods. It is normally equivalent to 
+C<< $obj->$method(@ARGS) >>. This function must be used if the
+METHOD name contains characters not valid in a Perl variable name 
+(like foreign language characters).
+To invoke a Javascript objects native C<< __invoke >> method (if such a
+thing exists), please use:
+
+    $object->__invoke('__invoke', @args);
+
+The same holds true for the other convenience methods implemented
+by this package:
+
+    __attr
+    __setAttr
+    __xpath
+    __click
+    expr
+    ...
+
+=cut
+
+=head2 C<< $obj->transform_arguments(@args) >>
+
+Transforms the passed in arguments to its string
+representations.
+
+Things that match C< /^[0-9]+$/ > get passed through.
+
+MozRepl::RemoteObject instances
+are transformed into strings that resolve to their
+Javascript counterparts.
+
+Everything else gets quoted and passed along as string.
+
+There is no way to specify
+Javascript global variables. Use the C<< ->expr >> method
+to get an object representing these.
+
+=cut
+
+sub __transform_arguments {
+    my $self = shift;
+    map {
+        if (/^[0-9]+$/) {
+            $_
+        } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
+            sprintf "repl.getLink(%d)", $_->__id
+        } elsif (ref) {
+            croak "Got $_. Passing references around is not yet supported.";
+        } else {
+            sprintf '"%s"', quotemeta $_
+        }
+    } @_
+};
+
+sub __invoke {
+    my ($self,$fn,@args) = @_;
+    my $id = $self->__id;
+    die unless $self->__id;
     $fn = quotemeta $fn;
     my $rn = $repl->repl;
+    @args = $self->__transform_arguments(@args);
     local $" = ',';
     my $js = <<JS;
-$rn.callMethod($id,"$fn",[@_])
+$rn.callMethod($id,"$fn",[@args])
 JS
     my $data = js_call_to_perl_struct($js);
     return $self->unwrap_json_result($data);
@@ -503,6 +587,30 @@ as a hash with the index as the key.
 
 =cut
 
+=head1 OBJECT IDENTITY
+
+Object identity is currently implemented by
+overloading the C<==> operator.
+Two objects are considered identical
+if the javascript C<===> operator
+returns true.
+
+=cut
+
+sub __object_identity {
+    my ($self,$other) = @_;
+    return if (! $other);
+    die unless $self->__id;
+    my $left = $self->__id;
+    my $right = $other->__id;
+    my $rn = $repl->repl;
+    my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
+    // __object_identity
+$rn.getLink($left)===$rn.getLink($right)
+JS
+}
+
+
 # tied interface reflection
 
 sub __as_hash {
@@ -598,6 +706,12 @@ sub PUSH {
 =head1 TODO
 
 =over 4
+
+=item *
+
+Implement proper automatic
+quoting for things that look like a string instead of blindly
+passing everything through.
 
 =item *
 
