@@ -36,7 +36,7 @@ isa_ok $foo, 'MozRepl::RemoteObject';
 my $bar = $foo->{bar};
 isa_ok $bar, 'MozRepl::RemoteObject';
 
-my @elements = @{ $baz };
+my @elements = @{ $bar };
 is 0+@elements, 2, 'We have two elements';
 
 my $baz = $bar->[0];

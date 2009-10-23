@@ -10,6 +10,7 @@ use Carp qw(croak);
 use MozRepl;
 
 use overload '%{}' => '__as_hash',
+             '@{}' => '__as_array',
              '""'  => sub { overload::StrVal $_[0] };
 
 =head1 NAME
@@ -505,12 +506,18 @@ will likely blow up.
 
 sub __as_hash {
     my $self = shift;
-    tie my %h, 'MozRepl::RemoteObject::Tied', $self;
+    tie my %h, 'MozRepl::RemoteObject::TiedHash', $self;
     \%h;
 };
 
+sub __as_hash {
+    my $self = shift;
+    tie my @a, 'MozRepl::RemoteObject::TiedArray', $self;
+    \@a;
+};
+
 package
-  MozRepl::RemoteObject::Tied;
+  MozRepl::RemoteObject::TiedHash;
 use strict;
 use Data::Dumper;
 use Scalar::Util qw(refaddr);
