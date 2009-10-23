@@ -58,3 +58,6 @@ is_deeply \@keys, ['bar','foo'], 'We can get at the keys'
 
 my @values = $foo->__values;
 is scalar @values, 2, 'We have two values';
+
+@values = values %$foo;
+is scalar @values, 2, 'We have two values';
