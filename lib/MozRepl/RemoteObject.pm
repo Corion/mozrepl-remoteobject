@@ -149,7 +149,6 @@ sub to_perl($) {
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if ($data->{type}) {
-        #warn $data->{type};
         return ($self->link_ids( $data->{result} ))[0]
     } else {
         return $data->{result}
@@ -210,16 +209,20 @@ You can also create Javascript functions and use them from Perl:
 =cut
 
 my %map = (
+    "\0" => "\\0",
     "\n" => "\\n",
     "\r" => "\\r",
     "\t" => "\\t",
 );
+for (0x00..0x1f) {
+    $map{ chr $_ } ||= sprintf '\\%02x', $_;
+};
 
 sub expr {
     my $package = shift;
     $package = ref $package || $package;
     my $js = shift;
-    $js =~ s/([\n"'\\])/$map{$1} || "\\$1"/ge;
+    $js =~ s/([\x00-\x1f"'\\])/$map{$1} || "\\$1"/ge;
     my $rn = $repl->repl;
     $js = <<JS;
     (function(repl,code) {
