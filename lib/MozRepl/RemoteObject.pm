@@ -366,11 +366,6 @@ sub __transform_arguments {
             $json->encode($_)
         } else {
             $json->encode($_)
-            # Shouldn't this be trivial using JSON?
-            #my $s = $_;
-            #$s =~ s/\s/ /g;
-            #$s =~ s/(["'\\])/"\\$1"/ge;
-            #sprintf '"%s"', $s
         }
     } @_
 };
@@ -721,7 +716,10 @@ sub link_ids {
 
 sub __object_identity {
     my ($self,$other) = @_;
-    return if (! $other);
+    return if (   ! $other 
+               or ! ref $other
+               or ! blessed $other
+               or ! $other->isa(__PACKAGE__));
     die unless $self->__id;
     my $left = $self->__id;
     my $right = $other->__id;
