@@ -8,6 +8,11 @@ use vars '$VERSION';
 
 MozRepl::Plugin::JSON2 - use a 7bit safe json2.js for MozRepl/JS serialization
 
+=head1 SYNOPSIS
+
+This module only exists to serve as a container for 
+the MozRepl::RemoteObject JSON encoding/decoding.
+
 =cut
 
 $VERSION = '0.01';
