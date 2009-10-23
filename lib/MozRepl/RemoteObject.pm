@@ -63,7 +63,7 @@ repl.link = function(obj) {
     };
     
     if (obj) {
-        repl.linkedVars[ [% rn %].linkedIdNext ] = obj;
+        repl.linkedVars[ repl.linkedIdNext ] = obj;
         return repl.linkedIdNext++;
     } else {
         return undefined
@@ -117,7 +117,6 @@ repl.callMethod = function(id,fn,args) {
     fn = obj[fn];
     return repl.wrapResults( fn.apply(obj, args));
 };
-
 })([% rn %]);
 JS
 
@@ -174,19 +173,13 @@ sub install_bridge {
     my ($package, $_repl) = @_;
     $repl = $_repl;
     
-    # Load our JSON2 support into FF
-    #my $json2 = File::Spec->catfile( File::Spec->rel2abs( dirname $0 ), 'js', 'json2.js' );
-    #$json2 =~ tr[\\][/];
-    #$repl->repl_load({ uri => "file://$json2" });
-
     my $rn = $repl->repl;
 
     # Load the JS side of the JS <-> Perl bridge
-    for my $c ($objBridge) { #split m!^//.*$!m, $objBridge) {
-        $c = "$c";
-        $c =~ s/\[%\s+rn\s+%\]/$rn/g;
+    for my $c ($objBridge) {
+        $c = "$c"; # make a copy
+        $c =~ s/\[%\s+rn\s+%\]/$rn/g; # cheap templating
         next unless $c =~ /\S/;
-        #warn "Loading [[$_]]";
         $repl->execute($c);
     };
 
