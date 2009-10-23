@@ -458,9 +458,9 @@ sub __attr {
     die unless $self->__id;
     my $id = $self->__id;
     my $rn = $repl->repl;
-    $attr = quotemeta $attr;
+    $attr = $json->encode($attr);
     my $data = js_call_to_perl_struct(<<JS);
-$rn.getAttr($id,"$attr")
+$rn.getAttr($id,$attr)
 JS
     return $self->unwrap_json_result($data);
 }
@@ -480,14 +480,14 @@ is identical to
 
 sub __setAttr {
     my ($self,$attr,$value) = @_;
-    #$attr = quotemeta $attr;
-    $attr = $json->encode($attr);
     die unless $self->__id;
     my $id = $self->__id;
     my $rn = $repl->repl;
+    $attr = $json->encode($attr);
+    ($value) = $self->__transform_arguments($value);
     my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
     // __setAttr
-$rn.getLink($id)[$attr]="$value"
+$rn.getLink($id)[$attr]=$value
 JS
 }
 
