@@ -608,6 +608,12 @@ sub PUSH {
 
 =item *
 
+Remove the reliance on the global C<$repl> and make
+each object carry a reference to the C<$repl> that created
+it. This will allow access to more than one C<$repl>.
+
+=item *
+
 Think about how to handle object identity.
 Should C<Scalar::Util::refaddr> return true whenever
 the Javascript C<===> operator returns true?
