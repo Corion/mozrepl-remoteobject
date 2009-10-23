@@ -218,14 +218,6 @@ JS
     return $package->unwrap_json_result($data);
 }
 
-# Should this go away?
-sub __activeObjects {
-    my ($self) = @_;
-    my $data = $self->expr(<<JS);
-    repl.linkedVars
-JS
-}
-
 =head1 HASH access
 
 All MozRepl::RemoteObject objects implement
@@ -564,9 +556,6 @@ is identical to
 sub __values { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    #my $id = $self->__id;
-    #my $rn = $repl->repl;
-    #my $data = js_call_to_perl_struct(<<JS);
     my $getValues = $self->expr(<<JS);
     function(obj){
         //var obj = repl.getLink(id);
