@@ -962,6 +962,8 @@ This would lead to implementing a full two-way message bus.
 
 L<Win32::OLE> for another implementation of proxy objects
 
+L<http://wiki.github.com/bard/mozrepl> - the MozRepl FireFox plugin homepage
+
 =head1 REPOSITORY
 
 The public repository of this module is 
