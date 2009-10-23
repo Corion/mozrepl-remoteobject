@@ -637,19 +637,16 @@ on HTMLdocument nodes or their children.
 
 sub __click {
     my ($self) = @_; # $self is a HTMLdocument or a descendant!
-    my $id = $self->__id;
-    my $rn = $repl->repl;
-    my $js = <<JS;
-    (function(repl,id) {
+    my $click = $self->expr(<<JS);
+    function(target) {
         var event = content.document.createEvent('MouseEvents');
-        var target = repl.getLink(id);
         event.initMouseEvent('click', true, true, window,
                              0, 0, 0, 0, 0, false, false, false,
                              false, 0, null);
         target.dispatchEvent(event);
-        }($rn,$id))
+    }
 JS
-    js_call_to_perl_struct($js);
+    $click->($self);
 }
 
 =head2 C<< MozRepl::RemoteObject->new ID, onDestroy >>
