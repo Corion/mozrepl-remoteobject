@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 7;
 
 use MozRepl::RemoteObject;
 
@@ -25,7 +25,7 @@ sub genObj {
     my $rn = $repl->repl;
     my $obj = MozRepl::RemoteObject->expr(<<JS)
 (function(repl, val) {
-    return { bar: { baz: { value: val } } };
+    return { bar: { baz: { value: val } }, foo: 1 };
 })($rn, "$val")
 JS
 }
@@ -48,4 +48,5 @@ is $val, undef, 'Nonexisting properties return undef';
 $baz->{ 'test' } = 'foo';
 is $baz->{ test }, 'foo', 'Setting a value works';
 
-# Should try setting a property to an object
+my @keys = $foo->__keys;
+is_deeply \@keys, ['bar','foo'], 'We can get at the keys';
