@@ -51,6 +51,6 @@ my $val = $bar->[1];
 isa_ok $val, 'MozRepl::RemoteObject', 'Object retrieval from array';
 is $val->{value}, 'deep', '... and the object contains our value';
 
-push @{ $bar }, '"asdf"';
+push @{ $bar }, 'asdf';
 is 0+@{ $bar }, 3, '... even pushing an element works';
 is $bar->[-1], 'asdf', '... and the value is actually stored';

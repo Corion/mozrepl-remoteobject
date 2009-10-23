@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use MozRepl::RemoteObject;
 
@@ -51,6 +51,9 @@ $res = $obj->__invoke('__invoke');
 is $res, 'my JS invoke', "Can __invoke '__invoke'()";
 
 $res = $obj->id('123');
+is $res, 123, "Can pass numerical parameters";
+
+$res = $obj->id(123);
 is $res, 123, "Can pass numerical parameters";
 
 $res = $obj->id('abc');

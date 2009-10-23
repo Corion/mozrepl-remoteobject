@@ -30,4 +30,4 @@ $body->{innerHTML} = "<h1>Hello from MozRepl::RemoteObject</h1>";
 
 like $body->{innerHTML}, '/Hello from/', "We stored the HTML";
 
-$tab->{linkedBrowser}->loadURI('"http://corion.net/"');
+$tab->{linkedBrowser}->loadURI('http://corion.net/');
