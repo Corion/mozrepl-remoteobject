@@ -218,12 +218,11 @@ JS
     return $package->unwrap_json_result($data);
 }
 
-# Should this go?
-sub activeObjects {
-    my $rn = $repl->repl;
-    my $data = $json->decode($repl->execute(<<JS));
-    // activeObjects
-    $rn.linkedValues
+# Should this go away?
+sub __activeObjects {
+    my ($self) = @_;
+    my $data = $self->expr(<<JS);
+    repl.linkedVars
 JS
 }
 
@@ -518,20 +517,6 @@ sub __dive {
 $rn.dive($id,$path)
 JS
     return $self->unwrap_json_result($data);
-}
-
-# Should this one be removed?
-sub __inspect {
-    my ($self,$attr) = @_;
-    die unless $self->__id;
-    my $id = $self->__id;
-    my $rn = $repl->repl;
-    my $data = $repl->execute(<<JS);
-    // __inspect
-    (function(repl,id) {
-        return repl.getLink(id)
-    }($rn,$id))
-JS
 }
 
 =head2 C<< $obj->keys() >>
