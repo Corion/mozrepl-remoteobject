@@ -152,7 +152,6 @@ to properly wrap objects but leave other values alone.
 =cut
 
 sub js_call_to_perl_struct {
-    my $js = shift;
     my ($js,$_repl) = @_;
     $_repl ||= $repl;
     $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
@@ -560,6 +559,10 @@ sub NEXTKEY {
 =head1 TODO
 
 =over 4
+
+=item *
+
+Implement array access
 
 =item *
 
