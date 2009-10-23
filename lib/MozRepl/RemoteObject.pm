@@ -345,6 +345,8 @@ MozRepl::RemoteObject instances
 are transformed into strings that resolve to their
 Javascript counterparts.
 
+MozRepl instances get transformed into their repl name.
+
 Everything else gets quoted and passed along as string.
 
 There is no way to specify
@@ -360,6 +362,8 @@ sub __transform_arguments {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
             sprintf "repl.getLink(%d)", $_->__id
+        } elsif (ref and blessed $_ and $_->isa('MozRepl')) {
+            $_->repl
         } elsif (ref) {
             croak "Got $_. Passing references around is not yet supported.";
         } else {
