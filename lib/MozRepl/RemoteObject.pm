@@ -515,11 +515,10 @@ sub __dive {
     die unless $self->__id;
     my $id = $self->__id;
     my $rn = $repl->repl;
-    # shouldn't this just use  ->__transform_arguments()?
-    my $path = join ",", map { '"' . quotemeta($_) . '"'} @path;
+    (my $path) = $self->__transform_arguments(\@path);
     
     my $data = js_call_to_perl_struct(<<JS);
-$rn.dive($id,[$path])
+$rn.dive($id,$path)
 JS
     return $self->unwrap_json_result($data);
 }
