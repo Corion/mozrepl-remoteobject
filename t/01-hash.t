@@ -39,10 +39,10 @@ isa_ok $bar, 'MozRepl::RemoteObject';
 my $baz = $bar->{baz};
 isa_ok $baz, 'MozRepl::RemoteObject';
 
-my $val = $baz->{deep};
+my $val = $baz->{value};
 is $val, 'deep';
 
-my $val = $baz->{nonexisting};
+$val = $baz->{nonexisting};
 is $val, undef, 'Nonexisting properties return undef';
 
 $baz->{ 'test' } = 'foo';
