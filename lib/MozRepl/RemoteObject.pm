@@ -939,6 +939,14 @@ This is an optimization and hence gets postponed.
 
 =item *
 
+Potentially do away with attaching to the repl object and keep
+all elements as anonymous functions referenced only by Perl variables.
+
+C<repl.wrapResults> would have to be handed around in an interesting
+manner then though.
+
+=item *
+
 Add proper event wrappers and find a mechanism to send such events.
 
 Having C<< __click() >> is less than desireable. Maybe blindly adding
