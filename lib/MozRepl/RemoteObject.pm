@@ -205,6 +205,7 @@ JS
     return $package->unwrap_json_result($data);
 }
 
+# Should this go?
 sub activeObjects {
     my $rn = $repl->repl;
     my $data = to_perl($repl->execute(<<JS));
@@ -896,7 +897,13 @@ synchronous MozRepl implementation.
 
 =item *
 
-Implement Perl-side event listeners as callbacks.
+Create a convenience wrapper to define anonymous JS functions
+and return them as anonymous Perl subroutines.
+
+=item *
+
+Create a convenience wrapper to define anonymous Perl subroutines
+and stuff them into Javascript as anonymous Javascript functions.
 
 These would be executed by the receiving Perl side.
 
