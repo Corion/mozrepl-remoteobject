@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 10;
 use Data::Dumper;
 
 use MozRepl::RemoteObject;
@@ -57,4 +57,7 @@ is_deeply \@keys, ['bar','foo'], 'We can get at the keys'
     or diag Dumper \@keys;
 
 my @values = $foo->__values;
+is scalar @values, 2, 'We have two values';
+
+@values = values %$foo;
 is scalar @values, 2, 'We have two values';

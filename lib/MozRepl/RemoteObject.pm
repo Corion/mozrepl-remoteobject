@@ -3,7 +3,6 @@ use strict;
 
 use Scalar::Util qw(blessed refaddr); # this should become a soft dependency
 use File::Basename;
-use Encode qw(decode);
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
@@ -50,7 +49,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $repl $encoding $objBridge $json];
+use vars qw[$VERSION $repl $objBridge $json];
 $VERSION = '0.01';
 
 # This should go into __setup__ and attach itself to $repl as .link()
@@ -126,9 +125,7 @@ repl.callMethod = function(id,fn,args) {
 })([% rn %]);
 JS
 
-$encoding = 'utf-8'; # hardcoded baseless assumption
-
-$json = JSON->new->allow_nonref;
+$json = JSON->new->allow_nonref->utf8;
 
 # Take a JSON response and convert it to a Perl data structure
 sub to_perl($) {
@@ -139,7 +136,6 @@ sub to_perl($) {
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
-    $_ = decode($encoding,$_);
     $json->decode($_);
 };
 
@@ -879,8 +875,7 @@ The communication with the MozRepl plugin is done
 through 7bit safe ASCII. The received bytes are supposed
 to be UTF-8.
 
-If you want to use a different encoding, set
-the variable $MozRepl::RemoteObject::encoding.
+Currently there is no way to specify a different encoding.
 
 =head1 TODO
 
@@ -944,7 +939,9 @@ Potentially do away with attaching to the repl object and keep
 all elements as anonymous functions referenced only by Perl variables.
 
 This would have the advantage of centralizing the value wrapping/unwrapping
-in one place, C<__as_code>.
+in one place, C<__invoke>, and possibly also in C<__as_code>. It would
+also keep the precompiled JS around instead of recompiling it on
+every access.
 
 C<repl.wrapResults> would have to be handed around in an interesting
 manner then though.
