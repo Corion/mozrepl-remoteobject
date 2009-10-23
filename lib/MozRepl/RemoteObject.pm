@@ -2,7 +2,7 @@ package MozRepl::RemoteObject;
 use strict;
 
 use vars qw[$repl $objBridge];      # this should become configurable, some day
-use Scalar::Util qw(blessed); # this should become a soft dependency
+use Scalar::Util qw(blessed refaddr); # this should become a soft dependency
 use File::Basename;
 use Encode qw(decode);
 use JSON;
@@ -153,14 +153,17 @@ Installs the Javascript C<< <-> >> Perl bridge. If you pass in
 an existing L<MozRepl> instance, it must have L<MozRepl::Plugin::JSON2>
 loaded.
 
+By default, MozRepl::RemoteObject will set up its own MozRepl instance
+and store it in $MozRepl::RemoteObject::repl .
+
 =cut
 
 sub install_bridge {
     my ($package, $_repl) = @_;
-    return
-        if (! $_repl and $repl); # already installed
+    return # already installed
+        if (! $_repl and $repl);
     cluck "Overwriting existing object bridge"
-        if $repl and (refaddr $repl != refaddr $_repl);
+        if ($repl and refaddr $repl != refaddr $_repl);
     $repl = $_repl;
     
     my $rn = $repl->repl;
@@ -176,45 +179,86 @@ sub install_bridge {
     $repl
 };
 
-sub __id {
-    my $class = ref $_[0];
-    bless $_[0], "$class\::HashAccess";
-    my $id = $_[0]->{id};
-    bless $_[0], $class;
-    $id
-};
+=head2 C<< MozRepl::RemoteObject->expr $js >>
 
-sub __release_action {
-    my $class = ref $_[0];
-    bless $_[0], "$class\::HashAccess";
-    if (2 == @_) {
-        $_[0]->{release_action} = $_[1];
-    };
-    my $release_action = $_[0]->{release_action};
-    bless $_[0], $class;
-    $release_action
-};
+Runs the Javascript passed in through C< $js > and links
+the returned result to a Perl object or a plain
+value, depending on the type of the Javascript result.
 
-sub DESTROY {
-    my $self = shift;
-    my $id = $self->__id();
-    my $release_action;
-    if ($release_action = $self->__release_action) {
-        $release_action = <<JS;
-    var self = repl.getLink(id);
-        $release_action //
-    ;self = null;
-JS
-    };
-    $release_action ||= '';
-    return unless $self->__id();
+This is how you get at the initial Javascript object
+in the object forest.
+
+=cut
+
+sub expr {
+    my $package = shift;
+    $package = ref $package || $package;
+    my $js = shift;
+    $js =~ s/\s/ /g;
+    $js =~ s/(["'\\])/"\\$1"/ge;
     my $rn = $repl->repl;
-    my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
-(function (repl,id) {$release_action
-    repl.breakLink(id);
-})($rn,$id)
+    my $data = js_call_to_perl_struct(<<JS);
+    (function(repl,code) {
+        return repl.wrapResults(eval(code))
+    })($rn,"$js")
+JS
+    return $package->unwrap_json_result($data);
+}
+
+sub activeObjects {
+    my $rn = $repl->repl;
+    my $data = to_perl($repl->execute(<<JS));
+    // activeObjects
+    $rn.linkedValues
 JS
 }
+
+=head1 HASH access
+
+All MozRepl::RemoteObject objects implement
+transparent hash access through overloading, which means
+that accessing C<< $document->{body} >> will return
+the wrapped C<< document.body >> object.
+
+This is usually what you want when working with Javascript
+objects from Perl.
+
+Setting hash keys will try to set the respective property
+in the Javascript object, but always as a string value,
+numerical values are not supported.
+
+B<NOTE>: Assignment of references is not yet implemented.
+So if you try to store a MozRepl::RemoteObject into
+another MozRepl::RemoteObject, the Javascript side of things
+will likely blow up.
+
+=head1 ARRAY access
+
+Accessing an object as an array will mainly work. For
+determining the C<length>, it is assumed that the
+object has a C<.length> method. If the method has
+a different name, you will have to access the object
+as a hash with the index as the key.
+
+Note that C<push> expects the underlying object
+to have a C<.push()> Javascript method, and C<pop>
+gets mapped to the C<.pop()> Javascript method.
+
+=cut
+
+=head1 OBJECT IDENTITY
+
+Object identity is currently implemented by
+overloading the C<==> operator.
+Two objects are considered identical
+if the javascript C<===> operator
+returns true.
+
+  my $obj_a = MozRepl::RemoteObject->expr('window.document');
+  print $obj_a->__id(),"\n"; # 42
+  my $obj_b = MozRepl::RemoteObject->expr('window.document');
+  print $obj_b->__id(), "\n"; #43
+  print $obj_a == $obj_b; # true
 
 =head1 CALLING METHODS
 
@@ -313,6 +357,74 @@ JS
     return $self->unwrap_json_result($data);
 }
 
+=head2 C<< $obj->__id >>
+
+Readonly accessor for the internal object id
+that connects the Javascript object to the
+Perl object.
+
+=cut
+
+sub __id {
+    my $class = ref $_[0];
+    bless $_[0], "$class\::HashAccess";
+    my $id = $_[0]->{id};
+    bless $_[0], $class;
+    $id
+};
+
+=head2 C<< $obj->__release_action >>
+
+Accessor for Javascript code that gets executed
+when the Perl object gets released.
+
+=cut
+
+sub __release_action {
+    my $class = ref $_[0];
+    bless $_[0], "$class\::HashAccess";
+    if (2 == @_) {
+        $_[0]->{release_action} = $_[1];
+    };
+    my $release_action = $_[0]->{release_action};
+    bless $_[0], $class;
+    $release_action
+};
+
+sub DESTROY {
+    my $self = shift;
+    my $id = $self->__id();
+    my $release_action;
+    if ($release_action = $self->__release_action) {
+        $release_action = <<JS;
+    var self = repl.getLink(id);
+        $release_action //
+    ;self = null;
+JS
+    };
+    $release_action ||= '';
+    return unless $self->__id();
+    my $rn = $repl->repl;
+    my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
+(function (repl,id) {$release_action
+    repl.breakLink(id);
+})($rn,$id)
+JS
+}
+
+=head2 C<< $obj->__attr ATTRIBUTE >>
+
+Read-only accessor to read the property
+of a Javascript object.
+
+    $obj->__attr('foo')
+    
+is identical to
+
+    $obj->{foo}
+
+=cut
+
 sub __attr {
     my ($self,$attr) = @_;
     die unless $self->__id;
@@ -324,6 +436,19 @@ $rn.getAttr($id,"$attr")
 JS
     return $self->unwrap_json_result($data);
 }
+
+=head2 C<< $obj->__setAttr ATTRIBUTE, VALUE >>
+
+Write accessor to set a property of a Javascript
+object.
+
+    $obj->__setAttr('foo', 'bar')
+    
+is identical to
+
+    $obj->{foo} = 'bar'
+
+=cut
 
 sub __setAttr {
     my ($self,$attr,$value) = @_;
@@ -369,6 +494,7 @@ JS
     return $self->unwrap_json_result($data);
 }
 
+# Should this one be removed?
 sub __inspect {
     my ($self,$attr) = @_;
     die unless $self->__id;
@@ -381,6 +507,20 @@ sub __inspect {
     }($rn,$id))
 JS
 }
+
+=head2 C<< $obj->keys() >>
+
+Returns the names of all properties
+of the javascript object as a list.
+
+  $obj->__keys()
+
+is identical to
+
+  keys %$obj
+
+
+=cut
 
 sub __keys { # or rather, __properties
     my ($self,$attr) = @_;
@@ -400,6 +540,19 @@ JS
     return @$data;
 }
 
+=head2 C<< $obj->values >>
+
+Returns the values of all properties
+as a list.
+
+  $obj->values()
+  
+is identical to
+
+  values %$obj
+
+=cut
+
 sub __values { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
@@ -417,6 +570,16 @@ sub __values { # or rather, __properties
 JS
     return @$data;
 }
+
+=head2 C<< $obj->__xpath QUERY [, REF] >>
+
+Executes an XPath query and returns the node
+snapshot result as a list.
+
+This is a convenience method that should only be called
+on HTMLdocument nodes.
+
+=cut
 
 sub __xpath {
     my ($self,$query,$ref) = @_; # $self is a HTMLdocument
@@ -442,6 +605,15 @@ JS
     my $elements = js_call_to_perl_struct($js);
     $self->link_ids(@$elements);
 }
+
+=head2 C<< $obj->__click >>
+
+Sends a Javascript C<click> event to the object.
+
+This is a convenience method that should only be called
+on HTMLdocument nodes or their children.
+
+=cut
 
 sub __click {
     my ($self) = @_; # $self is a HTMLdocument or a descendant!
@@ -512,88 +684,6 @@ sub link_ids {
     } @_
 }
 
-=head2 C<< MozRepl::RemoteObject->expr $js >>
-
-Runs the Javascript passed in through C< $js > and links
-the returned result to a Perl object or a plain
-value, depending on the type of the Javascript result.
-
-This is how you get at the initial Javascript object
-in the object forest.
-
-=cut
-
-sub expr {
-    my $package = shift;
-    $package = ref $package || $package;
-    my $js = shift;
-    $js =~ s/\s/ /g;
-    $js =~ s/(["'\\])/"\\$1"/ge;
-    my $rn = $repl->repl;
-    my $data = js_call_to_perl_struct(<<JS);
-    (function(repl,code) {
-        return repl.wrapResults(eval(code))
-    })($rn,"$js")
-JS
-    return $package->unwrap_json_result($data);
-}
-
-sub activeObjects {
-    my $rn = $repl->repl;
-    my $data = to_perl($repl->execute(<<JS));
-    // activeObjects
-    $rn.linkedValues
-JS
-}
-
-=head1 HASH access
-
-All MozRepl::RemoteObject objects implement
-transparent hash access through overloading, which means
-that accessing C<< $document->{body} >> will return
-the wrapped C<< document.body >> object.
-
-This is usually what you want when working with Javascript
-objects from Perl.
-
-Setting hash keys will try to set the respective property
-in the Javascript object, but always as a string value,
-numerical values are not supported.
-
-B<NOTE>: Assignment of references is not yet implemented.
-So if you try to store a MozRepl::RemoteObject into
-another MozRepl::RemoteObject, the Javascript side of things
-will likely blow up.
-
-=head1 ARRAY access
-
-Accessing an object as an array will mainly work. For
-determining the C<length>, it is assumed that the
-object has a C<.length> method. If the method has
-a different name, you will have to access the object
-as a hash with the index as the key.
-
-Note that C<push> expects the underlying object
-to have a C<.push()> Javascript method, and C<pop>
-gets mapped to the C<.pop()> Javascript method.
-
-=cut
-
-=head1 OBJECT IDENTITY
-
-Object identity is currently implemented by
-overloading the C<==> operator.
-Two objects are considered identical
-if the javascript C<===> operator
-returns true.
-
-  my $obj_a = MozRepl::RemoteObject->expr('window.document');
-  print $obj_a->__id(),"\n"; # 42
-  my $obj_b = MozRepl::RemoteObject->expr('window.document');
-  print $obj_b->__id(), "\n"; #43
-  print $obj_a == $obj_b; # true
-
-=cut
 
 sub __object_identity {
     my ($self,$other) = @_;
