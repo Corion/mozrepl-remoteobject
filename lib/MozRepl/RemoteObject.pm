@@ -902,11 +902,6 @@ These would be executed by the receiving Perl side.
 
 =item *
 
-Document the ways how to call methods on the JS side when you have a
-Perl method of the same name.
-
-=item *
-
 Implement fetching of more than one property at once through __attr()
 
 =item *
