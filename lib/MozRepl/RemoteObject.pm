@@ -125,7 +125,7 @@ repl.callMethod = function(id,fn,args) {
 })([% rn %]);
 JS
 
-$json = JSON->new->allow_nonref->utf8;
+$json = JSON->new->allow_nonref; # ->utf8;
 
 # Take a JSON response and convert it to a Perl data structure
 sub to_perl($) {
@@ -607,27 +607,23 @@ on HTMLdocument nodes.
 
 sub __xpath {
     my ($self,$query,$ref) = @_; # $self is a HTMLdocument
-    my $id = $self->__id;
     $ref ||= $self;
-    $ref = $ref->__id;
-    my $rn = $repl->repl;
     my $js = <<JS;
-    (function(repl,id,q,ref) {
-        var d = repl.getLink(id);
-        var r = repl.getLink(ref);
-        var xres = d.evaluate(q,r,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+    function(doc,q,ref) {
+        var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
         var res = [];
         var c = 0;
         for ( var i=0 ; i < xres.snapshotLength; i++ )
         {
-            // alert(i + ": " + xres.snapshotItem(i));
             res.push( repl.link( xres.snapshotItem(i)));
         };
         return res
-    }($rn,$id,"$query",$ref))
+    }
 JS
-    my $elements = js_call_to_perl_struct($js);
-    $self->link_ids(@$elements);
+    my $snap = $self->expr($js);
+    my $res = $snap->($self,$query,$ref);
+    @{ $res }
+    #map { $snap->[$_] } 0..$snap->{snapshotLength};
 }
 
 =head2 C<< $obj->__click >>
@@ -873,9 +869,13 @@ __END__
 
 The communication with the MozRepl plugin is done
 through 7bit safe ASCII. The received bytes are supposed
-to be UTF-8.
+to be UTF-8, but this seems not always to be the case.
 
 Currently there is no way to specify a different encoding.
+
+You can toggle the utf8'ness by calling
+
+  $MozRepl::RemoteObject::json->utf8;
 
 =head1 TODO
 
