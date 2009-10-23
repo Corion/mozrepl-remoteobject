@@ -585,6 +585,10 @@ object has a C<.length> method. If the method has
 a different name, you will have to access the object
 as a hash with the index as the key.
 
+Note that C<push> expects the underlying object
+to have a C<.push()> Javascript method, and C<pop>
+gets mapped to the C<.pop()> Javascript method.
+
 =cut
 
 =head1 OBJECT IDENTITY
@@ -609,7 +613,6 @@ sub __object_identity {
 $rn.getLink($left)===$rn.getLink($right)
 JS
 }
-
 
 # tied interface reflection
 
@@ -698,6 +701,14 @@ sub PUSH {
     my $obj = $tied->{impl};
     for (@_) {
         $obj->push($_);
+    };
+};
+
+sub POP {
+    my $tied = shift;
+    my $obj = $tied->{impl};
+    for (@_) {
+        $obj->pop($_);
     };
 };
 
