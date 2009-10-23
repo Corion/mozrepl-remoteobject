@@ -562,6 +562,16 @@ sub NEXTKEY {
 
 =item *
 
+Think about how to handle object identity.
+Should C<Scalar::Util::refaddr> return true whenever
+the Javascript C<===> operator returns true?
+
+Also see L<http://perlmonks.org/?node_id=802912>
+
+Currently not a pressing issue, hence postponed.
+
+=item *
+
 Implement array access
 
 =item *
