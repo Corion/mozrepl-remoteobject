@@ -519,10 +519,6 @@ sub __as_array {
 package # don't index this on CPAN
   MozRepl::RemoteObject::TiedHash;
 use strict;
-use Data::Dumper;
-use Scalar::Util qw(refaddr);
-
-use vars qw(%tied);
 
 sub TIEHASH {
     my ($package,$impl) = @_;
@@ -532,15 +528,12 @@ sub TIEHASH {
 
 sub FETCH {
     my ($tied,$k) = @_;
-    #warn "FETCH $tied / $k";
-    #warn Dumper $tied;
     my $obj = $tied->{impl};
     $obj->__attr($k)
 };
 
 sub STORE {
     my ($tied,$k,$val) = @_;
-    #die "STORE not implemented";
     my $obj = $tied->{impl};
     $obj->__setAttr($k,$val)
 };
@@ -566,10 +559,6 @@ sub NEXTKEY {
 package # don't index this on CPAN
   MozRepl::RemoteObject::TiedArray;
 use strict;
-use Data::Dumper;
-use Scalar::Util qw(refaddr);
-
-use vars qw(%tied);
 
 sub TIEARRAY {
     my ($package,$impl) = @_;
@@ -585,8 +574,6 @@ sub FETCHSIZE {
 
 sub FETCH {
     my ($tied,$k) = @_;
-    #warn "FETCH $tied / $k";
-    #warn Dumper $tied;
     my $obj = $tied->{impl};
     # XXX needs custom JS?
     $obj->__attr($k)
@@ -594,7 +581,6 @@ sub FETCH {
 
 sub STORE {
     my ($tied,$k,$val) = @_;
-    #die "STORE not implemented";
     my $obj = $tied->{impl};
     # XXX needs custom JS?
     $obj->__setAttr($k,$val)
