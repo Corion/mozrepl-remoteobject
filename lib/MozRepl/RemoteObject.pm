@@ -853,9 +853,18 @@ UTF-8 as output, make charset configurable.
 
 =item *
 
+Can we find a sensible implementation of string
+overloading for JS objects? Should it be the
+respective JS object type?
+
+=item *
+
 Create a lazy object release mechanism that adds object releases
 to a queue and only sends them when either $repl goes out
 of scope or another request (for a property etc.) is sent.
+
+This would reduce the TCP latency when manually descending
+through an object tree in a Perl-side loop.
 
 This is an optimization and hence gets postponed.
 
@@ -865,10 +874,6 @@ Add truely lazy objects that don't allocate their JS counterparts
 until an C<< __attr() >> is requested or a method call is made.
 
 This is an optimization and hence gets postponed.
-
-=item *
-
-Add proper stringification overloading.
 
 =item *
 
@@ -926,6 +931,10 @@ Consider using/supporting L<AnyEvent> for better compatibility
 with other mainloops.
 
 =back
+
+=head1 SEE ALSO
+
+L<Win32::OLE> for another implementation of proxy objects
 
 =head1 REPOSITORY
 
