@@ -626,10 +626,6 @@ Currently not a pressing issue, hence postponed.
 
 =item *
 
-Implement array access
-
-=item *
-
 Consider whether MozRepl actually always delivers
 UTF-8 as output, make charset configurable.
 
