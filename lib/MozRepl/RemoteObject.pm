@@ -305,9 +305,6 @@ two methods of calling a function are equivalent:
   
   $window->{loadURI}->('http://search.cpan.org/');
 
-Passing complex datastructures like (references to) arrays or hashes
-from Perl to Javascript is not yet supported.
-
 =cut
 
 sub AUTOLOAD {
