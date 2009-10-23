@@ -599,6 +599,12 @@ Two objects are considered identical
 if the javascript C<===> operator
 returns true.
 
+  my $obj_a = MozRepl::RemoteObject->expr('window.document');
+  print $obj_a->__id(),"\n"; # 42
+  my $obj_b = MozRepl::RemoteObject->expr('window.document');
+  print $obj_b->__id(), "\n"; #43
+  print $obj_a == $obj_b; # true
+
 =cut
 
 sub __object_identity {
