@@ -135,7 +135,6 @@ sub to_perl($) {
     local $_ = shift;
     s/^"//;
     s/"$//;
-    my $res;
     # reraise JS errors from perspective of caller
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
@@ -356,7 +355,9 @@ to get an object representing these.
 sub __transform_arguments {
     my $self = shift;
     map {
-        if (/^[0-9]+$/) {
+        if (! defined) {
+            'null'
+        } elsif (/^[0-9]+$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
             sprintf "%s.getLink(%d)", $repl->repl, $_->__id
@@ -556,17 +557,16 @@ sub __keys { # or rather, __properties
     die unless $self;
     my $id = $self->__id;
     my $rn = $repl->repl;
-    my $data = js_call_to_perl_struct(<<JS);
-    (function(repl,id){
-        var obj = repl.getLink(id);
+    my $getKeys = $self->expr(<<JS);
+    function(obj){
         var res = [];
         for (var el in obj) {
             res.push(el);
         }
         return res
-    }($rn,$id))
+    }
 JS
-    return @$data;
+    return @{ $getKeys->($self) };
 }
 
 =head2 C<< $obj->values >>
