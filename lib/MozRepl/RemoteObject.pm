@@ -832,12 +832,6 @@ __END__
 
 =item *
 
-Implement proper automatic
-quoting for things that look like a string instead of blindly
-passing everything through.
-
-=item *
-
 Remove the reliance on the global C<$repl> and make
 each object carry a reference to the C<$repl> that created
 it. This will allow access to more than one C<$repl>.
