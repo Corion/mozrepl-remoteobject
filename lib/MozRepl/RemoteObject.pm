@@ -510,13 +510,13 @@ sub __as_hash {
     \%h;
 };
 
-sub __as_hash {
+sub __as_array {
     my $self = shift;
     tie my @a, 'MozRepl::RemoteObject::TiedArray', $self;
     \@a;
 };
 
-package
+package # don't index this on CPAN
   MozRepl::RemoteObject::TiedHash;
 use strict;
 use Data::Dumper;
@@ -559,6 +559,53 @@ sub NEXTKEY {
     warn "NEXTKEY: $tied";
     my $obj = $tied->{impl};
     $tied->{__keys}->[ $tied->{__keyidx}++ ];
+};
+
+1;
+
+package # don't index this on CPAN
+  MozRepl::RemoteObject::TiedArray;
+use strict;
+use Data::Dumper;
+use Scalar::Util qw(refaddr);
+
+use vars qw(%tied);
+
+sub TIEARRAY {
+    my ($package,$impl) = @_;
+    my $tied = { impl => $impl };
+    bless $tied, $package;
+};
+
+sub FETCHSIZE {
+    my ($tied) = @_;
+    my $obj = $tied->{impl};
+    $obj->{length};
+}
+
+sub FETCH {
+    my ($tied,$k) = @_;
+    #warn "FETCH $tied / $k";
+    #warn Dumper $tied;
+    my $obj = $tied->{impl};
+    # XXX needs custom JS?
+    $obj->__attr($k)
+};
+
+sub STORE {
+    my ($tied,$k,$val) = @_;
+    #die "STORE not implemented";
+    my $obj = $tied->{impl};
+    # XXX needs custom JS?
+    $obj->__setAttr($k,$val)
+};
+
+sub PUSH {
+    my $tied = shift;
+    my $obj = $tied->{impl};
+    for (@_) {
+        $obj->push($_);
+    };
 };
 
 1;
