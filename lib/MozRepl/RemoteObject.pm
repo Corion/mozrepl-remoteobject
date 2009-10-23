@@ -850,13 +850,11 @@ it. This will allow access to more than one C<$repl>.
 
 =item *
 
-Think about how to handle object identity.
+Think more about how to handle object identity.
 Should C<Scalar::Util::refaddr> return true whenever
 the Javascript C<===> operator returns true?
 
 Also see L<http://perlmonks.org/?node_id=802912>
-
-Currently not a pressing issue, hence postponed.
 
 =item *
 
@@ -882,6 +880,10 @@ of scope or another request (for a property etc.) is sent.
 
 This would reduce the TCP latency when manually descending
 through an object tree in a Perl-side loop.
+
+This might introduce interesting problems when objects
+get delayed until global destruction begins and the MozRepl
+gets shut down before all object destructions could be sent.
 
 This is an optimization and hence gets postponed.
 
