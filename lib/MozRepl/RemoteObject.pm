@@ -50,7 +50,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $repl $encoding $objBridge];
+use vars qw[$VERSION $repl $encoding $objBridge $json];
 $VERSION = '0.01';
 
 # This should go into __setup__ and attach itself to $repl as .link()
@@ -128,6 +128,8 @@ JS
 
 $encoding = 'utf-8'; # hardcoded baseless assumption
 
+$json = JSON->new->allow_nonref;
+
 # Take a JSON response and convert it to a Perl data structure
 sub to_perl($) {
     local $_ = shift;
@@ -139,7 +141,7 @@ sub to_perl($) {
         croak "MozRepl::RemoteObject: $1";
     };
     $_ = decode($encoding,$_);
-    from_json($_);
+    $json->decode($_);
 };
 
 # Unwrap the result, will in the future also be used
@@ -207,25 +209,31 @@ You can also create Javascript functions and use them from Perl:
 
 =cut
 
+my %map = (
+    "\n" => "\\n",
+    "\r" => "\\r",
+    "\t" => "\\t",
+);
+
 sub expr {
     my $package = shift;
     $package = ref $package || $package;
     my $js = shift;
-    $js =~ s/\s/ /g;
-    $js =~ s/(["'\\])/"\\$1"/ge;
+    $js =~ s/([\n"'\\])/$map{$1} || "\\$1"/ge;
     my $rn = $repl->repl;
-    my $data = js_call_to_perl_struct(<<JS);
+    $js = <<JS;
     (function(repl,code) {
         return repl.wrapResults(eval(code))
     })($rn,"$js")
 JS
+    my $data = js_call_to_perl_struct($js);
     return $package->unwrap_json_result($data);
 }
 
 # Should this go?
 sub activeObjects {
     my $rn = $repl->repl;
-    my $data = to_perl($repl->execute(<<JS));
+    my $data = $json->decode($repl->execute(<<JS));
     // activeObjects
     $rn.linkedValues
 JS
@@ -361,13 +369,18 @@ sub __transform_arguments {
         if (/^[0-9]+$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
-            sprintf "repl.getLink(%d)", $_->__id
+            sprintf "%s.getLink(%d)", $repl->repl, $_->__id
         } elsif (ref and blessed $_ and $_->isa('MozRepl')) {
             $_->repl
         } elsif (ref) {
-            croak "Got $_. Passing references around is not yet supported.";
+            $json->encode($_)
         } else {
-            sprintf '"%s"', quotemeta $_
+            $json->encode($_)
+            # Shouldn't this be trivial using JSON?
+            #my $s = $_;
+            #$s =~ s/\s/ /g;
+            #$s =~ s/(["'\\])/"\\$1"/ge;
+            #sprintf '"%s"', $s
         }
     } @_
 };
@@ -776,7 +789,6 @@ sub __as_code {
         my $id = $self->__id;
         die unless $self->__id;
         
-        #($fn) = $self->__transform_arguments($self);
         my $rn = $repl->repl;
         @args = $self->__transform_arguments(@args);
         local $" = ',';
