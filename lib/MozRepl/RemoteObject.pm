@@ -10,6 +10,7 @@ use MozRepl;
 
 use overload '%{}' => '__as_hash',
              '@{}' => '__as_array',
+             '&{}' => '__as_code',
              '=='  => '__object_identity',
              '""'  => sub { overload::StrVal $_[0] };
 
@@ -112,6 +113,11 @@ repl.dive = function(id,elts) {
     return repl.wrapResults(obj)
 }
 
+repl.callThis = function(id,args) {
+    var obj = repl.getLink(id);
+    return repl.wrapResults( obj.apply(obj, args));
+}
+
 repl.callMethod = function(id,fn,args) { 
     var obj = repl.getLink(id);
     fn = obj[fn];
@@ -188,6 +194,16 @@ value, depending on the type of the Javascript result.
 
 This is how you get at the initial Javascript object
 in the object forest.
+
+  my $window = MozRepl::RemoteObject->expr('window');
+  print $window->{title};
+  
+You can also create Javascript functions and use them from Perl:
+
+  my $add = MozRepl::RemoteObject->expr(<<JS);
+      function (a,b) { return a+b }
+  JS
+  print $add->(2,3);
 
 =cut
 
@@ -274,8 +290,15 @@ to be put in between double quotes.
 Passing MozRepl::RemoteObject objects as parameters in Perl
 passes the proxied Javascript object as parameter to the Javascript method.
 
-Complex datastructures like (references to) arrays or hashes
-are not yet supported.
+As in Javascript, functions are first class objects, the following
+two methods of calling a function are equivalent:
+
+  $window->loadURI('http://search.cpan.org/');
+  
+  $window->{loadURI}->('http://search.cpan.org/');
+
+Passing complex datastructures like (references to) arrays or hashes
+from Perl to Javascript is not yet supported.
 
 =cut
 
@@ -298,7 +321,8 @@ thing exists), please use:
 
     $object->__invoke('__invoke', @args);
 
-The same holds true for the other convenience methods implemented
+The same method can be used to call the Javascript functions with the
+same name as other convenience methods implemented
 by this package:
 
     __attr
@@ -312,7 +336,7 @@ by this package:
 
 =head2 C<< $obj->__transform_arguments(@args) >>
 
-Transforms the passed in arguments to its string
+Transforms the passed in arguments to their string
 representations.
 
 Things that match C< /^[0-9]+$/ > get passed through.
@@ -348,12 +372,13 @@ sub __invoke {
     my ($self,$fn,@args) = @_;
     my $id = $self->__id;
     die unless $self->__id;
-    $fn = quotemeta $fn;
+    
+    ($fn) = $self->__transform_arguments($fn);
     my $rn = $repl->repl;
     @args = $self->__transform_arguments(@args);
     local $" = ',';
     my $js = <<JS;
-$rn.callMethod($id,"$fn",[@args])
+$rn.callMethod($id,$fn,[@args])
 JS
     my $data = js_call_to_perl_struct($js);
     return $self->unwrap_json_result($data);
@@ -738,6 +763,25 @@ sub __as_array {
     my $self = shift;
     tie my @a, 'MozRepl::RemoteObject::TiedArray', $self;
     \@a;
+};
+
+sub __as_code {
+    my $self = shift;
+    return sub {
+        my (@args) = @_;
+        my $id = $self->__id;
+        die unless $self->__id;
+        
+        #($fn) = $self->__transform_arguments($self);
+        my $rn = $repl->repl;
+        @args = $self->__transform_arguments(@args);
+        local $" = ',';
+        my $js = <<JS;
+    $rn.callThis($id,[@args])
+JS
+        my $data = js_call_to_perl_struct($js);
+        return $self->unwrap_json_result($data);
+    };
 };
 
 package # don't index this on CPAN
