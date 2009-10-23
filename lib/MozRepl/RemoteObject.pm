@@ -824,6 +824,8 @@ sub POP {
 
 1;
 
+__END__
+
 =head1 TODO
 
 =over 4
@@ -930,12 +932,6 @@ Consider using/supporting L<AnyEvent> for better compatibility
 with other mainloops.
 
 =back
-
-=cut
-
-1;
-
-__END__
 
 =head1 REPOSITORY
 
