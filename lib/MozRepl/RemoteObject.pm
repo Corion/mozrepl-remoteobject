@@ -208,26 +208,16 @@ You can also create Javascript functions and use them from Perl:
 
 =cut
 
-my %map = (
-    "\0" => "\\0",
-    "\n" => "\\n",
-    "\r" => "\\r",
-    "\t" => "\\t",
-);
-for (0x00..0x1f) {
-    $map{ chr $_ } ||= sprintf '\\%02x', $_;
-};
-
 sub expr {
     my $package = shift;
     $package = ref $package || $package;
     my $js = shift;
-    $js =~ s/([\x00-\x1f"'\\])/$map{$1} || "\\$1"/ge;
+    $js = $json->encode($js);
     my $rn = $repl->repl;
     $js = <<JS;
     (function(repl,code) {
         return repl.wrapResults(eval(code))
-    })($rn,"$js")
+    })($rn,$js)
 JS
     my $data = js_call_to_perl_struct($js);
     return $package->unwrap_json_result($data);
