@@ -583,14 +583,12 @@ sub FETCHSIZE {
 sub FETCH {
     my ($tied,$k) = @_;
     my $obj = $tied->{impl};
-    # XXX needs custom JS?
     $obj->__attr($k)
 };
 
 sub STORE {
     my ($tied,$k,$val) = @_;
     my $obj = $tied->{impl};
-    # XXX needs custom JS?
     $obj->__setAttr($k,$val)
 };
 
