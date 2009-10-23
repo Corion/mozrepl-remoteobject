@@ -690,6 +690,11 @@ to enable more polled events.
 Find out how to make MozRepl actively send responses instead
 of polling for changes.
 
+=item *
+
+Consider using/supporting L<AnyEvent> for better compatibility
+with other mainloops.
+
 =back
 
 =cut
