@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 6;
+use Test::More tests => 8;
 
 use MozRepl::RemoteObject;
 
@@ -39,9 +39,15 @@ isa_ok $bar, 'MozRepl::RemoteObject';
 my @elements = @{ $bar };
 is 0+@elements, 2, 'We have two elements';
 
+#diag $_ for @$bar;
+
 my $baz = $bar->[0];
 is $baz, 'baz', 'First array element retrieved';
 
 my $val = $bar->[1];
 isa_ok $val, 'MozRepl::RemoteObject', 'Object retrieval from array';
 is $val->{value}, 'deep', '... and the object contains our value';
+
+push @{ $bar }, '"asdf"';
+is 0+@{ $bar }, 3, '... even pushing an element works';
+is $bar->[-1], 'asdf', '... and the value is actually stored';
