@@ -50,7 +50,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars '$VERSION';
+use vars qw'$VERSION $repl $encoding';
 $VERSION = '0.01';
 
 # This should go into __setup__ and attach itself to $repl as .link()
@@ -121,6 +121,8 @@ repl.callMethod = function(id,fn,args) {
 })([% rn %]);
 JS
 
+$encoding = 'utf-8'; # hardcoded baseless assumption
+
 # Take a JSON response and convert it to a Perl data structure
 sub to_perl($) {
     local $_ = shift;
@@ -131,7 +133,7 @@ sub to_perl($) {
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
-    $_ = decode('utf-8',$_); # hardcoded
+    $_ = decode($encoding,$_);
     from_json($_);
 };
 
@@ -827,6 +829,15 @@ sub POP {
 
 __END__
 
+=head1 ENCODING
+
+The communication with the MozRepl plugin is done
+through 7bit safe ASCII. The received bytes are supposed
+to be UTF-8.
+
+If you want to use a different encoding, set
+the variable $MozRepl::RemoteObject::encoding.
+
 =head1 TODO
 
 =over 4
@@ -850,7 +861,12 @@ Currently not a pressing issue, hence postponed.
 =item *
 
 Consider whether MozRepl actually always delivers
-UTF-8 as output, make charset configurable.
+UTF-8 as output.
+
+=item *
+
+Properly encode all output that gets send towards
+L<MozRepl> into the proper encoding.
 
 =item *
 
