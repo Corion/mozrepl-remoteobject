@@ -397,16 +397,15 @@ sub __release_action {
 sub DESTROY {
     my $self = shift;
     my $id = $self->__id();
+    return unless $self->__id();
     my $release_action;
-    if ($release_action = $self->__release_action) {
+    if ($release_action = ($self->__release_action || '')) {
         $release_action = <<JS;
     var self = repl.getLink(id);
         $release_action //
     ;self = null;
 JS
     };
-    $release_action ||= '';
-    return unless $self->__id();
     my $rn = $repl->repl;
     my $data = MozRepl::RemoteObject::js_call_to_perl_struct(<<JS);
 (function (repl,id) {$release_action
