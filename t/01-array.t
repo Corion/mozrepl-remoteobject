@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 8;
+use Test::More tests => 9;
 
 use MozRepl::RemoteObject;
 
@@ -43,6 +43,9 @@ is 0+@elements, 2, 'We have two elements';
 
 my $baz = $bar->[0];
 is $baz, 'baz', 'First array element retrieved';
+
+my $baz2 = $bar->{0};
+is $baz2, 'baz', 'First array element retrieved via hash key';
 
 my $val = $bar->[1];
 isa_ok $val, 'MozRepl::RemoteObject', 'Object retrieval from array';

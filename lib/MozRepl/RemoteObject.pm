@@ -500,6 +500,14 @@ So if you try to store a MozRepl::RemoteObject into
 another MozRepl::RemoteObject, the Javascript side of things
 will likely blow up.
 
+=head1 ARRAY access
+
+Accessing an object as an array will mainly work. For
+determining the C<length>, it is assumed that the
+object has a C<.length> method. If the method has
+a different name, you will have to access the object
+as a hash with the index as the key.
+
 =cut
 
 # tied interface reflection
