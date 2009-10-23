@@ -311,7 +311,7 @@ by this package:
 
 =cut
 
-=head2 C<< $obj->transform_arguments(@args) >>
+=head2 C<< $obj->__transform_arguments(@args) >>
 
 Transforms the passed in arguments to its string
 representations.
@@ -488,6 +488,7 @@ sub __dive {
     die unless $self->__id;
     my $id = $self->__id;
     my $rn = $repl->repl;
+    # shouldn't this just use  ->__transform_arguments()?
     my $path = join ",", map { '"' . quotemeta($_) . '"'} @path;
     
     my $data = js_call_to_perl_struct(<<JS);
