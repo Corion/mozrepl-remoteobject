@@ -907,7 +907,8 @@ Implement fetching of more than one property at once through __attr()
 =item *
 
 Implement automatic reblessing of JS objects into Perl objects
-based on a typemap.
+based on a typemap instead of blessing everything into
+MozRepl::RemoteObject.
 
 =item *
 
@@ -915,15 +916,21 @@ On the Javascript side, there should be an event queue which
 is returned (and purged) as out-of-band data with every response
 to enable more polled events.
 
+This would lead to implementing a full two-way message bus.
+
 =item *
 
 Find out how to make MozRepl actively send responses instead
 of polling for changes.
 
+This would lead to implementing a full two-way message bus.
+
 =item *
 
 Consider using/supporting L<AnyEvent> for better compatibility
 with other mainloops.
+
+This would lead to implementing a full two-way message bus.
 
 =back
 
