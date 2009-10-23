@@ -10,7 +10,6 @@ CVS/
 ^Makefile$
 ^cvstest$
 ^blibdirs$
-
 # Version control files and dirs.
 \bRCS\b
 \bCVS\b
