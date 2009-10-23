@@ -7,9 +7,10 @@ WriteMakefile(
     'PREREQ_PM'    => { 'MozRepl' => 0.06,
                         'Scalar::Util' => 0,
                         'JSON' => 2,
-                        'File::Basename' => 0,
                         'Encode' => 0,
                         'JSON' => 2,
+                        'File::Basename' => 0,
+                        'parent' => 0,
                       }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'lib/MozRepl/RemoteObject.pm', # retrieve abstract from module
