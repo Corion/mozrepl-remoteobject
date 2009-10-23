@@ -46,7 +46,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
     like $body->{innerHTML}, '/Hello from/', "We stored the HTML";
 
-    $tab->{linkedBrowser}->loadURI('"http://corion.net/"');
+    $tab->{linkedBrowser}->loadURI('http://corion.net/');
 
 =cut
 
@@ -135,31 +135,8 @@ sub to_perl($) {
     from_json($_);
 };
 
-=head2 C<< js_call_to_perl_struct $js, $repl >>
-
-Takes a scalar with JS code, executes it, and returns
-the result as a Perl structure.
-
-C<$repl> is optional and defaults to $MozRepl::RemoteObject::repl.
-
-This will not (yet?) cope with objects on the remote side, so you
-will need to make sure to call C<< $rn.link() >> on all objects
-that are to persist across the bridge.
-
-This is a very low level method. You are better advised to use
-C<< MozRepl::RemoteObject->expr() >> as that will know
-to properly wrap objects but leave other values alone.
-
-=cut
-
-sub js_call_to_perl_struct {
-    my ($js,$_repl) = @_;
-    $_repl ||= $repl;
-    $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
-    my $d = to_perl($_repl->execute($js));
-    $d->{result}
-};
-
+# Unwrap the result, will in the future also be used
+# to handle async events
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if ($data->{type}) {
@@ -170,8 +147,18 @@ sub unwrap_json_result {
     };
 };
 
+=head2 C<< MozRepl::RemoteObject->install_bridge [$repl] >>
+
+Installs the Javascript C<< <-> >> Perl bridge. If you pass in
+an existing L<MozRepl> instance, it must have L<MozRepl::Plugin::JSON2>
+loaded.
+
+=cut
+
 sub install_bridge {
     my ($package, $_repl) = @_;
+    return
+        if (! $_repl and $repl); # already installed
     cluck "Overwriting existing object bridge"
         if $repl and (refaddr $repl != refaddr $_repl);
     $repl = $_repl;
@@ -186,6 +173,7 @@ sub install_bridge {
         $repl->execute($c);
     };
 
+    $repl
 };
 
 sub __id {
@@ -619,6 +607,32 @@ sub __object_identity {
 $rn.getLink($left)===$rn.getLink($right)
 JS
 }
+
+=head2 C<< js_call_to_perl_struct $js, $repl >>
+
+Takes a scalar with JS code, executes it, and returns
+the result as a Perl structure.
+
+C<$repl> is optional and defaults to $MozRepl::RemoteObject::repl.
+
+This will not (yet?) cope with objects on the remote side, so you
+will need to make sure to call C<< $rn.link() >> on all objects
+that are to persist across the bridge.
+
+This is a very low level method. You are better advised to use
+C<< MozRepl::RemoteObject->expr() >> as that will know
+to properly wrap objects but leave other values alone.
+
+=cut
+
+sub js_call_to_perl_struct {
+    my ($js,$_repl) = @_;
+    $_repl ||= $repl;
+    $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    my $d = to_perl($_repl->execute($js));
+    $d->{result}
+};
+
 
 # tied interface reflection
 
