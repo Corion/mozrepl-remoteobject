@@ -1,6 +1,6 @@
 #!perl -w
 use strict;
-use Test::More tests => 2;
+use Test::More tests => 4;
 
 use MozRepl::RemoteObject;
 
@@ -33,3 +33,12 @@ my $identity = MozRepl::RemoteObject->expr(<<JS);
 JS
 
 is $identity, 'true', "Object identity in Javascript works";
+
+my $adder = MozRepl::RemoteObject->expr(<<JS);
+    function(a,b) { return a+b }
+JS
+isa_ok $adder, 'MozRepl::RemoteObject';
+
+my $five = $adder->(2,3);
+is $five, 5, "Anonymous functions in Javascript work as well";
+

@@ -942,6 +942,9 @@ This is an optimization and hence gets postponed.
 Potentially do away with attaching to the repl object and keep
 all elements as anonymous functions referenced only by Perl variables.
 
+This would have the advantage of centralizing the value wrapping/unwrapping
+in one place, C<__as_code>.
+
 C<repl.wrapResults> would have to be handed around in an interesting
 manner then though.
 
