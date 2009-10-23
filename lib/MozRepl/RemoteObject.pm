@@ -679,6 +679,17 @@ Implement fetching of more than one property at once through __attr()
 Implement automatic reblessing of JS objects into Perl objects
 based on a typemap.
 
+=item *
+
+On the Javascript side, there should be an event queue which
+is returned (and purged) as out-of-band data with every response
+to enable more polled events.
+
+=item *
+
+Find out how to make MozRepl actively send responses instead
+of polling for changes.
+
 =back
 
 =cut
