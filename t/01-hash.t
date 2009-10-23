@@ -1,6 +1,7 @@
 #!perl -w
 use strict;
-use Test::More tests => 7;
+use Test::More tests => 8;
+use Data::Dumper;
 
 use MozRepl::RemoteObject;
 
@@ -48,5 +49,12 @@ is $val, undef, 'Nonexisting properties return undef';
 $baz->{ 'test' } = 'foo';
 is $baz->{ test }, 'foo', 'Setting a value works';
 
-my @keys = $foo->__keys;
+my @keys = sort $foo->__keys;
 is_deeply \@keys, ['bar','foo'], 'We can get at the keys';
+
+@keys = sort keys %$foo;
+is_deeply \@keys, ['bar','foo'], 'We can get at the keys'
+    or diag Dumper \@keys;
+
+my @values = $foo->__values;
+#is_deeply \@values, ['bar','foo'], 'We can get at the keys';

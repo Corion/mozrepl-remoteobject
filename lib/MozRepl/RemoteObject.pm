@@ -555,8 +555,6 @@ is identical to
 sub __keys { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $id = $self->__id;
-    my $rn = $repl->repl;
     my $getKeys = $self->expr(<<JS);
     function(obj){
         var res = [];
@@ -585,19 +583,20 @@ is identical to
 sub __values { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $id = $self->__id;
-    my $rn = $repl->repl;
-    my $data = js_call_to_perl_struct(<<JS);
-    (function(repl,id){
-        var obj = repl.getLink(id);
+    #my $id = $self->__id;
+    #my $rn = $repl->repl;
+    #my $data = js_call_to_perl_struct(<<JS);
+    my $getValues = $self->expr(<<JS);
+    function(obj){
+        //var obj = repl.getLink(id);
         var res = [];
         for (var el in obj) {
             res.push(obj[el]);
         }
         return res
-    }($rn,$id))
+    }
 JS
-    return @$data;
+    return @{ $getValues->($self) };
 }
 
 =head2 C<< $obj->__xpath QUERY [, REF] >>
@@ -812,16 +811,14 @@ sub STORE {
 
 sub FIRSTKEY {
     my ($tied) = @_;
-    warn "FIRSTKEY: $tied";
     my $obj = $tied->{impl};
     $tied->{__keys} ||= [$tied->{impl}->__keys()];
     $tied->{__keyidx} = 0;
-    $tied->{__keys}->[ $obj->{__keyidx}++ ];
+    $tied->{__keys}->[ $tied->{__keyidx}++ ];
 };
 
 sub NEXTKEY {
     my ($tied,$lastkey) = @_;
-    warn "NEXTKEY: $tied";
     my $obj = $tied->{impl};
     $tied->{__keys}->[ $tied->{__keyidx}++ ];
 };
