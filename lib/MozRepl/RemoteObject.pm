@@ -1,7 +1,6 @@
 package MozRepl::RemoteObject;
 use strict;
 
-use vars qw[$repl $objBridge];      # this should become configurable, some day
 use Scalar::Util qw(blessed refaddr); # this should become a soft dependency
 use File::Basename;
 use Encode qw(decode);
@@ -50,7 +49,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw'$VERSION $repl $encoding';
+use vars qw[$VERSION $repl $encoding $objBridge];
 $VERSION = '0.01';
 
 # This should go into __setup__ and attach itself to $repl as .link()
