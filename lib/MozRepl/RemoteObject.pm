@@ -917,15 +917,6 @@ You can toggle the utf8'ness by calling
 
 =item *
 
-Add configuration option through environment variable
-so the ip+port can be configured from the outside for the tests
-
-=item *
-
-Make tests C<skip_all> if MozRepl cannot connect.
-
-=item *
-
 For tests that connect to the outside world,
 check/ask whether we're allowed to. If running
 automated, skip.
