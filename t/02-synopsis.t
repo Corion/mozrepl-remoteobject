@@ -1,11 +1,21 @@
 #!perl -w
 use strict;
-use Test::More tests => 2;
+use Test::More;
 
 use MozRepl::RemoteObject;
 
 # use $ENV{MOZREPL} or localhost:4242
-my $repl = MozRepl::RemoteObject->install_bridge();
+my $repl;
+my $ok = eval {
+    $repl = MozRepl::RemoteObject->install_bridge();
+    1;
+};
+if (! $ok) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+} else {
+    plan tests => 2;
+};
 
 # get our root object:
 my $rn = $repl->repl;
