@@ -27,3 +27,7 @@ like $body->{innerHTML}, '/Hello from/', "We stored the HTML";
 
 # Don't connect to the outside:
 #$tab->{linkedBrowser}->loadURI('http://corion.net/');
+
+# close our tab again:
+$tab->__release_action('window.getBrowser().removeTab(self)');
+undef $tab;
