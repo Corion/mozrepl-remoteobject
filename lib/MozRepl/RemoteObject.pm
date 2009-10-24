@@ -22,13 +22,10 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
     #!perl -w
     use strict;
     use MozRepl::RemoteObject;
-    my $repl = MozRepl->new;
-    $repl->setup({
-        log => [qw/ error/],
-        plugins => { plugins => [qw[ JSON2 ]] },
-    });
-    MozRepl::RemoteObject->install_bridge($repl);
-      
+    
+    # use $ENV{MOZREPL} or localhost:4242
+    my $repl = MozRepl::RemoteObject->install_bridge();
+    
     # get our root object:
     my $rn = $repl->repl;
     my $tab = MozRepl::RemoteObject->expr(<<JS);
@@ -166,6 +163,25 @@ to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
 is not set, the default of C<localhost:4242> will be used.
 
 If C<$repl> is not a reference, it will be used instead of C<$ENV{MOZREPL}>.
+
+=head3 Example
+
+If you want to connect to a Firefox instance on a different machine,
+call C<< ->install_bridge >> as follows:
+
+    MozRepl::RemoteObject->install_bridge("$remote_machine:4242");
+
+=head3 Example
+
+If you want to pass in a preconfigured L<MozRepl> object,
+call C<< ->install_bridge >> as follows:
+
+    my $repl = MozRepl->new;
+    $repl->setup({
+        log => [qw/ error info /],
+        plugins => { plugins => [qw[ JSON2 ]] },
+    });
+    MozRepl::RemoteObject->install_bridge($repl);
 
 =cut
 
@@ -329,7 +345,7 @@ sub AUTOLOAD {
     return $self->__invoke($fn,@_)
 }
 
-=head2 C<< $obj->__invoke(METHOD, ARGS)
+=head2 C<< $obj->__invoke(METHOD, ARGS) >>
 
 The C<< ->__invoke() >> object method is an alternate way to
 invoke Javascript methods. It is normally equivalent to 
