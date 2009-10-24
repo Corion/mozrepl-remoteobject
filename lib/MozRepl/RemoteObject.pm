@@ -1,7 +1,7 @@
 package MozRepl::RemoteObject;
 use strict;
 
-use Scalar::Util qw(blessed refaddr); # this should become a soft dependency
+use Scalar::Util qw(blessed refaddr);
 use File::Basename;
 use JSON;
 use Carp qw(croak cluck);
