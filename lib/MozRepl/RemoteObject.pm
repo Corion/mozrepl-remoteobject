@@ -128,6 +128,7 @@ JS
 $json = JSON->new->allow_nonref; # ->utf8;
 
 # Take a JSON response and convert it to a Perl data structure
+# This should go into its own package to clean up the namespace
 sub to_perl($) {
     local $_ = shift;
     s/^"//;
@@ -141,6 +142,7 @@ sub to_perl($) {
 
 # Unwrap the result, will in the future also be used
 # to handle async events
+# This should go into its own package to clean up the namespace
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if ($data->{type}) {
@@ -708,6 +710,7 @@ to properly wrap objects but leave other values alone.
 
 =cut
 
+# This should go into its own package to clean up the namespace
 sub js_call_to_perl_struct {
     my ($js,$_repl) = @_;
     $_repl ||= $repl;
