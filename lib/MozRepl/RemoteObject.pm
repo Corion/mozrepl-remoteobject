@@ -150,6 +150,8 @@ sub unwrap_json_result {
     };
 };
 
+=head1 BRIDGE SETUP
+
 =head2 C<< MozRepl::RemoteObject->install_bridge [$repl] >>
 
 Installs the Javascript C<< <-> >> Perl bridge. If you pass in
@@ -235,42 +237,6 @@ sub install_bridge {
     $repl
 };
 
-=head2 C<< MozRepl::RemoteObject->expr $js >>
-
-Runs the Javascript passed in through C< $js > and links
-the returned result to a Perl object or a plain
-value, depending on the type of the Javascript result.
-
-This is how you get at the initial Javascript object
-in the object forest.
-
-  my $window = MozRepl::RemoteObject->expr('window');
-  print $window->{title};
-  
-You can also create Javascript functions and use them from Perl:
-
-  my $add = MozRepl::RemoteObject->expr(<<JS);
-      function (a,b) { return a+b }
-  JS
-  print $add->(2,3);
-
-=cut
-
-sub expr {
-    my $package = shift;
-    $package = ref $package || $package;
-    my $js = shift;
-    $js = $json->encode($js);
-    my $rn = $repl->repl;
-    $js = <<JS;
-    (function(repl,code) {
-        return repl.wrapResults(eval(code))
-    })($rn,$js)
-JS
-    my $data = js_call_to_perl_struct($js);
-    return $package->unwrap_json_result($data);
-}
-
 =head1 HASH access
 
 All MozRepl::RemoteObject objects implement
@@ -284,11 +250,6 @@ objects from Perl.
 Setting hash keys will try to set the respective property
 in the Javascript object, but always as a string value,
 numerical values are not supported.
-
-B<NOTE>: Assignment of references is not yet implemented.
-So if you try to store a MozRepl::RemoteObject into
-another MozRepl::RemoteObject, the Javascript side of things
-will likely blow up.
 
 =head1 ARRAY access
 
@@ -345,6 +306,44 @@ sub AUTOLOAD {
     my $self = shift;
     return $self->__invoke($fn,@_)
 }
+
+=head2 C<< MozRepl::RemoteObject->expr $js >>
+
+Runs the Javascript passed in through C< $js > and links
+the returned result to a Perl object or a plain
+value, depending on the type of the Javascript result.
+
+This is how you get at the initial Javascript object
+in the object forest.
+
+  my $window = MozRepl::RemoteObject->expr('window');
+  print $window->{title};
+  
+You can also create Javascript functions and use them from Perl:
+
+  my $add = MozRepl::RemoteObject->expr(<<JS);
+      function (a,b) { return a+b }
+  JS
+  print $add->(2,3);
+
+=cut
+
+sub expr {
+    my $package = shift;
+    $package = ref $package || $package;
+    my $js = shift;
+    $js = $json->encode($js);
+    my $rn = $repl->repl;
+    $js = <<JS;
+    (function(repl,code) {
+        return repl.wrapResults(eval(code))
+    })($rn,$js)
+JS
+    my $data = js_call_to_perl_struct($js);
+    return $package->unwrap_json_result($data);
+}
+
+=head1 OBJECT METHODS
 
 =head2 C<< $obj->__invoke(METHOD, ARGS) >>
 
