@@ -4,18 +4,6 @@ use Test::More;
 
 use MozRepl::RemoteObject;
 
-#my $repl = MozRepl->new;
-#$repl->setup({
-#    client => {
-#        extra_client_args => {
-#            binmode => 1,
-#        }
-#    },
-#    log => [qw/ error/],
-#    #log => [qw/ debug error/],
-#    plugins => { plugins => [qw[ Repl::Load ]] }, # I'm loading my own JSON serializer
-#});
-
 diag "--- Loading object functionality into repl\n";
 my $repl;
 
