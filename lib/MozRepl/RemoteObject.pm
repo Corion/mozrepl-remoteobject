@@ -40,7 +40,8 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
                 ;
     $body->{innerHTML} = "<h1>Hello from MozRepl::RemoteObject</h1>";
 
-    like $body->{innerHTML}, '/Hello from/', "We stored the HTML";
+    $body->{innerHTML} =~ '/Hello from/'
+        and print "We stored the HTML";
 
     $tab->{linkedBrowser}->loadURI('http://corion.net/');
 
