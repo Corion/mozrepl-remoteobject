@@ -318,6 +318,22 @@ by this package:
 
 =cut
 
+sub __invoke {
+    my ($self,$fn,@args) = @_;
+    my $id = $self->__id;
+    die unless $self->__id;
+    
+    ($fn) = $self->__transform_arguments($fn);
+    my $rn = $repl->repl;
+    @args = $self->__transform_arguments(@args);
+    local $" = ',';
+    my $js = <<JS;
+$rn.callMethod($id,$fn,[@args])
+JS
+    my $data = js_call_to_perl_struct($js);
+    return $self->unwrap_json_result($data);
+}
+
 =head2 C<< $obj->__transform_arguments(@args) >>
 
 Transforms the passed in arguments to their string
@@ -357,22 +373,6 @@ sub __transform_arguments {
         }
     } @_
 };
-
-sub __invoke {
-    my ($self,$fn,@args) = @_;
-    my $id = $self->__id;
-    die unless $self->__id;
-    
-    ($fn) = $self->__transform_arguments($fn);
-    my $rn = $repl->repl;
-    @args = $self->__transform_arguments(@args);
-    local $" = ',';
-    my $js = <<JS;
-$rn.callMethod($id,$fn,[@args])
-JS
-    my $data = js_call_to_perl_struct($js);
-    return $self->unwrap_json_result($data);
-}
 
 =head2 C<< $obj->__id >>
 
@@ -511,7 +511,7 @@ JS
     return $self->unwrap_json_result($data);
 }
 
-=head2 C<< $obj->keys() >>
+=head2 C<< $obj->__keys() >>
 
 Returns the names of all properties
 of the javascript object as a list.
@@ -540,7 +540,7 @@ JS
     return @{ $getKeys->($self) };
 }
 
-=head2 C<< $obj->values >>
+=head2 C<< $obj->__values >>
 
 Returns the values of all properties
 as a list.
@@ -597,7 +597,6 @@ JS
     my $snap = $self->expr($js);
     my $res = $snap->($self,$query,$ref);
     @{ $res }
-    #map { $snap->[$_] } 0..$snap->{snapshotLength};
 }
 
 =head2 C<< $obj->__click >>
@@ -719,6 +718,17 @@ sub js_call_to_perl_struct {
 
 
 # tied interface reflection
+
+=head2 C<< $obj->__as_hash >>
+
+=head2 C<< $obj->__as_array >>
+
+=head2 C<< $obj->__as_code >>
+
+Returns a reference to a hash/array/coderef. This is used
+by L<overload>. Don't use these directly.
+
+=cut
 
 sub __as_hash {
     my $self = shift;
