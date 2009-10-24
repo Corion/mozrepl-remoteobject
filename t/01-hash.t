@@ -1,24 +1,21 @@
 #!perl -w
 use strict;
-use Test::More tests => 10;
 use Data::Dumper;
+use Test::More;
 
 use MozRepl::RemoteObject;
 
-my $repl = MozRepl->new;
-$repl->setup({
-    client => {
-        extra_client_args => {
-            binmode => 1,
-        }
-    },
-    log => [qw/ error/],
-    #log => [qw/ debug error/],
-    plugins => { plugins => [qw[ Repl::Load ]] }, # I'm loading my own JSON serializer
-});
-
-diag "--- Loading object functionality into repl\n";
-MozRepl::RemoteObject->install_bridge($repl);
+my $repl;
+my $ok = eval {
+    $repl = MozRepl::RemoteObject->install_bridge();
+    1;
+};
+if (! $ok) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+} else {
+    plan tests => 10;
+};
 
 # create a nested object
 sub genObj {

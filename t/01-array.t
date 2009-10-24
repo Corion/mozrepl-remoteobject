@@ -5,8 +5,8 @@ use Test::More;
 use MozRepl::RemoteObject;
 
 diag "--- Loading object functionality into repl\n";
-my $repl;
 
+my $repl;
 my $ok = eval {
     $repl = MozRepl::RemoteObject->install_bridge();
     1;
