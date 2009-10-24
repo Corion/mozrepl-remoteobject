@@ -161,14 +161,48 @@ loaded.
 By default, MozRepl::RemoteObject will set up its own MozRepl instance
 and store it in $MozRepl::RemoteObject::repl .
 
+If C<$repl> is not passed in, C<$ENV{MOZREPL}> will be used
+to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
+is not set, the default of C<localhost:4242> will be used.
+
+If C<$repl> is not a reference, it will be used instead of C<$ENV{MOZREPL}>.
+
 =cut
 
 sub install_bridge {
     my ($package, $_repl) = @_;
     return # already installed
         if (! $_repl and $repl);
-    cluck "Overwriting existing object bridge"
-        if ($repl and refaddr $repl != refaddr $_repl);
+    if ($_repl and ref $repl) {
+        cluck "Overwriting existing object bridge"
+            if ($repl and refaddr $repl != refaddr $_repl);
+    };
+    
+    $_repl ||= $ENV{MOZREPL};    
+    
+    if (! ref $_repl) { # we have host:port
+        my @host_port;
+        if (defined $_repl) {
+            $_repl =~ /^(.*):(\d+)$/
+                or croak "Couldn't find host:port from [$_repl].";
+            push @host_port, host => $1
+                if defined $1;
+            push @host_port, port => $2
+                if defined $2;
+        };
+        $_repl = MozRepl->new();
+        $_repl->setup({
+            client => {
+                @host_port,
+                extra_client_args => {
+                    binmode => 1,
+                }
+            },
+            log => [qw/ error/],
+            #log => [qw/ debug error/],
+            plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
+        });
+    };
     $repl = $_repl;
     
     my $rn = $repl->repl;
@@ -867,7 +901,18 @@ You can toggle the utf8'ness by calling
 
 =item *
 
+Add configuration option through environment variable
+so the ip+port can be configured from the outside for the tests
+
+=item *
+
 Make tests C<skip_all> if MozRepl cannot connect.
+
+=item *
+
+For tests that connect to the outside world,
+check/ask whether we're allowed to. If running
+automated, skip.
 
 =item *
 
