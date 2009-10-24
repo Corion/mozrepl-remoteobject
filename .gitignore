@@ -4,3 +4,4 @@ Makefile.old
 pm_to_blib
 blib/
 .releaserc
+MozRepl-RemoteObject-*/
