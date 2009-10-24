@@ -867,6 +867,10 @@ You can toggle the utf8'ness by calling
 
 =item *
 
+Make tests C<skip_all> if MozRepl cannot connect.
+
+=item *
+
 Remove the reliance on the global C<$repl> and make
 each object carry a reference to the C<$repl> that created
 it. This will allow access to more than one C<$repl>.
