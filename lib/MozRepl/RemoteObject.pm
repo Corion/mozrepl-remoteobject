@@ -108,8 +108,11 @@ repl.callThis = function(id,args) {
 
 repl.callMethod = function(id,fn,args) { 
     var obj = repl.getLink(id);
-    fn = obj[fn];
-    return repl.wrapResults( fn.apply(obj, args));
+    var f = obj[fn];
+    if (! f) {
+        throw "Object has no function " + fn;
+    }
+    return repl.wrapResults( f.apply(obj, args));
 };
 })([% rn %]);
 JS
