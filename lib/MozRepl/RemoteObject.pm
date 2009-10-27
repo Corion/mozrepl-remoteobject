@@ -455,7 +455,7 @@ representations.
 
 Things that match C< /^[0-9]+$/ > get passed through.
 
-MozRepl::RemoteObject instances
+MozRepl::RemoteObject::Instance instances
 are transformed into strings that resolve to their
 Javascript counterparts.
 
