@@ -15,7 +15,7 @@ WriteMakefile(
                         'WWW::Mechanize' => 0, # for WWW::Mechanize::Link
                       }, # e.g., Module::Name => 1.1
     'ABSTRACT_FROM' => 'lib/MozRepl/RemoteObject.pm', # retrieve abstract from module
-    'AUTHOR'        => 'Max Maischein <corion@cpan.org>'),
+    'AUTHOR'        => 'Max Maischein <corion@cpan.org>',
 );
 
 1;
