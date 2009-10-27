@@ -178,7 +178,7 @@ call C<< ->install_bridge >> as follows:
         log => [qw/ error info /],
         plugins => { plugins => [qw[ JSON2 ]] },
     });
-    MozRepl::RemoteObject->install_bridge(repl => $repl);
+    my $bridge = MozRepl::RemoteObject->install_bridge(repl => $repl);
 
 =cut
 
@@ -281,6 +281,7 @@ sub js_call_to_perl_struct {
 
 sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
+sub name {$_[0]->{repl}->repl};
 
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
@@ -423,8 +424,9 @@ sub __invoke {
     die unless $self->__id;
     
     ($fn) = $self->__transform_arguments($fn);
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     @args = $self->__transform_arguments(@args);
+    use Data::Dumper;
     local $" = ',';
     my $js = <<JS;
 $rn.callMethod($id,$fn,[@args])
@@ -444,7 +446,7 @@ MozRepl::RemoteObject instances
 are transformed into strings that resolve to their
 Javascript counterparts.
 
-MozRepl instances get transformed into their repl name.
+MozRepl::RemoteObject instances get transformed into their repl name.
 
 Everything else gets quoted and passed along as string.
 
@@ -463,9 +465,9 @@ sub __transform_arguments {
         } elsif (/^[0-9]+$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
-            sprintf "%s.getLink(%d)", $self->bridge->repl, $_->__id
-        } elsif (ref and blessed $_ and $_->isa('MozRepl')) {
-            $_->repl
+            sprintf "%s.getLink(%d)", $self->bridge->name, $_->__id
+        } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
+            $_->name
         } elsif (ref) {
             $json->encode($_)
         } else {
@@ -792,7 +794,7 @@ sub __object_identity {
     die unless $self->__id;
     my $left = $self->__id;
     my $right = $other->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     my $data = $self->bridge->js_call_to_perl_struct(<<JS);
     // __object_identity
 $rn.getLink($left)===$rn.getLink($right)

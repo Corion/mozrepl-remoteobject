@@ -18,8 +18,8 @@ if (! $ok) {
 # create two remote objects
 sub genObj {
     my ($repl,$val) = @_;
-    my $rn = $repl->repl;
-    my $obj = MozRepl::RemoteObject->expr(<<JS)
+    my $rn = $repl->repl->repl;
+    my $obj = $repl->expr(<<JS)
 (function(repl, val) {
     return { value: val };
 })($rn, "$val")
@@ -27,9 +27,9 @@ JS
 }
 
 my $foo = genObj($repl, 'foo');
-isa_ok $foo, 'MozRepl::RemoteObject';
+isa_ok $foo, 'MozRepl::RemoteObject::Instance';
 my $bar = genObj($repl, 'bar');
-isa_ok $bar, 'MozRepl::RemoteObject';
+isa_ok $bar, 'MozRepl::RemoteObject::Instance';
 
 my $foo_id = $foo->__id;
 

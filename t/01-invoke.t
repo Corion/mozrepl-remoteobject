@@ -19,8 +19,8 @@ if (! $ok) {
 # create a nested object
 sub genObj {
     my ($repl) = @_;
-    my $rn = $repl->repl;
-    my $obj = MozRepl::RemoteObject->expr(<<JS)
+    my $rn = $repl->name;
+    my $obj = $repl->expr(<<JS)
 (function(repl, val) {
     var res = {};
     res.foo  = function() { return "foo" };
@@ -33,7 +33,7 @@ JS
 }
 
 my $obj = genObj($repl);
-isa_ok $obj, 'MozRepl::RemoteObject';
+isa_ok $obj, 'MozRepl::RemoteObject::Instance';
 
 my $res = $obj->__invoke('foo');
 is $res, 'foo', "Can __invoke 'foo'";

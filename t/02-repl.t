@@ -16,14 +16,14 @@ if (! $ok) {
 };
 
 diag "--- Loading object functionality into repl\n";
-MozRepl::RemoteObject->install_bridge($repl);
+#MozRepl::RemoteObject->install_bridge($repl);
 
-my $id = MozRepl::RemoteObject->expr(<<JS);
+my $id = $repl->expr(<<JS);
 function(v) { return v }
 JS
 
 my $JSrepl = $id->($repl);
 
-isa_ok $JSrepl, 'MozRepl::RemoteObject', 'We can pass in a MozRepl object';
+isa_ok $JSrepl, 'MozRepl::RemoteObject::Instance', 'We can pass in a MozRepl object';
 
-is $JSrepl->{_name}, $repl->repl, '... and get at the JS implementation';
+is $JSrepl->{_name}, $repl->repl->repl, '... and get at the JS implementation';

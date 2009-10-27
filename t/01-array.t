@@ -21,8 +21,8 @@ if (! $ok) {
 # create a nested object
 sub genObj {
     my ($repl,$val) = @_;
-    my $rn = $repl->repl;
-    my $obj = MozRepl::RemoteObject->expr(<<JS)
+    my $rn = $repl->name;
+    my $obj = $repl->expr(<<JS)
 (function(repl, val) {
     return { bar: [ 'baz', { value: val } ] };
 })($rn, "$val")
@@ -30,10 +30,10 @@ JS
 }
 
 my $foo = genObj($repl, 'deep');
-isa_ok $foo, 'MozRepl::RemoteObject';
+isa_ok $foo, 'MozRepl::RemoteObject::Instance';
 
 my $bar = $foo->{bar};
-isa_ok $bar, 'MozRepl::RemoteObject';
+isa_ok $bar, 'MozRepl::RemoteObject::Instance';
 
 my @elements = @{ $bar };
 is 0+@elements, 2, 'We have two elements';
@@ -47,7 +47,7 @@ my $baz2 = $bar->{0};
 is $baz2, 'baz', 'First array element retrieved via hash key';
 
 my $val = $bar->[1];
-isa_ok $val, 'MozRepl::RemoteObject', 'Object retrieval from array';
+isa_ok $val, 'MozRepl::RemoteObject::Instance', 'Object retrieval from array';
 is $val->{value}, 'deep', '... and the object contains our value';
 
 push @{ $bar }, 'asdf';

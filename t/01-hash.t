@@ -20,8 +20,8 @@ if (! $ok) {
 # create a nested object
 sub genObj {
     my ($repl,$val) = @_;
-    my $rn = $repl->repl;
-    my $obj = MozRepl::RemoteObject->expr(<<JS)
+    my $rn = $repl->name;
+    my $obj = $repl->expr(<<JS)
 (function(repl, val) {
     return { bar: { baz: { value: val } }, foo: 1 };
 })($rn, "$val")
@@ -29,13 +29,13 @@ JS
 }
 
 my $foo = genObj($repl, 'deep');
-isa_ok $foo, 'MozRepl::RemoteObject';
+isa_ok $foo, 'MozRepl::RemoteObject::Instance';
 
 my $bar = $foo->{bar};
-isa_ok $bar, 'MozRepl::RemoteObject';
+isa_ok $bar, 'MozRepl::RemoteObject::Instance';
 
 my $baz = $bar->{baz};
-isa_ok $baz, 'MozRepl::RemoteObject';
+isa_ok $baz, 'MozRepl::RemoteObject::Instance';
 
 my $val = $baz->{value};
 is $val, 'deep';
