@@ -1,2 +1,5 @@
+0.02 20091027
+    * ->__xpath returned numbers instead of objects
+
 0.01 20091018
     . released on CPAN
