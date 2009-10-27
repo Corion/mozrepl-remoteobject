@@ -282,10 +282,26 @@ sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}->repl};
 
-=head2 C<< $bridge->prepare($js) >>
+=head2 C<< $bridge->declare($js) >>
 
 Shortcut to declare anonymous JS functions
-that will be cached on the JS side.
+that will be cached in the bridge. This
+allows you to use anonymous functions
+in an efficient manner from your modules
+while keeping the serialization features
+of MozRepl::RemoteObject:
+
+  my $js = <<'JS';
+    function(a,b) {
+        return a+b
+    }
+  JS
+  my $fn = $self->bridge->declare($js);
+  $fn->($a,$b);
+
+The function C<$fn> will remain declared
+on the Javascript side
+until the bridge is torn down.
 
 =cut
 
@@ -659,7 +675,7 @@ is identical to
 sub __keys { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $getKeys = $self->expr(<<JS);
+    my $getKeys = $self->bridge->declare(<<'JS');
     function(obj){
         var res = [];
         for (var el in obj) {
@@ -687,9 +703,8 @@ is identical to
 sub __values { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $getValues = $self->expr(<<JS);
+    my $getValues = $self->bridge->declare(<<'JS');
     function(obj){
-        //var obj = repl.getLink(id);
         var res = [];
         for (var el in obj) {
             res.push(obj[el]);
@@ -713,7 +728,7 @@ on HTMLdocument nodes.
 sub __xpath {
     my ($self,$query,$ref) = @_; # $self is a HTMLdocument
     $ref ||= $self;
-    my $js = <<JS;
+    my $js = <<'JS';
     function(doc,q,ref) {
         var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
         var res = [];
@@ -726,7 +741,6 @@ sub __xpath {
     }
 JS
     my $snap = $self->bridge->declare($js);
-    #my $snap = $self->expr($js);
     my $res = $snap->($self,$query,$ref);
     @{ $res }
 }
@@ -742,7 +756,7 @@ on HTMLdocument nodes or their children.
 
 sub __click {
     my ($self) = @_; # $self is a HTMLdocument or a descendant!
-    my $click = $self->expr(<<JS);
+    my $click = $self->declare(<<'JS');
     function(target) {
         var event = content.document.createEvent('MouseEvents');
         event.initMouseEvent('click', true, true, window,
