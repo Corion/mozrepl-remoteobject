@@ -964,11 +964,13 @@ The communication with the MozRepl plugin is done
 through 7bit safe ASCII. The received bytes are supposed
 to be UTF-8, but this seems not always to be the case.
 
-Currently there is no way to specify a different encoding.
+Currently there is no way to specify a different encoding
+on the fly. You have to replace or reconfigure
+the JSON object in the constructor.
 
 You can toggle the utf8'ness by calling
 
-  $MozRepl::RemoteObject::json->utf8;
+  $bridge->json->utf8;
 
 =head1 TODO
 
@@ -979,12 +981,6 @@ You can toggle the utf8'ness by calling
 For tests that connect to the outside world,
 check/ask whether we're allowed to. If running
 automated, skip.
-
-=item *
-
-Remove the reliance on the global C<$repl> and make
-each object carry a reference to the C<$repl> that created
-it. This will allow access to more than one C<$repl>.
 
 =item *
 
@@ -1066,18 +1062,6 @@ synchronous MozRepl implementation.
 
 =item *
 
-Create a convenience wrapper to define anonymous JS functions
-and return them as anonymous Perl subroutines.
-
-=item *
-
-Create a convenience wrapper to define anonymous Perl subroutines
-and stuff them into Javascript as anonymous Javascript functions.
-
-These would be executed by the receiving Perl side.
-
-=item *
-
 Implement fetching of more than one property at once through __attr()
 
 =item *
@@ -1093,6 +1077,14 @@ is returned (and purged) as out-of-band data with every response
 to enable more polled events.
 
 This would lead to implementing a full two-way message bus.
+
+=item *
+
+Create a convenience wrapper to define anonymous Perl subroutines
+and stuff them into Javascript as anonymous Javascript functions.
+
+These would be executed by the receiving Perl side when it
+reads the requests from the event queue.
 
 =item *
 
@@ -1114,7 +1106,8 @@ This would lead to implementing a full two-way message bus.
 
 L<Win32::OLE> for another implementation of proxy objects
 
-L<http://wiki.github.com/bard/mozrepl> - the MozRepl FireFox plugin homepage
+L<http://wiki.github.com/bard/mozrepl> - the MozRepl 
+FireFox plugin homepage
 
 =head1 REPOSITORY
 
