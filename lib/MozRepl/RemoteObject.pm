@@ -181,13 +181,6 @@ call C<< ->install_bridge >> as follows:
 
 sub install_bridge {
     my ($package, %options) = @_;
-    #return # already installed
-    #    if (! $_repl and $repl);
-    #if ($_repl and ref $repl) {
-    #    cluck "Overwriting existing object bridge"
-    #        if ($repl and refaddr $repl != refaddr $_repl);
-    #};
-    #$_repl ||= $ENV{MOZREPL};    
     $options{ repl } ||= $ENV{MOZREPL};
     
     if (! ref $options{repl}) { # we have host:port
@@ -217,7 +210,6 @@ sub install_bridge {
     my $rn = $options{repl}->repl;
     $options{ json } ||= JSON->new->allow_nonref; # ->utf8;
 
-
     # Load the JS side of the JS <-> Perl bridge
     for my $c ($objBridge) {
         $c = "$c"; # make a copy
@@ -230,6 +222,27 @@ sub install_bridge {
 
     bless \%options, $package
 };
+
+=head2 C<< $bridge->expr $js >>
+
+Runs the Javascript passed in through C< $js > and links
+the returned result to a Perl object or a plain
+value, depending on the type of the Javascript result.
+
+This is how you get at the initial Javascript object
+in the object forest.
+
+  my $window = $bridge->expr('window');
+  print $window->{title};
+  
+You can also create Javascript functions and use them from Perl:
+
+  my $add = $bridge->expr(<<JS);
+      function (a,b) { return a+b }
+  JS
+  print $add->(2,3);
+
+=cut
 
 sub expr {
     my ($self,$js) = @_;
@@ -390,31 +403,6 @@ sub AUTOLOAD {
     return $self->__invoke($fn,@_)
 }
 
-=head2 C<< MozRepl::RemoteObject->expr $js >>
-
-Runs the Javascript passed in through C< $js > and links
-the returned result to a Perl object or a plain
-value, depending on the type of the Javascript result.
-
-This is how you get at the initial Javascript object
-in the object forest.
-
-  my $window = MozRepl::RemoteObject->expr('window');
-  print $window->{title};
-  
-You can also create Javascript functions and use them from Perl:
-
-  my $add = MozRepl::RemoteObject->expr(<<JS);
-      function (a,b) { return a+b }
-  JS
-  print $add->(2,3);
-
-=cut
-
-sub expr {
-    my ($self,$js) = @_;
-    return $self->bridge->expr($js);
-};
 
 =head1 OBJECT METHODS
 
