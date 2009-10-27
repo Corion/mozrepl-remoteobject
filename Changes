@@ -1,5 +1,8 @@
-0.02 20091027
+0.02 20091028
     * ->__xpath returned numbers instead of objects
+    * The object was split into two classes, one for bridge functionality
+      and one for instance functionality
+    * $bridge->declare() for declaring cached anonymous functions
 
 0.01 20091018
     . released on CPAN
