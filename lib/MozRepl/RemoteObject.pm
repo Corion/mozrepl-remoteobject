@@ -141,6 +141,13 @@ sub unwrap_json_result {
     };
 };
 
+# Call JS and return the unwrapped result
+sub unjson {
+    my ($self,$js) = @_;
+    my $data = $self->js_call_to_perl_struct($js);
+    return $self->unwrap_json_result($data);    
+};
+
 =head1 BRIDGE SETUP
 
 =head2 C<< MozRepl::RemoteObject->install_bridge %options >>
@@ -256,8 +263,7 @@ sub expr {
         return repl.wrapResults(eval(code))
     })($rn,$js)
 JS
-    my $data = $self->js_call_to_perl_struct($js);
-    return $self->unwrap_json_result($data);
+    return $self->unjson($js);
 }
 
 sub link_ids {
@@ -447,8 +453,7 @@ sub __invoke {
     my $js = <<JS;
 $rn.callMethod($id,$fn,[@args])
 JS
-    my $data = $self->bridge->js_call_to_perl_struct($js);
-    return $self->bridge->unwrap_json_result($data);
+    return $self->bridge->unjson($js);
 }
 
 =head2 C<< $obj->__transform_arguments(@args) >>
@@ -583,10 +588,9 @@ sub __attr {
     my $id = $self->__id;
     my $rn = $self->bridge->repl->repl;
     $attr = $self->bridge->json->encode($attr);
-    my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+    return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
 JS
-    return $self->bridge->unwrap_json_result($data);
 }
 
 =head2 C<< $obj->__setAttr ATTRIBUTE, VALUE >>
@@ -641,10 +645,9 @@ sub __dive {
     my $rn = $self->bridge->repl->repl;
     (my $path) = $self->__transform_arguments(\@path);
     
-    my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+    my $data = $self->bridge->unjson(<<JS);
 $rn.dive($id,$path)
 JS
-    return $self->bridge->unwrap_json_result($data);
 }
 
 =head2 C<< $obj->__keys() >>
@@ -856,8 +859,7 @@ sub __as_code {
         my $js = <<JS;
     $rn.callThis($id,[@args])
 JS
-        my $data = $self->bridge->js_call_to_perl_struct($js);
-        return $self->bridge->unwrap_json_result($data);
+        return $self->bridge->unjson($js);
     };
 };
 
