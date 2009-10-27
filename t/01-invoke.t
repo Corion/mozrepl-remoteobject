@@ -13,7 +13,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 9;
+    plan tests => 10;
 };
 
 # create a nested object
@@ -58,3 +58,18 @@ is $res, 'abc', "Can pass alphanumerical parameters";
 
 $res = $obj->id($obj);
 ok $res == $obj, "Can pass MozRepl::RemoteObject parameters";
+
+my $js = <<'JS';
+function(val) {
+    var res = {};
+    res.foo  = function() { return "foo" };
+    res.__id = function() { return "my JS id"  };
+    res.__invoke = function() { return "my JS invoke"  };
+    res.id   = function(p) { return p };
+    return res
+}
+JS
+
+my $fn  = $repl->declare($js);
+my $fn2 = $repl->declare($js);
+ok $fn == $fn2, "Function declarations get cached";

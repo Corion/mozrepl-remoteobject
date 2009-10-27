@@ -131,7 +131,6 @@ sub to_perl {
 
 # Unwrap the result, will in the future also be used
 # to handle async events
-# This should go into its own package to clean up the namespace
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if ($data->{type}) {
@@ -282,6 +281,18 @@ sub js_call_to_perl_struct {
 sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}->repl};
+
+=head2 C<< $bridge->prepare($js) >>
+
+Shortcut to declare anonymous JS functions
+that will be cached on the JS side.
+
+=cut
+
+sub declare {
+    my ($self,$js) = @_;
+    $self->{functions}->{$js} ||= $self->expr($js);
+};
 
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
@@ -538,12 +549,14 @@ sub DESTROY {
     ;self = null;
 JS
     };
-    my $rn = $self->bridge->repl->repl;
-    my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+    if ($self->bridge) { # not always there during global destruction
+        my $rn = $self->bridge->name;
+        my $data = $self->bridge->js_call_to_perl_struct(<<JS);
 (function (repl,id) {$release_action
     repl.breakLink(id);
 })($rn,$id)
 JS
+    };
 }
 
 =head2 C<< $obj->__attr ATTRIBUTE >>
@@ -712,7 +725,8 @@ sub __xpath {
         return res
     }
 JS
-    my $snap = $self->expr($js);
+    my $snap = $self->bridge->declare($js);
+    #my $snap = $self->expr($js);
     my $res = $snap->($self,$query,$ref);
     @{ $res }
 }
@@ -744,7 +758,7 @@ JS
 
 This creates a new Perl object that's linked to the
 Javascript object C<ID>. You usually do not call this
-directly but use C<< MozRepl::RemoteObject->link_ids @IDs >>
+directly but use C<< $bridge->link_ids @IDs >>
 to wrap a list of Javascript ids with Perl objects.
 
 The C<onDestroy> parameter should contain a Javascript
