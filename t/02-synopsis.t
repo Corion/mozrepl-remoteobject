@@ -18,12 +18,11 @@ if (! $ok) {
 };
 
 # get our root object:
-my $rn = $repl->repl;
-my $tab = MozRepl::RemoteObject->expr(<<JS);
+my $tab = $repl->expr(<<JS);
     window.getBrowser().addTab()
 JS
 
-isa_ok $tab, 'MozRepl::RemoteObject', 'Our tab';
+isa_ok $tab, 'MozRepl::RemoteObject::Instance', 'Our tab';
 
 # Now use the object:
 my $body = $tab->{linkedBrowser}
