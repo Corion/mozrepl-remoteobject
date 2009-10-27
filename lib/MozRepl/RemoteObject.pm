@@ -641,7 +641,7 @@ sub __xpath {
         var c = 0;
         for ( var i=0 ; i < xres.snapshotLength; i++ )
         {
-            res.push( repl.link( xres.snapshotItem(i)));
+            res.push( xres.snapshotItem(i));
         };
         return res
     }
