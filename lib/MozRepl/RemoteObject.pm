@@ -1,7 +1,6 @@
 package MozRepl::RemoteObject;
 use strict;
 
-#use File::Basename;
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
@@ -116,7 +115,6 @@ repl.callMethod = function(id,fn,args) {
 JS
 
 # Take a JSON response and convert it to a Perl data structure
-# This should go into its own package to clean up the namespace
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
