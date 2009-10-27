@@ -11,6 +11,7 @@ WriteMakefile(
                         'JSON' => 2,
                         'File::Basename' => 0,
                         'parent' => 0,
+                        'WWW::Mechanize' => 0, # for WWW::Mechanize::Link
                       }, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM => 'lib/MozRepl/RemoteObject.pm', # retrieve abstract from module
