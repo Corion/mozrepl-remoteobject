@@ -969,6 +969,11 @@ You can toggle the utf8'ness by calling
 
 =item *
 
+Implement C<EXISTS()> so we can use
+C<< exists $foo->{onClick} >>.
+
+=item *
+
 For tests that connect to the outside world,
 check/ask whether we're allowed to. If running
 automated, skip.
