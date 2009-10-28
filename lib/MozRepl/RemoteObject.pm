@@ -1104,6 +1104,11 @@ Potentially, C<repl.print()> on the Javascript side can trigger
 an event. This would mean that we need asynchronous IO
 between Perl and JS, and potentially L<AnyEvent>.
 
+=item *
+
+Consider implementing a mozrepl "interactor" to remove
+the prompting of C<mozrepl> alltogether.
+
 =back
 
 =head1 SEE ALSO
