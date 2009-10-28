@@ -111,8 +111,25 @@ repl.callMethod = function(id,fn,args) {
     if (! f) {
         throw "Object has no function " + fn;
     }
+    if (! f.apply) {
+        throw "<object>." + fn + " is no function";
+    }
     return repl.wrapResults( f.apply(obj, args));
 };
+
+defineInteractor('mozrepl-json', {
+    handleInput: function(repl,input) {
+        // In theory, we could pass in all commands as JSON tuples
+        // and also pass them back as such
+        var res = eval(input);
+        repl.print(JSON.stringify(res));
+    },
+    onStart:    function(repl){},
+    onStop:     function(repl){},
+    getPrompt:  function(repl){}
+});
+
+repl.pushInteractor('mozrepl-json');
 })([% rn %]);
 JS
 
