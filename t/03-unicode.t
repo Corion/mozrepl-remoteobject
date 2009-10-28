@@ -26,7 +26,7 @@ JS
 like $newtitle, qr/mixi/, "The ASCII part doesn't look too bad";
 is $newtitle,
       "\x{30BD}\x{30FC}\x{30B7}\x{30E3}\x{30EB}\x{30FB}\x{30CD}\x{30C3}\x{30C8}"
-    . "\x{30EF}\x{30FC}\x{30AD}\x{30F3}\x{30B0 }\x{30B5}\x{30FC}\x{30D3}\x{30B9}"
+    . "\x{30EF}\x{30FC}\x{30AD}\x{30F3}\x{30B0}\x{30B5}\x{30FC}\x{30D3}\x{30B9}"
     . " [mixi(}\x{30DF}\x{30AF}\x{30B7}\x{30A3}]",
     'We can pass unicode-titles back and forth';
 diag $newtitle;
