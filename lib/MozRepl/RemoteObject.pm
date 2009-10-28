@@ -120,12 +120,16 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
+    s/^(\.+\>)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
     # reraise JS errors from perspective of caller
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
+    #warn "[[$_]]";
+    s/\\x/\\\\x/g; # effin' .toSource() sends us \xHH escapes, and JSON doesn't
+    # know what to do with them. So I pass them through unharmed :-(
     $self->json->decode($_)
 };
 
@@ -293,6 +297,7 @@ sub js_call_to_perl_struct {
     my ($self,$js) = @_;
     my $repl = $self->repl;
     $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    #warn "<<$js>>";
     my $d = $self->to_perl($repl->execute($js));
     $d->{result}
 };
