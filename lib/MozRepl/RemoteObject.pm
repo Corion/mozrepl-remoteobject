@@ -127,7 +127,7 @@ sub to_perl {
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
-    $self->json->decode($_);
+    $self->json->decode($_)
 };
 
 # Unwrap the result, will in the future also be used
@@ -218,7 +218,7 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
-    $options{ json } ||= JSON->new->allow_nonref; # ->utf8;
+    $options{ json } ||= JSON->new->allow_nonref->ascii; #->utf8;
 
     # Load the JS side of the JS <-> Perl bridge
     for my $c ($objBridge) {
@@ -953,15 +953,13 @@ __END__
 
 The communication with the MozRepl plugin is done
 through 7bit safe ASCII. The received bytes are supposed
-to be UTF-8, but this seems not always to be the case.
+to be UTF-8, but this seems not always to be the case,
+so the JSON encoder on the Javascript side also
+uses a 7bit safe encoding.
 
 Currently there is no way to specify a different encoding
 on the fly. You have to replace or reconfigure
 the JSON object in the constructor.
-
-You can toggle the utf8'ness by calling
-
-  $bridge->json->utf8;
 
 =head1 TODO
 
@@ -1095,6 +1093,12 @@ Consider using/supporting L<AnyEvent> for better compatibility
 with other mainloops.
 
 This would lead to implementing a full two-way message bus.
+
+=item *
+
+Potentially, C<repl.print()> on the Javascript side can trigger
+an event. This would mean that we need asynchronous IO
+between Perl and JS, and potentially L<AnyEvent>.
 
 =back
 
