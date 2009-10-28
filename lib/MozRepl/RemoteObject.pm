@@ -192,6 +192,7 @@ call C<< ->install_bridge >> as follows:
 sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
+    $options{ log } ||= [qw/ error/];
     
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
@@ -211,8 +212,7 @@ sub install_bridge {
                     binmode => 1,
                 }
             },
-            log => [qw/ error/],
-            #log => [qw/ debug error/],
+            log => $options{ log },
             plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
         });
     };
@@ -748,7 +748,7 @@ on HTMLdocument nodes or their children.
 
 sub __click {
     my ($self) = @_; # $self is a HTMLdocument or a descendant!
-    my $click = $self->declare(<<'JS');
+    my $click = $self->bridge->declare(<<'JS');
     function(target) {
         var event = content.document.createEvent('MouseEvents');
         event.initMouseEvent('click', true, true, window,
