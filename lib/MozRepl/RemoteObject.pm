@@ -1,6 +1,5 @@
 package MozRepl::RemoteObject;
 use strict;
-
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
@@ -39,7 +38,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge];
-$VERSION = '0.02';
+$VERSION = '0.03';
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;
@@ -121,13 +120,17 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
+    s/^(\.+\>)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
     # reraise JS errors from perspective of caller
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
-    $self->json->decode($_);
+    #warn "[[$_]]";
+    s/\\x/\\\\x/g; # effin' .toSource() sends us \xHH escapes, and JSON doesn't
+    # know what to do with them. So I pass them through unharmed :-(
+    $self->json->decode($_)
 };
 
 # Unwrap the result, will in the future also be used
@@ -218,7 +221,7 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
-    $options{ json } ||= JSON->new->allow_nonref; # ->utf8;
+    $options{ json } ||= JSON->new->allow_nonref->ascii; #->utf8;
 
     # Load the JS side of the JS <-> Perl bridge
     for my $c ($objBridge) {
@@ -294,6 +297,7 @@ sub js_call_to_perl_struct {
     my ($self,$js) = @_;
     my $repl = $self->repl;
     $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    #warn "<<$js>>";
     my $d = $self->to_perl($repl->execute($js));
     $d->{result}
 };
@@ -953,19 +957,22 @@ __END__
 
 The communication with the MozRepl plugin is done
 through 7bit safe ASCII. The received bytes are supposed
-to be UTF-8, but this seems not always to be the case.
+to be UTF-8, but this seems not always to be the case,
+so the JSON encoder on the Javascript side also
+uses a 7bit safe encoding.
 
 Currently there is no way to specify a different encoding
 on the fly. You have to replace or reconfigure
 the JSON object in the constructor.
 
-You can toggle the utf8'ness by calling
-
-  $bridge->json->utf8;
-
 =head1 TODO
 
 =over 4
+
+=item *
+
+Implement C<EXISTS()> so we can use
+C<< exists $foo->{onClick} >>.
 
 =item *
 
@@ -1090,6 +1097,17 @@ Consider using/supporting L<AnyEvent> for better compatibility
 with other mainloops.
 
 This would lead to implementing a full two-way message bus.
+
+=item *
+
+Potentially, C<repl.print()> on the Javascript side can trigger
+an event. This would mean that we need asynchronous IO
+between Perl and JS, and potentially L<AnyEvent>.
+
+=item *
+
+Consider implementing a mozrepl "interactor" to remove
+the prompting of C<mozrepl> alltogether.
 
 =back
 

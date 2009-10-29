@@ -1,4 +1,10 @@
-0.02 20091028
+0.03 20091028
+    ! Fixed ->__xpath
+    ! Fixed bad use of ->declare
+    * Use the stable but large encoding of 7-bit ASCII
+      for communication
+
+0.02 20091027
     * ->__xpath returned numbers instead of objects
     * The object was split into two classes, one for bridge functionality
       and one for instance functionality

@@ -285,15 +285,11 @@ if (!this.JSON) {
 // backslash characters, then we can safely slap some quotes around it.
 // Otherwise we must also replace the offending characters with safe escape
 // sequences.
-
-        escapable.lastIndex = 0;
-        return escapable.test(string) ?
-            '"' + string.replace(escapable, function (a) {
-                var c = meta[a];
-                return typeof c === 'string' ? c :
-                    '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-            }) + '"' :
-            '"' + string + '"';
+        var res = String(string).toSource();
+        // strip "(new String(" at the start
+        res = res.replace(/^\(new String\(/,"");
+        res = res.replace(/\)\)$/,"");
+        return res // this is a it less space efficient
     }
 
 
