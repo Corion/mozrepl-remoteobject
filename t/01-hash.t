@@ -14,7 +14,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 10;
+    plan tests => 12;
 };
 
 # create a nested object
@@ -42,6 +42,9 @@ is $val, 'deep';
 
 $val = $baz->{nonexisting};
 is $val, undef, 'Nonexisting properties return undef';
+
+ok !exists $baz->{nonexisting}, 'exists works for not existing keys';
+ok exists $baz->{value}, 'exists works for existing keys';
 
 $baz->{ 'test' } = 'foo';
 is $baz->{ test }, 'foo', 'Setting a value works';

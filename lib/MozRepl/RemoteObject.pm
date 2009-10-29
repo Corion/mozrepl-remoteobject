@@ -38,7 +38,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge];
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;
@@ -903,6 +903,17 @@ sub NEXTKEY {
     $tied->{__keys}->[ $tied->{__keyidx}++ ];
 };
 
+sub EXISTS {
+    my ($tied,$key) = @_;
+    my $obj = $tied->{impl};
+    my $exists = $obj->bridge->declare(<<'JS');
+    function(elt,prop) {
+        return prop in elt
+    }
+JS
+    $exists->($obj,$key);
+}
+
 1;
 
 package # don't index this on CPAN
@@ -968,11 +979,6 @@ the JSON object in the constructor.
 =head1 TODO
 
 =over 4
-
-=item *
-
-Implement C<EXISTS()> so we can use
-C<< exists $foo->{onClick} >>.
 
 =item *
 
