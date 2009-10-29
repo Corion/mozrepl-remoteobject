@@ -2,7 +2,8 @@
     ! Fixed ->__xpath
     ! Fixed bad use of ->declare
     * Use the stable but large encoding of 7-bit ASCII
-      for communication
+      for communication by switching to String.toSourceCode() on the
+      JS side.
 
 0.02 20091027
     * ->__xpath returned numbers instead of objects
