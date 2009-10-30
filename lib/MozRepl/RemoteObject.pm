@@ -262,7 +262,7 @@ You can also create Javascript functions and use them from Perl:
 sub expr {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
-    my $rn = $self->repl->repl;
+    my $rn = $self->name;
 
     $js = <<JS;
     (function(repl,code) {
@@ -592,7 +592,7 @@ sub __attr {
     my ($self,$attr) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     $attr = $self->bridge->json->encode($attr);
     return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
@@ -616,7 +616,7 @@ sub __setAttr {
     my ($self,$attr,$value) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     $attr = $self->bridge->json->encode($attr);
     ($value) = $self->__transform_arguments($value);
     my $data = $self->bridge->js_call_to_perl_struct(<<JS);
@@ -648,7 +648,7 @@ sub __dive {
     my ($self,@path) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     (my $path) = $self->__transform_arguments(\@path);
     
     my $data = $self->bridge->unjson(<<JS);
@@ -859,7 +859,7 @@ sub __as_code {
         my $id = $self->__id;
         die unless $self->__id;
         
-        my $rn = $self->bridge->repl->repl;
+        my $rn = $self->bridge->name;
         @args = $self->__transform_arguments(@args);
         local $" = ',';
         my $js = <<JS;
