@@ -71,6 +71,7 @@ repl.getAttr = function(id,attr) {
 }
 
 repl.wrapResults = function(v) {
+    // Should we return arrays as arrays instead of returning a ref to them?
     if (  v instanceof String
        || typeof(v) == "string"
        || v instanceof Number
@@ -257,10 +258,12 @@ You can also create Javascript functions and use them from Perl:
 
 =cut
 
+# This is used by ->declare() so can't use it itself
 sub expr {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
     my $rn = $self->repl->repl;
+
     $js = <<JS;
     (function(repl,code) {
         return repl.wrapResults(eval(code))
@@ -292,7 +295,6 @@ to properly wrap objects but leave other values alone.
 
 =cut
 
-# This should go into its own package to clean up the namespace
 sub js_call_to_perl_struct {
     my ($self,$js) = @_;
     my $repl = $self->repl;
