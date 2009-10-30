@@ -1097,6 +1097,9 @@ of polling for changes.
 
 This would lead to implementing a full two-way message bus.
 
+C<repl.print()> can create arbitrary output, but L<Net::Telnet>
+is not prepared to consume it.
+
 =item *
 
 Consider using/supporting L<AnyEvent> for better compatibility
