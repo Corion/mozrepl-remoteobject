@@ -114,6 +114,7 @@ repl.callMethod = function(id,fn,args) {
     }
     return repl.wrapResults( f.apply(obj, args));
 };
+
 // This should return links to all installed functions
 // so we can get rid of nasty details of ->expr()
 // return repl.wrapResults({});
@@ -200,7 +201,9 @@ sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
     $options{ log } ||= [qw/ error/];
-    
+    $options{ queue } ||= [];
+    $options{ use_queue } = 0; # > 0 means enqueue
+
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
         if (defined $options{repl}) {
@@ -261,8 +264,7 @@ You can also create Javascript functions and use them from Perl:
 
 =cut
 
-# This is used by ->declare() so can't use it itself
-sub expr {
+sub expr_js {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
     my $rn = $self->name;
@@ -272,13 +274,48 @@ sub expr {
         return repl.wrapResults(eval(code))
     })($rn,$js)
 JS
-    return $self->unjson($js);
+}
+
+# This is used by ->declare() so can't use it itself
+sub expr {
+    my ($self,$js) = @_;
+    return $self->unjson($self->expr_js($js));
 }
 
 sub exprq {
     my ($self,$js) = @_;
-    $self->expr($js);
+    if (defined wantarray) {
+        croak "->exprq cannot return a result yet";
+    };
+    if ($self->{use_queue}) {
+        # can we fake up a result here? Maybe hand out a fictional
+        # object id and tell the JS to construct an object here,
+        # just in case we need it?
+        # later
+        push @{ $self->{queue} }, $js;
+    } else {
+        $self->js_call_to_perl_struct($js);
+        # but we're not really interested in the result
+    };
 }
+
+sub queued {
+    my ($self,$cb) = @_;
+    if (defined wantarray) {
+        croak "->queued cannot return a result yet";
+    };
+    $self->{use_queue}++;
+    $cb->();
+    # ideally, we would gather the results here and
+    # also return those, if wanted.
+    if (! $self->{use_queue}--) {
+        # flush the queue
+        my $js = join "//\n;//\n", @{ $self->queue };
+        # we don't want a result here!
+        $self->repl->execute($js);
+        @{ $self->queue } = ();
+    };
+};
 
 sub link_ids {
     my $self = shift;
@@ -306,7 +343,12 @@ to properly wrap objects but leave other values alone.
 sub js_call_to_perl_struct {
     my ($self,$js) = @_;
     my $repl = $self->repl;
-    $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    my $queued = '';
+    if (@{ $self->queue }) {
+        $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
+        @{ $self->queue } = ();
+    };
+    $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
     #warn "<<$js>>";
     my $d = $self->to_perl($repl->execute($js));
     $d->{result}
@@ -315,6 +357,7 @@ sub js_call_to_perl_struct {
 sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}->repl};
+sub queue {$_[0]->{queue}};
 
 =head2 C<< $bridge->declare($js) >>
 
@@ -575,12 +618,13 @@ JS
     };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name;
-        #my $data = $self->bridge->js_call_to_perl_struct(<<JS);
-        my $data = $self->bridge->expr(<<JS);
+        # we don't want a result here!
+        $self->bridge->exprq(<<JS);
 (function (repl,id) {$release_action
     repl.breakLink(id);
 })($rn,$id)
 JS
+        1
     };
 }
 
@@ -1128,6 +1172,20 @@ between Perl and JS, and potentially L<AnyEvent>.
 
 Consider implementing a mozrepl "interactor" to remove
 the prompting of C<mozrepl> alltogether.
+
+=item *
+
+Should I make room for promises as well?
+
+  my ($foo,$bar);
+  $bridge->transaction(sub {
+      $foo = $obj->promise;
+      $bar = $obj2->promise;
+  });
+
+The JS could instantiate another level of proxy objects
+that would have to get filled by a batch of JS statements
+sent from Perl to fill in all those promises.
 
 =back
 
