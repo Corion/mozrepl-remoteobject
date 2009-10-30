@@ -114,6 +114,9 @@ repl.callMethod = function(id,fn,args) {
     }
     return repl.wrapResults( f.apply(obj, args));
 };
+// This should return links to all installed functions
+// so we can get rid of nasty details of ->expr()
+// return repl.wrapResults({});
 })([% rn %]);
 JS
 
@@ -270,6 +273,11 @@ sub expr {
     })($rn,$js)
 JS
     return $self->unjson($js);
+}
+
+sub exprq {
+    my ($self,$js) = @_;
+    $self->expr($js);
 }
 
 sub link_ids {
@@ -567,7 +575,8 @@ JS
     };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name;
-        my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+        #my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+        my $data = $self->bridge->expr(<<JS);
 (function (repl,id) {$release_action
     repl.breakLink(id);
 })($rn,$id)
