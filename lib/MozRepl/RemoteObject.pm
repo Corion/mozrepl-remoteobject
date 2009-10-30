@@ -282,6 +282,10 @@ sub expr {
     return $self->unjson($self->expr_js($js));
 }
 
+# the queue stuff is left undocumented because it's
+# not necessarily useful. The destructors use it to
+# bundle the destruction of objects when run through
+# ->queued()
 sub exprq {
     my ($self,$js) = @_;
     if (defined wantarray) {
@@ -317,6 +321,34 @@ sub queued {
     };
 };
 
+=head2 C<< $bridge->declare($js) >>
+
+Shortcut to declare anonymous JS functions
+that will be cached in the bridge. This
+allows you to use anonymous functions
+in an efficient manner from your modules
+while keeping the serialization features
+of MozRepl::RemoteObject:
+
+  my $js = <<'JS';
+    function(a,b) {
+        return a+b
+    }
+  JS
+  my $fn = $self->bridge->declare($js);
+  $fn->($a,$b);
+
+The function C<$fn> will remain declared
+on the Javascript side
+until the bridge is torn down.
+
+=cut
+
+sub declare {
+    my ($self,$js) = @_;
+    $self->{functions}->{$js} ||= $self->expr($js);
+};
+
 sub link_ids {
     my $self = shift;
     map {
@@ -324,6 +356,26 @@ sub link_ids {
            : undef
     } @_
 }
+
+=head2 C<< $bridge->appinfo() >>
+
+Returns the C<nsIXULAppInfo> object
+so you can inspect what application
+the bridge is connected to:
+
+    my $info = $bridge->appinfo();
+    print $info->{name}, "\n";
+    print $info->{version}, "\n";
+    print $info->{ID}, "\n";
+
+=cut
+
+sub appinfo {
+    $_[0]->expr(<<'JS');
+    Components.classes["@mozilla.org/xre/app-info;1"]
+        .getService(Components.interfaces.nsIXULAppInfo);
+JS
+};
 
 =head2 C<< $bridge->js_call_to_perl_struct $js >>
 
@@ -358,34 +410,6 @@ sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}->repl};
 sub queue {$_[0]->{queue}};
-
-=head2 C<< $bridge->declare($js) >>
-
-Shortcut to declare anonymous JS functions
-that will be cached in the bridge. This
-allows you to use anonymous functions
-in an efficient manner from your modules
-while keeping the serialization features
-of MozRepl::RemoteObject:
-
-  my $js = <<'JS';
-    function(a,b) {
-        return a+b
-    }
-  JS
-  my $fn = $self->bridge->declare($js);
-  $fn->($a,$b);
-
-The function C<$fn> will remain declared
-on the Javascript side
-until the bridge is torn down.
-
-=cut
-
-sub declare {
-    my ($self,$js) = @_;
-    $self->{functions}->{$js} ||= $self->expr($js);
-};
 
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
