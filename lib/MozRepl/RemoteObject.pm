@@ -164,9 +164,6 @@ Installs the Javascript C<< <-> >> Perl bridge. If you pass in
 an existing L<MozRepl> instance, it must have L<MozRepl::Plugin::JSON2>
 loaded.
 
-By default, MozRepl::RemoteObject will set up its own MozRepl instance
-and store it in $MozRepl::RemoteObject::repl .
-
 If C<repl> is not passed in, C<$ENV{MOZREPL}> will be used
 to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
 is not set, the default of C<localhost:4242> will be used.
@@ -539,7 +536,7 @@ JS
 
 =head2 C<< $obj->__transform_arguments(@args) >>
 
-Transforms the passed in arguments to their string
+This method transforms the passed in arguments to their JSON string
 representations.
 
 Things that match C< /^[0-9]+$/ > get passed through.
