@@ -3,6 +3,7 @@ use strict;
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
+use Scalar::Util qw(refaddr);
 
 =head1 NAME
 
@@ -71,7 +72,7 @@ repl.getAttr = function(id,attr) {
     return repl.wrapResults(v)
 };
 
-// repl.eventQueue = [];
+repl.eventQueue = [];
 repl.wrapResults = function(v) {
     // Should we return arrays as arrays instead of returning a ref to them?
     var payload;
@@ -86,7 +87,7 @@ repl.wrapResults = function(v) {
     } else {
         payload = { result: repl.link(v), type: typeof(v) }
     };
-    /*
+    
     if (repl.eventQueue.length) {
         // cheap cop-out
         payload.events = [];
@@ -95,7 +96,6 @@ repl.wrapResults = function(v) {
         };
         repl.eventQueue = [];
     };
-    */
     return payload;
 };
 
@@ -129,19 +129,17 @@ repl.callMethod = function(id,fn,args) {
     return repl.wrapResults( f.apply(obj, args));
 };
 
-/*
+
 repl.makeCatchEvent = function(myid) {
         var id = myid;
-        return id;
         return function(ev) {
             repl.eventQueue.push({
-                //cbid : id,
-                //ts   : Number(new Date()),
-                //event: ev 
+                cbid : id,
+                ts   : Number(new Date()),
+                event: ev 
             });
-        }
+        };
 };
-*/
 
 // This should return links to all installed functions
 // so we can get rid of nasty details of ->expr()
@@ -448,20 +446,36 @@ sub queue {$_[0]->{queue}};
 sub make_callback {
     my ($self,$cb) = @_;
     my $cbid = refaddr $cb;
-    $self->{callbacks}->{$cbid} = $cb;
-    my $repl = $self->repl;
     my $makeCatchEvent = $self->declare(<<'JS');
     function(repl,id) {
         return repl.makeCatchEvent(id);
     };
 JS
-    $makeCatchEvent->($repl,$cbid);
+    #(my $res) = $self->link_ids($makeCatchEvent->($self,$cbid));
+    my $res = $makeCatchEvent->($self,$cbid);
+    croak "Couldn't create a callback"
+        if (! $res);
+    #warn "Got callback Javascript proxy as $res";
+    $self->{callbacks}->{$cbid} = { callback => $cb, jsproxy => $res };
+    $res
 };
 
 sub dispatch_callback {
     my ($self,$ev) = @_;
     my $cbid = $ev->{cbid};
-    $self->{callbacks}->{$cbid}->($ev->{event});
+    $self->{callbacks}->{$cbid}->{callback}->($ev->{event});
+};
+
+=head2 C<< $bridge->poll >>
+
+A crude no-op that can be used to just look if new events have arrived.
+
+=cut
+
+sub poll {
+    $_[0]->expr(<<'JS');
+        1==1
+JS
 };
 
 package # hide from CPAN
@@ -546,6 +560,35 @@ sub AUTOLOAD {
     return $self->__invoke($fn,@_)
 }
 
+=head1 CALLBACKS
+
+This module also implements a rudimentary asynchronous
+event dispatch mechanism. Basically, it allows you
+to write code like this and it will work:
+
+  
+  $window->addEventListener('load', sub { 
+       my ($event) = @_; 
+       print "I got a " . $event->{type} . " event\n";
+       print "on " . $event->{originalTarget};
+  });
+  # do other things...
+
+Currently, only busy-waiting is implemented and there is no
+way yet for Javascript to tell Perl it has something to say.
+So in absence of a real mainloop, you have to call
+
+  $repl->poll;
+
+from time to time to look for new events. Note that I<any>
+call to Javascript will carry all events back to Perl and trigger
+the handlers there, so you only need to use poll if no other
+activity happens.
+
+In the long run,
+a move to L<AnyEvent> would make more sense, but currently,
+MozRepl::RemoteObject is still under heavy development on
+many fronts so that has been postponed.
 
 =head1 OBJECT METHODS
 
@@ -569,7 +612,6 @@ by this package:
     __setAttr
     __xpath
     __click
-    expr
     ...
 
 =cut
@@ -624,7 +666,9 @@ sub __transform_arguments {
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
             $_->name
         } elsif (ref and ref eq 'CODE') { # callback
-            sprintf "%s.getLink(%d)", $self->bridge->name, $self->bridge->makecallback($_)->__id
+            my $cb = $self->bridge->make_callback($_);
+            sprintf "%s.getLink(%d)", $self->bridge->name,
+                                      $cb->__id
         } elsif (ref) {
             $json->encode($_)
         } else {
