@@ -1232,18 +1232,6 @@ the C<< click() >> method is preferrable.
 
 =item *
 
-Implement "notifications":
-
-  gBrowser.addEventListener('load', function() { 
-      repl.mechanize.update_content++
-  });
-
-The notifications would be sent as the C<events:>
-entry in any response from a queue, at least for the
-synchronous MozRepl implementation.
-
-=item *
-
 Implement fetching of more than one property at once through __attr()
 
 =item *
@@ -1251,22 +1239,6 @@ Implement fetching of more than one property at once through __attr()
 Implement automatic reblessing of JS objects into Perl objects
 based on a typemap instead of blessing everything into
 MozRepl::RemoteObject.
-
-=item *
-
-On the Javascript side, there should be an event queue which
-is returned (and purged) as out-of-band data with every response
-to enable more polled events.
-
-This would lead to implementing a full two-way message bus.
-
-=item *
-
-Create a convenience wrapper to define anonymous Perl subroutines
-and stuff them into Javascript as anonymous Javascript functions.
-
-These would be executed by the receiving Perl side when it
-reads the requests from the event queue.
 
 =item *
 
@@ -1287,14 +1259,10 @@ This would lead to implementing a full two-way message bus.
 
 =item *
 
-Potentially, C<repl.print()> on the Javascript side can trigger
-an event. This would mean that we need asynchronous IO
-between Perl and JS, and potentially L<AnyEvent>.
-
-=item *
-
 Consider implementing a mozrepl "interactor" to remove
 the prompting of C<mozrepl> alltogether.
+Interactors only exist in the development releases
+of C<mozrepl>.
 
 =item *
 
