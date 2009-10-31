@@ -125,7 +125,7 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
-    s/^(\.+\>)+//; # remove Mozrepl continuation prompts
+    s/^(\.+\>\s*)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
     # reraise JS errors from perspective of caller
@@ -133,8 +133,9 @@ sub to_perl {
         croak "MozRepl::RemoteObject: $1";
     };
     #warn "[[$_]]";
-    s/\\x/\\\\x/g; # effin' .toSource() sends us \xHH escapes, and JSON doesn't
+    # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
+    #s/\\x/\\\\x/g;
     $self->json->decode($_)
 };
 
@@ -226,6 +227,7 @@ sub install_bridge {
     
     my $rn = $options{repl}->repl;
     $options{ json } ||= JSON->new->allow_nonref->ascii; #->utf8;
+    #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
     for my $c ($objBridge) {
@@ -1136,7 +1138,7 @@ Implement "notifications":
       repl.mechanize.update_content++
   });
 
-The notifications would be sent as the events:
+The notifications would be sent as the C<events:>
 entry in any response from a queue, at least for the
 synchronous MozRepl implementation.
 
