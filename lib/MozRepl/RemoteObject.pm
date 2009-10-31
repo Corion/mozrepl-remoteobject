@@ -56,22 +56,25 @@ repl.link = function(obj) {
     } else {
         return undefined
     }
-}
+};
+
 repl.getLink = function(id) {
     return repl.linkedVars[ id ];
-}
+};
 
 repl.breakLink = function(id) {
     delete repl.linkedVars[ id ];
-}
+};
 
 repl.getAttr = function(id,attr) {
     var v = repl.getLink(id)[attr];
     return repl.wrapResults(v)
-}
+};
 
+// repl.eventQueue = [];
 repl.wrapResults = function(v) {
     // Should we return arrays as arrays instead of returning a ref to them?
+    var payload;
     if (  v instanceof String
        || typeof(v) == "string"
        || v instanceof Number
@@ -79,11 +82,22 @@ repl.wrapResults = function(v) {
        || v instanceof Boolean
        || typeof(v) == "boolean"
        ) {
-        return { result: v, type: null }
+        payload = { result: v, type: null }
     } else {
-        return { result: repl.link(v), type: typeof(v) }
+        payload = { result: repl.link(v), type: typeof(v) }
     };
-}
+    /*
+    if (repl.eventQueue.length) {
+        // cheap cop-out
+        payload.events = [];
+        for (var ev in repl.eventQueue) {
+            payload.events.push(repl.link(repl.eventQueue[ev]));
+        };
+        repl.eventQueue = [];
+    };
+    */
+    return payload;
+};
 
 repl.dive = function(id,elts) {
     var obj = repl.getLink(id);
@@ -99,12 +113,12 @@ repl.dive = function(id,elts) {
         };
     };
     return repl.wrapResults(obj)
-}
+};
 
 repl.callThis = function(id,args) {
     var obj = repl.getLink(id);
     return repl.wrapResults( obj.apply(obj, args));
-}
+};
 
 repl.callMethod = function(id,fn,args) { 
     var obj = repl.getLink(id);
@@ -114,6 +128,20 @@ repl.callMethod = function(id,fn,args) {
     }
     return repl.wrapResults( f.apply(obj, args));
 };
+
+/*
+repl.makeCatchEvent = function(myid) {
+        var id = myid;
+        return id;
+        return function(ev) {
+            repl.eventQueue.push({
+                //cbid : id,
+                //ts   : Number(new Date()),
+                //event: ev 
+            });
+        }
+};
+*/
 
 // This should return links to all installed functions
 // so we can get rid of nasty details of ->expr()
@@ -143,6 +171,12 @@ sub to_perl {
 # to handle async events
 sub unwrap_json_result {
     my ($self,$data) = @_;
+    if (my $events = delete $data->{events}) {
+        my @ev = $self->link_ids( @$events );
+        for my $ev (@ev) {
+            $self->dispatch_callback($ev);
+        };
+    };
     if ($data->{type}) {
         return ($self->link_ids( $data->{result} ))[0]
     } else {
@@ -238,6 +272,7 @@ sub install_bridge {
     };
     
     $options{ functions } = {}; # cache
+    $options{ callbacks } = {}; # active callbacks
 
     bless \%options, $package
 };
@@ -410,6 +445,25 @@ sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}->repl};
 sub queue {$_[0]->{queue}};
 
+sub make_callback {
+    my ($self,$cb) = @_;
+    my $cbid = refaddr $cb;
+    $self->{callbacks}->{$cbid} = $cb;
+    my $repl = $self->repl;
+    my $makeCatchEvent = $self->declare(<<'JS');
+    function(repl,id) {
+        return repl.makeCatchEvent(id);
+    };
+JS
+    $makeCatchEvent->($repl,$cbid);
+};
+
+sub dispatch_callback {
+    my ($self,$ev) = @_;
+    my $cbid = $ev->{cbid};
+    $self->{callbacks}->{$cbid}->($ev->{event});
+};
+
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
 use strict;
@@ -569,6 +623,8 @@ sub __transform_arguments {
             sprintf "%s.getLink(%d)", $self->bridge->name, $_->__id
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
             $_->name
+        } elsif (ref and ref eq 'CODE') { # callback
+            sprintf "%s.getLink(%d)", $self->bridge->name, $self->bridge->makecallback($_)->__id
         } elsif (ref) {
             $json->encode($_)
         } else {
