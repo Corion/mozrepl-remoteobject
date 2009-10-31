@@ -15,7 +15,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 9;
+    plan tests => 11;
 };
 
 sub genObj {
@@ -61,10 +61,13 @@ is_deeply \@events,
     "We received the events in the order we expected";
 
 my $window = $repl->expr(<<'JS');
-    repl._workContext.window
+    window
 JS
 isa_ok $window, 'MozRepl::RemoteObject::Instance',
     "We got a handle on window";
+
+# Weirdly enough, .setTimeout cannot be passed around as bare function
+# Maybe just like object methods in Perl
 
 my $timer_id = $window->setTimeout($trigger_command, 2000, $obj, 'from_timer');
 is_deeply \@events,
@@ -77,3 +80,18 @@ $repl->poll;
 is_deeply \@events,
     ['from_perl','from_js', 'from_timer'],
     "Delayed triggers trigger eventually";
+
+$timer_id = $window->setTimeout(sub { 
+    push @events, 'in_perl'
+}, 2000);
+
+is_deeply \@events,
+    ['from_perl','from_js', 'from_timer'],
+    "Delayed events don't trigger immediately (with Perl callback)";
+
+sleep 3;
+$repl->poll;
+
+is_deeply \@events,
+    ['from_perl','from_js', 'from_timer', 'in_perl'],
+    "Delayed triggers trigger eventually (with Perl callback)";

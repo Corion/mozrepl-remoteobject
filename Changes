@@ -1,3 +1,6 @@
+0.05 20091031
+    . Implement callbacks/events
+
 0.04 20091030
     . Added exists functionality for hashes
     . added $bridge->appinfo as a convenience function

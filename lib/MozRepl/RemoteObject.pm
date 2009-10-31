@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge];
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;
@@ -560,12 +560,11 @@ sub AUTOLOAD {
     return $self->__invoke($fn,@_)
 }
 
-=head1 CALLBACKS
+=head1 EVENTS / CALLBACKS
 
 This module also implements a rudimentary asynchronous
 event dispatch mechanism. Basically, it allows you
 to write code like this and it will work:
-
   
   $window->addEventListener('load', sub { 
        my ($event) = @_; 
@@ -573,6 +572,10 @@ to write code like this and it will work:
        print "on " . $event->{originalTarget};
   });
   # do other things...
+
+Note that you cannot block the execution of Javascript that way.
+The Javascript code has long continued running when you receive
+the event.
 
 Currently, only busy-waiting is implemented and there is no
 way yet for Javascript to tell Perl it has something to say.
@@ -584,6 +587,7 @@ from time to time to look for new events. Note that I<any>
 call to Javascript will carry all events back to Perl and trigger
 the handlers there, so you only need to use poll if no other
 activity happens.
+
 
 In the long run,
 a move to L<AnyEvent> would make more sense, but currently,
