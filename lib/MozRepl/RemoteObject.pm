@@ -946,7 +946,7 @@ JS
     $click->($self);
 }
 
-=head2 C<< MozRepl::RemoteObject->new bridge, ID, onDestroy >>
+=head2 C<< MozRepl::RemoteObject::Instance->new bridge, ID, onDestroy >>
 
 This creates a new Perl object that's linked to the
 Javascript object C<ID>. You usually do not call this
