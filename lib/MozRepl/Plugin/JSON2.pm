@@ -232,8 +232,16 @@ __setup__
 // Create a JSON object only if one does not already exist. We create the
 // methods in a closure to avoid creating global variables.
 
+if (this.JSON) {
+    if (this.JSON.corion) {
+        this.JSON = undefined; // boom
+    }
+}
+
 if (!this.JSON) {
-    this.JSON = {};
+    this.JSON = {
+        corion: 1,
+    };
 }
 
 (function () {
@@ -289,6 +297,7 @@ if (!this.JSON) {
         // strip "(new String(" at the start
         res = res.replace(/^\(new String\(/,"");
         res = res.replace(/\)\)$/,"");
+        res = res.replace(/\\x/g, "\\u00"); // hackety hack
         return res // this is less space efficient, but almost works
     }
 

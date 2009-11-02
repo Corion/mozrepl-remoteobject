@@ -161,7 +161,7 @@ sub to_perl {
     #warn "[[$_]]";
     # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
-    #s/\\x/\\\\x/g;
+    #s/\\x/\\u00/g; # this is not safe against \\xHH, but at the moment I don't care
     $self->json->decode($_)
 };
 
@@ -944,6 +944,18 @@ sub __click {
     }
 JS
     $click->($self);
+}
+
+sub __change {
+    my ($self) = @_; # $self is a HTMLdocument or a descendant!
+    my $change = $self->bridge->declare(<<'JS');
+    function(target) {
+        var event = content.document.createEvent('Events');
+        event.initEvent('change', true, true);
+        target.dispatchEvent(event);
+    }
+JS
+    $change->($self);
 }
 
 =head2 C<< MozRepl::RemoteObject::Instance->new bridge, ID, onDestroy >>
