@@ -3,6 +3,7 @@ use strict;
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
+use Scalar::Util qw(refaddr);
 
 =head1 NAME
 
@@ -38,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge];
-$VERSION = '0.03';
+$VERSION = '0.05';
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;
@@ -56,21 +57,25 @@ repl.link = function(obj) {
     } else {
         return undefined
     }
-}
+};
+
 repl.getLink = function(id) {
     return repl.linkedVars[ id ];
-}
+};
 
 repl.breakLink = function(id) {
     delete repl.linkedVars[ id ];
-}
+};
 
 repl.getAttr = function(id,attr) {
     var v = repl.getLink(id)[attr];
     return repl.wrapResults(v)
-}
+};
 
+repl.eventQueue = [];
 repl.wrapResults = function(v) {
+    // Should we return arrays as arrays instead of returning a ref to them?
+    var payload;
     if (  v instanceof String
        || typeof(v) == "string"
        || v instanceof Number
@@ -78,11 +83,21 @@ repl.wrapResults = function(v) {
        || v instanceof Boolean
        || typeof(v) == "boolean"
        ) {
-        return { result: v, type: null }
+        payload = { result: v, type: null }
     } else {
-        return { result: repl.link(v), type: typeof(v) }
+        payload = { result: repl.link(v), type: typeof(v) }
     };
-}
+    
+    if (repl.eventQueue.length) {
+        // cheap cop-out
+        payload.events = [];
+        for (var ev in repl.eventQueue) {
+            payload.events.push(repl.link(repl.eventQueue[ev]));
+        };
+        repl.eventQueue = [];
+    };
+    return payload;
+};
 
 repl.dive = function(id,elts) {
     var obj = repl.getLink(id);
@@ -98,12 +113,12 @@ repl.dive = function(id,elts) {
         };
     };
     return repl.wrapResults(obj)
-}
+};
 
 repl.callThis = function(id,args) {
     var obj = repl.getLink(id);
     return repl.wrapResults( obj.apply(obj, args));
-}
+};
 
 repl.callMethod = function(id,fn,args) { 
     var obj = repl.getLink(id);
@@ -113,6 +128,22 @@ repl.callMethod = function(id,fn,args) {
     }
     return repl.wrapResults( f.apply(obj, args));
 };
+
+
+repl.makeCatchEvent = function(myid) {
+        var id = myid;
+        return function(ev) {
+            repl.eventQueue.push({
+                cbid : id,
+                ts   : Number(new Date()),
+                event: ev 
+            });
+        };
+};
+
+// This should return links to all installed functions
+// so we can get rid of nasty details of ->expr()
+// return repl.wrapResults({});
 })([% rn %]);
 JS
 
@@ -120,7 +151,7 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
-    s/^(\.+\>)+//; # remove Mozrepl continuation prompts
+    s/^(\.+\>\s*)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
     # reraise JS errors from perspective of caller
@@ -128,8 +159,9 @@ sub to_perl {
         croak "MozRepl::RemoteObject: $1";
     };
     #warn "[[$_]]";
-    s/\\x/\\\\x/g; # effin' .toSource() sends us \xHH escapes, and JSON doesn't
+    # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
+    #s/\\x/\\\\x/g;
     $self->json->decode($_)
 };
 
@@ -137,6 +169,12 @@ sub to_perl {
 # to handle async events
 sub unwrap_json_result {
     my ($self,$data) = @_;
+    if (my $events = delete $data->{events}) {
+        my @ev = $self->link_ids( @$events );
+        for my $ev (@ev) {
+            $self->dispatch_callback($ev);
+        };
+    };
     if ($data->{type}) {
         return ($self->link_ids( $data->{result} ))[0]
     } else {
@@ -158,9 +196,6 @@ sub unjson {
 Installs the Javascript C<< <-> >> Perl bridge. If you pass in
 an existing L<MozRepl> instance, it must have L<MozRepl::Plugin::JSON2>
 loaded.
-
-By default, MozRepl::RemoteObject will set up its own MozRepl instance
-and store it in $MozRepl::RemoteObject::repl .
 
 If C<repl> is not passed in, C<$ENV{MOZREPL}> will be used
 to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
@@ -196,7 +231,9 @@ sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
     $options{ log } ||= [qw/ error/];
-    
+    $options{ queue } ||= [];
+    $options{ use_queue } = 0; # > 0 means enqueue
+
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
         if (defined $options{repl}) {
@@ -222,6 +259,7 @@ sub install_bridge {
     
     my $rn = $options{repl}->repl;
     $options{ json } ||= JSON->new->allow_nonref->ascii; #->utf8;
+    #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
     for my $c ($objBridge) {
@@ -232,6 +270,7 @@ sub install_bridge {
     };
     
     $options{ functions } = {}; # cache
+    $options{ callbacks } = {}; # active callbacks
 
     bless \%options, $package
 };
@@ -257,54 +296,62 @@ You can also create Javascript functions and use them from Perl:
 
 =cut
 
-sub expr {
+sub expr_js {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
-    my $rn = $self->repl->repl;
+    my $rn = $self->name;
+
     $js = <<JS;
     (function(repl,code) {
         return repl.wrapResults(eval(code))
     })($rn,$js)
 JS
-    return $self->unjson($js);
 }
 
-sub link_ids {
-    my $self = shift;
-    map {
-        $_ ? MozRepl::RemoteObject::Instance->new( $self, $_ )
-           : undef
-    } @_
-}
-
-=head2 C<< $bridge->js_call_to_perl_struct $js >>
-
-Takes a scalar with JS code, executes it, and returns
-the result as a Perl structure.
-
-This will not (yet?) cope with objects on the remote side, so you
-will need to make sure to call C<< $rn.link() >> on all objects
-that are to persist across the bridge.
-
-This is a very low level method. You are better advised to use
-C<< $bridge->expr() >> as that will know
-to properly wrap objects but leave other values alone.
-
-=cut
-
-# This should go into its own package to clean up the namespace
-sub js_call_to_perl_struct {
+# This is used by ->declare() so can't use it itself
+sub expr {
     my ($self,$js) = @_;
-    my $repl = $self->repl;
-    $js = "JSON.stringify( function(){ var res = $js; return { result: res }}())";
-    #warn "<<$js>>";
-    my $d = $self->to_perl($repl->execute($js));
-    $d->{result}
-};
+    return $self->unjson($self->expr_js($js));
+}
 
-sub repl {$_[0]->{repl}};
-sub json {$_[0]->{json}};
-sub name {$_[0]->{repl}->repl};
+# the queue stuff is left undocumented because it's
+# not necessarily useful. The destructors use it to
+# bundle the destruction of objects when run through
+# ->queued()
+sub exprq {
+    my ($self,$js) = @_;
+    if (defined wantarray) {
+        croak "->exprq cannot return a result yet";
+    };
+    if ($self->{use_queue}) {
+        # can we fake up a result here? Maybe hand out a fictional
+        # object id and tell the JS to construct an object here,
+        # just in case we need it?
+        # later
+        push @{ $self->{queue} }, $js;
+    } else {
+        $self->js_call_to_perl_struct($js);
+        # but we're not really interested in the result
+    };
+}
+
+sub queued {
+    my ($self,$cb) = @_;
+    if (defined wantarray) {
+        croak "->queued cannot return a result yet";
+    };
+    $self->{use_queue}++;
+    $cb->();
+    # ideally, we would gather the results here and
+    # also return those, if wanted.
+    if (! $self->{use_queue}--) {
+        # flush the queue
+        my $js = join "//\n;//\n", @{ $self->queue };
+        # we don't want a result here!
+        $self->repl->execute($js);
+        @{ $self->queue } = ();
+    };
+};
 
 =head2 C<< $bridge->declare($js) >>
 
@@ -332,6 +379,103 @@ until the bridge is torn down.
 sub declare {
     my ($self,$js) = @_;
     $self->{functions}->{$js} ||= $self->expr($js);
+};
+
+sub link_ids {
+    my $self = shift;
+    map {
+        $_ ? MozRepl::RemoteObject::Instance->new( $self, $_ )
+           : undef
+    } @_
+}
+
+=head2 C<< $bridge->appinfo() >>
+
+Returns the C<nsIXULAppInfo> object
+so you can inspect what application
+the bridge is connected to:
+
+    my $info = $bridge->appinfo();
+    print $info->{name}, "\n";
+    print $info->{version}, "\n";
+    print $info->{ID}, "\n";
+
+=cut
+
+sub appinfo {
+    $_[0]->expr(<<'JS');
+    Components.classes["@mozilla.org/xre/app-info;1"]
+        .getService(Components.interfaces.nsIXULAppInfo);
+JS
+};
+
+=head2 C<< $bridge->js_call_to_perl_struct $js >>
+
+Takes a scalar with JS code, executes it, and returns
+the result as a Perl structure.
+
+This will not (yet?) cope with objects on the remote side, so you
+will need to make sure to call C<< $rn.link() >> on all objects
+that are to persist across the bridge.
+
+This is a very low level method. You are better advised to use
+C<< $bridge->expr() >> as that will know
+to properly wrap objects but leave other values alone.
+
+=cut
+
+sub js_call_to_perl_struct {
+    my ($self,$js) = @_;
+    my $repl = $self->repl;
+    my $queued = '';
+    if (@{ $self->queue }) {
+        $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
+        @{ $self->queue } = ();
+    };
+    $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    #warn "<<$js>>";
+    my $d = $self->to_perl($repl->execute($js));
+    $d->{result}
+};
+
+sub repl {$_[0]->{repl}};
+sub json {$_[0]->{json}};
+sub name {$_[0]->{repl}->repl};
+sub queue {$_[0]->{queue}};
+
+sub make_callback {
+    my ($self,$cb) = @_;
+    my $cbid = refaddr $cb;
+    my $makeCatchEvent = $self->declare(<<'JS');
+    function(repl,id) {
+        return repl.makeCatchEvent(id);
+    };
+JS
+    #(my $res) = $self->link_ids($makeCatchEvent->($self,$cbid));
+    my $res = $makeCatchEvent->($self,$cbid);
+    croak "Couldn't create a callback"
+        if (! $res);
+    #warn "Got callback Javascript proxy as $res";
+    $self->{callbacks}->{$cbid} = { callback => $cb, jsproxy => $res };
+    $res
+};
+
+sub dispatch_callback {
+    my ($self,$ev) = @_;
+    my $cbid = $ev->{cbid};
+    $self->{callbacks}->{$cbid}->{callback}->($ev->{event});
+};
+
+=head2 C<< $bridge->poll >>
+
+A crude no-op that can be used to just look if new events have arrived.
+
+=cut
+
+sub poll {
+    $_[0]->expr(<<'JS');
+        1==1
+JS
 };
 
 package # hide from CPAN
@@ -416,6 +560,39 @@ sub AUTOLOAD {
     return $self->__invoke($fn,@_)
 }
 
+=head1 EVENTS / CALLBACKS
+
+This module also implements a rudimentary asynchronous
+event dispatch mechanism. Basically, it allows you
+to write code like this and it will work:
+  
+  $window->addEventListener('load', sub { 
+       my ($event) = @_; 
+       print "I got a " . $event->{type} . " event\n";
+       print "on " . $event->{originalTarget};
+  });
+  # do other things...
+
+Note that you cannot block the execution of Javascript that way.
+The Javascript code has long continued running when you receive
+the event.
+
+Currently, only busy-waiting is implemented and there is no
+way yet for Javascript to tell Perl it has something to say.
+So in absence of a real mainloop, you have to call
+
+  $repl->poll;
+
+from time to time to look for new events. Note that I<any>
+call to Javascript will carry all events back to Perl and trigger
+the handlers there, so you only need to use poll if no other
+activity happens.
+
+
+In the long run,
+a move to L<AnyEvent> would make more sense, but currently,
+MozRepl::RemoteObject is still under heavy development on
+many fronts so that has been postponed.
 
 =head1 OBJECT METHODS
 
@@ -439,7 +616,6 @@ by this package:
     __setAttr
     __xpath
     __click
-    expr
     ...
 
 =cut
@@ -462,7 +638,7 @@ JS
 
 =head2 C<< $obj->__transform_arguments(@args) >>
 
-Transforms the passed in arguments to their string
+This method transforms the passed in arguments to their JSON string
 representations.
 
 Things that match C< /^[0-9]+$/ > get passed through.
@@ -493,6 +669,10 @@ sub __transform_arguments {
             sprintf "%s.getLink(%d)", $self->bridge->name, $_->__id
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
             $_->name
+        } elsif (ref and ref eq 'CODE') { # callback
+            my $cb = $self->bridge->make_callback($_);
+            sprintf "%s.getLink(%d)", $self->bridge->name,
+                                      $cb->__id
         } elsif (ref) {
             $json->encode($_)
         } else {
@@ -565,11 +745,13 @@ JS
     };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name;
-        my $data = $self->bridge->js_call_to_perl_struct(<<JS);
+        # we don't want a result here!
+        $self->bridge->exprq(<<JS);
 (function (repl,id) {$release_action
     repl.breakLink(id);
 })($rn,$id)
 JS
+        1
     };
 }
 
@@ -590,7 +772,7 @@ sub __attr {
     my ($self,$attr) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     $attr = $self->bridge->json->encode($attr);
     return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
@@ -614,7 +796,7 @@ sub __setAttr {
     my ($self,$attr,$value) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     $attr = $self->bridge->json->encode($attr);
     ($value) = $self->__transform_arguments($value);
     my $data = $self->bridge->js_call_to_perl_struct(<<JS);
@@ -646,7 +828,7 @@ sub __dive {
     my ($self,@path) = @_;
     die unless $self->__id;
     my $id = $self->__id;
-    my $rn = $self->bridge->repl->repl;
+    my $rn = $self->bridge->name;
     (my $path) = $self->__transform_arguments(\@path);
     
     my $data = $self->bridge->unjson(<<JS);
@@ -764,7 +946,7 @@ JS
     $click->($self);
 }
 
-=head2 C<< MozRepl::RemoteObject->new bridge, ID, onDestroy >>
+=head2 C<< MozRepl::RemoteObject::Instance->new bridge, ID, onDestroy >>
 
 This creates a new Perl object that's linked to the
 Javascript object C<ID>. You usually do not call this
@@ -857,7 +1039,7 @@ sub __as_code {
         my $id = $self->__id;
         die unless $self->__id;
         
-        my $rn = $self->bridge->repl->repl;
+        my $rn = $self->bridge->name;
         @args = $self->__transform_arguments(@args);
         local $" = ',';
         my $js = <<JS;
@@ -902,6 +1084,17 @@ sub NEXTKEY {
     my $obj = $tied->{impl};
     $tied->{__keys}->[ $tied->{__keyidx}++ ];
 };
+
+sub EXISTS {
+    my ($tied,$key) = @_;
+    my $obj = $tied->{impl};
+    my $exists = $obj->bridge->declare(<<'JS');
+    function(elt,prop) {
+        return prop in elt
+    }
+JS
+    $exists->($obj,$key);
+}
 
 1;
 
@@ -968,11 +1161,6 @@ the JSON object in the constructor.
 =head1 TODO
 
 =over 4
-
-=item *
-
-Implement C<EXISTS()> so we can use
-C<< exists $foo->{onClick} >>.
 
 =item *
 
@@ -1048,18 +1236,6 @@ the C<< click() >> method is preferrable.
 
 =item *
 
-Implement "notifications":
-
-  gBrowser.addEventListener('load', function() { 
-      repl.mechanize.update_content++
-  });
-
-The notifications would be sent as the events:
-entry in any response from a queue, at least for the
-synchronous MozRepl implementation.
-
-=item *
-
 Implement fetching of more than one property at once through __attr()
 
 =item *
@@ -1070,26 +1246,13 @@ MozRepl::RemoteObject.
 
 =item *
 
-On the Javascript side, there should be an event queue which
-is returned (and purged) as out-of-band data with every response
-to enable more polled events.
-
-This would lead to implementing a full two-way message bus.
-
-=item *
-
-Create a convenience wrapper to define anonymous Perl subroutines
-and stuff them into Javascript as anonymous Javascript functions.
-
-These would be executed by the receiving Perl side when it
-reads the requests from the event queue.
-
-=item *
-
 Find out how to make MozRepl actively send responses instead
 of polling for changes.
 
 This would lead to implementing a full two-way message bus.
+
+C<repl.print()> can create arbitrary output, but L<Net::Telnet>
+is not prepared to consume it.
 
 =item *
 
@@ -1100,14 +1263,24 @@ This would lead to implementing a full two-way message bus.
 
 =item *
 
-Potentially, C<repl.print()> on the Javascript side can trigger
-an event. This would mean that we need asynchronous IO
-between Perl and JS, and potentially L<AnyEvent>.
+Consider implementing a mozrepl "interactor" to remove
+the prompting of C<mozrepl> alltogether.
+Interactors only exist in the development releases
+of C<mozrepl>.
 
 =item *
 
-Consider implementing a mozrepl "interactor" to remove
-the prompting of C<mozrepl> alltogether.
+Should I make room for promises as well?
+
+  my ($foo,$bar);
+  $bridge->transaction(sub {
+      $foo = $obj->promise;
+      $bar = $obj2->promise;
+  });
+
+The JS could instantiate another level of proxy objects
+that would have to get filled by a batch of JS statements
+sent from Perl to fill in all those promises.
 
 =back
 

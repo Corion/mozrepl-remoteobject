@@ -15,7 +15,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.02';
+$VERSION = '0.05';
 
 sub setup {
     my ($self, $ctx, $args) = @_;
@@ -289,7 +289,7 @@ if (!this.JSON) {
         // strip "(new String(" at the start
         res = res.replace(/^\(new String\(/,"");
         res = res.replace(/\)\)$/,"");
-        return res // this is a it less space efficient
+        return res // this is less space efficient, but almost works
     }
 
 

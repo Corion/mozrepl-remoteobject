@@ -1,8 +1,16 @@
-0.03 20091028
+0.05 20091031
+    . Implement callbacks/events
+
+0.04 20091030
+    . Added exists functionality for hashes
+    . added $bridge->appinfo as a convenience function
+
+0.03 20091029
     ! Fixed ->__xpath
     ! Fixed bad use of ->declare
     * Use the stable but large encoding of 7-bit ASCII
-      for communication
+      for communication by switching to String.toSourceCode() on the
+      JS side.
 
 0.02 20091027
     * ->__xpath returned numbers instead of objects
