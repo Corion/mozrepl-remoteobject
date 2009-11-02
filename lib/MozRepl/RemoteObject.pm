@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge];
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;

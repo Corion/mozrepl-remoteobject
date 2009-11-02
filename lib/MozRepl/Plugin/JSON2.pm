@@ -15,7 +15,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 sub setup {
     my ($self, $ctx, $args) = @_;
@@ -233,14 +233,14 @@ __setup__
 // methods in a closure to avoid creating global variables.
 
 if (this.JSON) {
-    if (this.JSON.corion) {
+    if (this.JSON.mozrepl) {   // is this our own JSON implementation?
         this.JSON = undefined; // boom
     }
 }
 
 if (!this.JSON) {
     this.JSON = {
-        corion: 1,
+        mozrepl: 1,
     };
 }
 
