@@ -61,3 +61,7 @@ is scalar @values, 2, 'We have two values';
 
 @values = values %$foo;
 is scalar @values, 2, 'We have two values';
+
+#my $multi = $foo->__attr([qw[ bar foo ]]);
+#is scalar @$multi, 2, "Multi-fetch retrieves two values";
+#is $multi->[1], 1, "... and the second value is '1'";

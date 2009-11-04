@@ -72,8 +72,7 @@ repl.getAttr = function(id,attr) {
     return repl.wrapResults(v)
 };
 
-repl.eventQueue = [];
-repl.wrapResults = function(v) {
+repl.wrapValue = function(v) {
     // Should we return arrays as arrays instead of returning a ref to them?
     var payload;
     if (  v instanceof String
@@ -87,7 +86,12 @@ repl.wrapResults = function(v) {
     } else {
         payload = { result: repl.link(v), type: typeof(v) }
     };
-    
+    return payload
+}
+
+repl.eventQueue = [];
+repl.wrapResults = function(v) {
+    var payload = repl.wrapValue(v);
     if (repl.eventQueue.length) {
         // cheap cop-out
         payload.events = [];
@@ -770,13 +774,14 @@ is identical to
 
 sub __attr {
     my ($self,$attr) = @_;
-    die unless $self->__id;
+    die "No id given" unless $self->__id;
     my $id = $self->__id;
     my $rn = $self->bridge->name;
     $attr = $self->bridge->json->encode($attr);
     return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
 JS
+    }
 }
 
 =head2 C<< $obj->__setAttr ATTRIBUTE, VALUE >>
