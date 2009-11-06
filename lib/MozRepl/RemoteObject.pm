@@ -781,7 +781,6 @@ sub __attr {
     return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
 JS
-    }
 }
 
 =head2 C<< $obj->__setAttr ATTRIBUTE, VALUE >>
