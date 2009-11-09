@@ -15,7 +15,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 sub setup {
     my ($self, $ctx, $args) = @_;
@@ -232,6 +232,7 @@ __setup__
 // Create a JSON object only if one does not already exist. We create the
 // methods in a closure to avoid creating global variables.
 
+// this.JSON = undefined; // boom
 if (this.JSON) {
     if (this.JSON.mozrepl) {   // is this our own JSON implementation?
         this.JSON = undefined; // boom

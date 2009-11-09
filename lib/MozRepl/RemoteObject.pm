@@ -166,7 +166,23 @@ sub to_perl {
     # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
     #s/\\x/\\u00/g; # this is not safe against \\xHH, but at the moment I don't care
-    $self->json->decode($_)
+    my $res;
+    local $@;
+    if (! eval {
+        $res = $self->json->decode($_);
+        1
+    }) {
+        my $err = $@;
+        my $offset;
+        if ($err =~ /character offset (\d+)\b/) {
+            $offset = $1
+        };
+        $offset -= 10;
+        $offset = 0 if $offset < 0;
+        warn sprintf "(Sub)string is [%s]", substr($_,$offset,20);
+        die $@
+    };
+    $res
 };
 
 # Unwrap the result, will in the future also be used
@@ -262,7 +278,7 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
-    $options{ json } ||= JSON->new->allow_nonref->ascii; #->utf8;
+    $options{ json } ||= JSON->new->allow_nonref->utf8->ascii; #->utf8;
     #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
@@ -670,7 +686,7 @@ sub __transform_arguments {
         } elsif (/^[0-9]+$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
-            sprintf "%s.getLink(%d)", $self->bridge->name, $_->__id
+            sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
             $_->name
         } elsif (ref and ref eq 'CODE') { # callback
@@ -777,7 +793,8 @@ sub __attr {
     die "No id given" unless $self->__id;
     my $id = $self->__id;
     my $rn = $self->bridge->name;
-    $attr = $self->bridge->json->encode($attr);
+    my $json = $self->bridge->json;
+    $attr = $json->encode($attr);
     return $self->bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
 JS
@@ -801,7 +818,8 @@ sub __setAttr {
     die unless $self->__id;
     my $id = $self->__id;
     my $rn = $self->bridge->name;
-    $attr = $self->bridge->json->encode($attr);
+    my $json = $self->bridge->json;
+    $attr = $json->encode($attr);
     ($value) = $self->__transform_arguments($value);
     my $data = $self->bridge->js_call_to_perl_struct(<<JS);
     // __setAttr
@@ -1334,6 +1352,12 @@ Should I make room for promises as well?
 The JS could instantiate another level of proxy objects
 that would have to get filled by a batch of JS statements
 sent from Perl to fill in all those promises.
+
+  $bridge->promise( 'window' )
+  could return
+  sub { $bridge->expr('window') }
+  
+but that wouldn't allow for coalescing these promises into Javascript.
 
 =item *
 
