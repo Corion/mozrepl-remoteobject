@@ -38,8 +38,10 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $objBridge];
+use vars qw[$VERSION $objBridge @CARP_NOT];
 $VERSION = '0.07';
+
+@CARP_NOT = qw[MozRepl::RemoteObject::Instance];
 
 # This should go into __setup__ and attach itself to $repl as .link()
 $objBridge = <<JS;
@@ -504,6 +506,7 @@ package # hide from CPAN
 use strict;
 use Carp qw(croak cluck);
 use Scalar::Util qw(blessed refaddr);
+push @Carp::CARP_NOT, __PACKAGE__;
 
 use overload '%{}' => '__as_hash',
              '@{}' => '__as_array',
