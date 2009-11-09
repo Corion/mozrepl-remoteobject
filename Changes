@@ -1,3 +1,8 @@
+0.07 20091109
+    . Always use our own JSON encoder on the Javascript side.
+      The native encoders don't output ASCII. This is sad,
+      but there seems to be a problem with the encodings along the way.
+
 0.06 20091102
     . Added __event() to send arbitrary events
 

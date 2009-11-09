@@ -168,8 +168,9 @@ sub to_perl {
     #s/\\x/\\u00/g; # this is not safe against \\xHH, but at the moment I don't care
     my $res;
     local $@;
+    my $json = $self->json;
     if (! eval {
-        $res = $self->json->decode($_);
+        $res = $json->decode($_);
         1
     }) {
         my $err = $@;
@@ -278,7 +279,7 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
-    $options{ json } ||= JSON->new->allow_nonref->utf8->ascii; #->utf8;
+    $options{ json } ||= JSON->new->allow_nonref->ascii; # We send ASCII
     #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
