@@ -757,6 +757,7 @@ sub __release_action {
 
 sub DESTROY {
     my $self = shift;
+    local $@;
     my $id = $self->__id();
     return unless $self->__id();
     my $release_action;
