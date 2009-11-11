@@ -1,3 +1,8 @@
+0.08 20091111
+    . Localize $@ in the destructor so we don't eat
+      exceptions.
+    . Allow for passing of multiple parameters in callbacks
+
 0.07 20091109
     . Always use our own JSON encoder on the Javascript side.
       The native encoders don't output ASCII. This is sad,

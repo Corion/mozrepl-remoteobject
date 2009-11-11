@@ -15,7 +15,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 11;
+    plan tests => 13;
 };
 
 sub genObj {
@@ -59,7 +59,20 @@ is $called, 2, "We got called indirectly by a callback in Javascript";
 is_deeply \@events,
     ['from_perl','from_js'],
     "We received the events in the order we expected";
+@events = ();
 
+my $trigger_command_multi = $repl->declare(<<'JS');
+    function(obj,m,n,o,p) {
+        obj.oncommand(m,n,o,p);
+    };
+JS
+$trigger_command_multi->($obj,'param1','param2','param3','param4');
+is $called, 3, "We got called indirectly by a callback in Javascript";
+is_deeply \@events,
+    ['param1','param2','param3','param4'],
+    "We received the multiple arguments in the order we expected";
+
+@events = ();
 my $window = $repl->expr(<<'JS');
     window
 JS
@@ -71,27 +84,28 @@ isa_ok $window, 'MozRepl::RemoteObject::Instance',
 
 my $timer_id = $window->setTimeout($trigger_command, 2000, $obj, 'from_timer');
 is_deeply \@events,
-    ['from_perl','from_js'],
+    [],
     "Delayed events don't trigger immediately";
 
 sleep 3;
 $repl->poll;
 
 is_deeply \@events,
-    ['from_perl','from_js', 'from_timer'],
+    ['from_timer'],
     "Delayed triggers trigger eventually";
 
+@events = ();
 $timer_id = $window->setTimeout(sub { 
     push @events, 'in_perl'
 }, 2000);
 
 is_deeply \@events,
-    ['from_perl','from_js', 'from_timer'],
+    [],
     "Delayed events don't trigger immediately (with Perl callback)";
 
 sleep 3;
 $repl->poll;
 
 is_deeply \@events,
-    ['from_perl','from_js', 'from_timer', 'in_perl'],
+    ['in_perl'],
     "Delayed triggers trigger eventually (with Perl callback)";
