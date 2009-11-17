@@ -463,7 +463,7 @@ sub js_call_to_perl_struct {
 
 sub repl {$_[0]->{repl}};
 sub json {$_[0]->{json}};
-sub name {$_[0]->{repl}->repl};
+sub name {$_[0]->{repl}?$_[0]->{repl}->repl:undef};
 sub queue {$_[0]->{queue}};
 
 sub make_callback {
