@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT];
-$VERSION = '0.08';
+$VERSION = '0.09';
 
 @CARP_NOT = qw[MozRepl::RemoteObject::Instance];
 
@@ -282,16 +282,15 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
+    #warn "<$rn>";
     $options{ json } ||= JSON->new->allow_nonref->ascii; # We send ASCII
     #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
-    for my $c ($objBridge) {
-        $c = "$c"; # make a copy
-        $c =~ s/\[%\s+rn\s+%\]/$rn/g; # cheap templating
-        next unless $c =~ /\S/;
-        $options{repl}->execute($c);
-    };
+    my $c = $objBridge; # make a copy
+    $c =~ s/\[%\s+rn\s+%\]/$rn/g; # cheap templating
+    #warn $c;
+    $options{repl}->execute($c);
     
     $options{ functions } = {}; # cache
     $options{ callbacks } = {}; # active callbacks
@@ -324,7 +323,7 @@ sub expr_js {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
     my $rn = $self->name;
-
+#warn "($rn)";
     $js = <<JS;
     (function(repl,code) {
         return repl.wrapResults(eval(code))
@@ -501,6 +500,10 @@ sub poll {
 JS
 };
 
+#sub TO_JSON {
+#    $_[0]->name
+#};
+
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
 use strict;
@@ -513,6 +516,10 @@ use overload '%{}' => '__as_hash',
              '&{}' => '__as_code',
              '=='  => '__object_identity',
              '""'  => sub { overload::StrVal $_[0] };
+
+#sub TO_JSON {
+#    sprintf "%s.getLink(%d)", $_[0]->bridge->name, $_[0]->__id
+#};
 
 =head1 HASH access
 
@@ -652,7 +659,7 @@ sub __invoke {
     ($fn) = $self->__transform_arguments($fn);
     my $rn = $self->bridge->name;
     @args = $self->__transform_arguments(@args);
-    use Data::Dumper;
+    #use Data::Dumper;
     local $" = ',';
     my $js = <<JS;
 $rn.callMethod($id,$fn,[@args])
@@ -698,7 +705,7 @@ sub __transform_arguments {
             sprintf "%s.getLink(%d)", $self->bridge->name,
                                       $cb->__id
         } elsif (ref) {
-            $json->encode($_)
+            $json->encode($_);
         } else {
             $json->encode($_)
         }
