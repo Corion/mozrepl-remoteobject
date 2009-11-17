@@ -450,6 +450,10 @@ to properly wrap objects but leave other values alone.
 sub js_call_to_perl_struct {
     my ($self,$js) = @_;
     my $repl = $self->repl;
+    if (! $repl) {
+        # Likely during global destruction
+        return
+    };
     my $queued = '';
     if (@{ $self->queue }) {
         $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
