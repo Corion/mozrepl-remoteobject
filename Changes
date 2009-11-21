@@ -1,3 +1,9 @@
+0.09 20091121
+    . Add tests for multiple bridge instances
+    . Multiple bridge instances work (except for some warnings
+      originating from MozRepl.pm)
+    . Some code cleanup
+
 0.08 20091111
     . Localize $@ in the destructor so we don't eat
       exceptions.
