@@ -1,3 +1,7 @@
+0.10 20091126
+    . Add way to deregister callbacks to release the memory
+      taken up on the Perl side for them.
+
 0.09 20091121
     . Add tests for multiple bridge instances
     . Multiple bridge instances work (except for some warnings

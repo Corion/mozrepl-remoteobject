@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT];
-$VERSION = '0.09';
+$VERSION = '0.10';
 
 @CARP_NOT = qw[MozRepl::RemoteObject::Instance];
 
@@ -67,6 +67,11 @@ repl.getLink = function(id) {
 
 repl.breakLink = function(id) {
     delete repl.linkedVars[ id ];
+};
+
+repl.purgeLinks = function() {
+    repl.linkedVars = {};
+    repl.linkedIdNext = 1;
 };
 
 repl.getAttr = function(id,attr) {
@@ -492,6 +497,25 @@ sub dispatch_callback {
     $self->{callbacks}->{$cbid}->{callback}->(@args);
 };
 
+=head2 C<< $bridge->remove_callback $callback >>
+
+If you want to remove a callback that you instated,
+this is the way.
+
+This will release the resources associated with the callback
+on both sides of the bridge.
+
+=cut
+
+sub remove_callback {
+    my ($self,@callbacks) = @_;
+    for my $cb (@callbacks) {
+        my $cbid = refaddr $cb;
+        delete $self->{callbacks}->{$cbid}
+        # and if you don't have memory cycles, all will be fine
+    };
+};
+
 =head2 C<< $bridge->poll >>
 
 A crude no-op that can be used to just look if new events have arrived.
@@ -503,6 +527,15 @@ sub poll {
         1==1
 JS
 };
+
+#sub DESTROY {
+#    local $@;
+#    my ($self) = @_;;
+#    my $rn = $self->name;
+#    $_[0]->expr(<<JS);
+#$rn.purgeLinks()
+#JS
+#};
 
 #sub TO_JSON {
 #    $_[0]->name
@@ -731,6 +764,25 @@ sub __id {
     bless $_[0], $class;
     $id
 };
+
+=head2 C<< $obj->__on_destroy >>
+
+Accessor for the callback
+that gets invoked from C<< DESTROY >>.
+
+=cut
+
+sub __on_destroy {
+    my $class = ref $_[0];
+    bless $_[0], "$class\::HashAccess";
+    my $d = $_[0]->{on_destroy};
+    if (@_ == 2) {
+        $_[0]->{on_destroy} = $_[1];
+    };
+    bless $_[0], $class;
+    $d
+};
+
 
 =head2 C<< $obj->bridge >>
 
