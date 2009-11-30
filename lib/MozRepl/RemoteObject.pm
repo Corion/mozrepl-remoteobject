@@ -243,7 +243,9 @@ option.
 If you want to connect to a Firefox instance on a different machine,
 call C<< ->install_bridge >> as follows:
 
-    MozRepl::RemoteObject->install_bridge("$remote_machine:4242");
+    MozRepl::RemoteObject->install_bridge(
+        repl => "$remote_machine:4242"
+    );
 
 =head3 Using an existing MozRepl
 
@@ -256,6 +258,26 @@ call C<< ->install_bridge >> as follows:
         plugins => { plugins => [qw[ JSON2 ]] },
     });
     my $bridge = MozRepl::RemoteObject->install_bridge(repl => $repl);
+
+=head3 Launch a mozrepl program if it's not found running
+
+If you want to launch Firefox if it's not already running,
+call C<< ->install_bridge >> as follows:
+
+    MozRepl::RemoteObject->install_bridge(
+        launch => 'iceweasel' # that program must be in the path
+    );
+
+=head3 Using a custom command line
+
+By default the launched program will be launched with the C<-repl>
+command line switch to start up C<mozrepl>. If you need to provide
+the full command line, pass an array reference to the
+C<launch> option:
+
+    MozRepl::RemoteObject->install_bridge(
+        launch => ['iceweasel','-repl','666']
+    );
 
 =cut
 
@@ -277,16 +299,31 @@ sub install_bridge {
                 if defined $2;
         };
         $options{repl} = MozRepl->new();
-        $options{repl}->setup({
-            client => {
-                @host_port,
-                extra_client_args => {
-                    binmode => 1,
-                }
-            },
-            log => $options{ log },
-            plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
-        });
+        RETRY: {
+            my $ok = eval {
+                $options{repl}->setup({
+                    client => {
+                        @host_port,
+                        extra_client_args => {
+                            binmode => 1,
+                        }
+                    },
+                    log => $options{ log },
+                    plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
+                });
+                1;
+            };
+            if (! $ok and $options{ launch }) {
+                require IPC::Run;
+                my $cmd = delete $options{ launch };
+                if (! ref $cmd) {
+                    $cmd = [$cmd,'-repl']
+                };
+                IPC::Run::start($cmd);
+                sleep 2; # to give the process a chance to launch
+                redo RETRY
+            };
+        };
     };
     
     my $rn = $options{repl}->repl;
