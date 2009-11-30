@@ -268,6 +268,8 @@ call C<< ->install_bridge >> as follows:
         launch => 'iceweasel' # that program must be in the path
     );
 
+This feature needs L<IPC::Run> to be installed.
+
 =head3 Using a custom command line
 
 By default the launched program will be launched with the C<-repl>
