@@ -36,11 +36,24 @@ function callGenerator () {
         try {
             alert(v);
             v = i.next();
-        } catch (StopIteration) {
+        } catch (e if e == "StopIteration") {
             // end of our loop
             break
         };
     };
+};
+
+function yieldTo(gen) {
+    yield gen.next()
+};
+
+function callbackToGenerator(callback,master) {
+    var cb = callback;
+    (function () {
+        master.next()
+        yield;
+        yield cb();
+    })()
 };
 
 callGenerator();
