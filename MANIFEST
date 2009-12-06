@@ -17,8 +17,11 @@ t/02-repl.t
 t/02-synopsis.t
 t/03-unicode.t
 t/04-appversion.t
+t/10-xul-hud.t
+t/10-xul-hud.xul
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t
 t/99-unix-text.t
 t/99-versions.t
+t/sync-callbacks.html
