@@ -1,6 +1,7 @@
 0.11 20091130
     . Don't carp() in ::TiedHash or ::TiedArray
     . Added "launch" option to launch a mozrepl process
+    . This means we need IPC::Run as a prerequisite
 
 0.10 20091126
     . Add way to deregister callbacks to release the memory
