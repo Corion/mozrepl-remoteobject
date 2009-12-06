@@ -1433,6 +1433,11 @@ This would lead to implementing a full two-way message bus.
 C<repl.print()> can create arbitrary output, but L<Net::Telnet>
 is not prepared to consume it.
 
+On the Javascript side, C<yield> can be used to implement
+continuations in a way that could maybe allow us to "suspend" the currently
+executing Javascript callback to introduce synchronous callbacks from
+Javascript into Perl.
+
 =item *
 
 Consider using/supporting L<AnyEvent> for better compatibility
