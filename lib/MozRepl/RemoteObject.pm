@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT];
-$VERSION = '0.11';
+$VERSION = '0.12';
 
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
                 MozRepl::RemoteObject::TiedHash
@@ -749,29 +749,23 @@ JS
 This method transforms the passed in arguments to their JSON string
 representations.
 
-Things that match C< /^[0-9]+$/ > get passed through.
-
+Things that match C< /^(?:[1-9][0-9]*|0+)$/ > get passed through.
+ 
 MozRepl::RemoteObject::Instance instances
 are transformed into strings that resolve to their
-Javascript counterparts.
-
-MozRepl::RemoteObject instances get transformed into their repl name.
-
-Everything else gets quoted and passed along as string.
-
-There is no way to specify
 Javascript global variables. Use the C<< ->expr >> method
 to get an object representing these.
+ 
+It's also impossible to pass a negative or fractional number
+as a number through to Javascript, or to pass digits as a Javascript string.
 
 =cut
-
+ 
 sub __transform_arguments {
-    my $self = shift;
-    my $json = $self->bridge->json;
     map {
         if (! defined) {
-            'null'
-        } elsif (/^[0-9]+$/) {
+             'null'
+        } elsif (/^(?:[1-9][0-9]*|0+)$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
             sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id

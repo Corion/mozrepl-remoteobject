@@ -1,3 +1,9 @@
+0.12 to be released
+    . Fix bad unquoted passthrough of numbers with a leading zero. This
+      led to those numbers being interpreted as octal numbers.
+      Reported and diagnosed by Jess Robinson and James Mastros
+    . Document limitations of passthrough
+
 0.11 20091130
     . Don't carp() in ::TiedHash or ::TiedArray
     . Added "launch" option to launch a mozrepl process
