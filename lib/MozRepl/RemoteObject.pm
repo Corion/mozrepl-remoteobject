@@ -762,6 +762,8 @@ as a number through to Javascript, or to pass digits as a Javascript string.
 =cut
  
 sub __transform_arguments {
+    my $self = shift;
+    my $json = $self->bridge->json;
     map {
         if (! defined) {
              'null'
