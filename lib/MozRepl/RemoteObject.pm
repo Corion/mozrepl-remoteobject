@@ -568,6 +568,15 @@ sub poll {
 JS
 };
 
+sub DESTROY {
+    local $@;
+    my ($self) = @_;
+    my $repl = $self->repl; # keep one reference so $repl goes out of scope last
+    %$self = (); # blow away everything else
+    undef $repl # release the repl
+};
+
+
 #sub DESTROY {
 #    local $@;
 #    my ($self) = @_;;
@@ -749,7 +758,7 @@ JS
 This method transforms the passed in arguments to their JSON string
 representations.
 
-Things that match C< /^[0-9]+$/ > get passed through.
+Things that match C< /^(?:[1-9][0-9]*|0+)$/ > get passed through.
 
 MozRepl::RemoteObject::Instance instances
 are transformed into strings that resolve to their
@@ -763,6 +772,9 @@ There is no way to specify
 Javascript global variables. Use the C<< ->expr >> method
 to get an object representing these.
 
+It's also impossible to pass a negative or fractional number
+as a number through to Javascript, or to pass digits as a Javascript string.
+
 =cut
 
 sub __transform_arguments {
@@ -771,7 +783,7 @@ sub __transform_arguments {
     map {
         if (! defined) {
             'null'
-        } elsif (/^[0-9]+$/) {
+        } elsif (/^(?:[1-9][0-9]*|0+)$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
             sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id

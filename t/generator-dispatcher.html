@@ -12,6 +12,15 @@ function genDispatcher () {
     };
 };
 
+var dispatcher = genDispatcher();
+
+function wrapCallback (cb) {
+    return function () {
+        dispatcher.waiting.push(this);
+        dispatcher.next();
+    };
+};
+
 //]]></script>
 </head>
 <body>
