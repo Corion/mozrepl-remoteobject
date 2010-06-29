@@ -313,16 +313,20 @@ sub install_bridge {
                 });
                 1;
             };
-            if (! $ok and $options{ launch }) {
-                require IPC::Run;
-                my $cmd = delete $options{ launch };
-                if (! ref $cmd) {
-                    $cmd = [$cmd,'-repl']
-                };
-                IPC::Run::start($cmd);
-                sleep 2; # to give the process a chance to launch
-                redo RETRY
-            };
+            if (! $ok ) {
+                if( $options{ launch }) {
+                    require IPC::Run;
+                    my $cmd = delete $options{ launch };
+                    if (! ref $cmd) {
+                        $cmd = [$cmd,'-repl']
+                    };
+                    IPC::Run::start($cmd);
+                    sleep 2; # to give the process a chance to launch
+                    redo RETRY
+                } else {
+                    die "Failed to connect to @host_port, $@";
+                }
+            }
         };
     };
     
