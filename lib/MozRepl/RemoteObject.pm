@@ -868,13 +868,15 @@ sub DESTROY {
 JS
     };
     if ($self->bridge) { # not always there during global destruction
-        my $rn = $self->bridge->name;
-        # we don't want a result here!
-        $self->bridge->exprq(<<JS);
+        my $rn = $self->bridge->name; 
+        if ($rn) { # not always there during global destruction
+            # we don't want a result here!
+            $self->bridge->exprq(<<JS);
 (function (repl,id) {$release_action
     repl.breakLink(id);
 })($rn,$id)
 JS
+        };
         1
     };
 }

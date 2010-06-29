@@ -1,8 +1,13 @@
-0.12 to be released
+0.13 to be released
+    . Squelch some warnings when global destruction pulls out the rug
+      from under our feet.
+
+0.12 20100625
     . Fix bad unquoted passthrough of numbers with a leading zero. This
       led to those numbers being interpreted as octal numbers.
       Reported and diagnosed by Jess Robinson and James Mastros
     . Document limitations of passthrough
+    + Die with an informative message if we can't connect
 
 0.11 20091130
     . Don't carp() in ::TiedHash or ::TiedArray
