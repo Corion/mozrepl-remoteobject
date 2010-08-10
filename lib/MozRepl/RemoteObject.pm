@@ -508,10 +508,17 @@ sub js_call_to_perl_struct {
         $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
         @{ $self->queue } = ();
     };
-    $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
     #warn "<<$js>>";
-    my $d = $self->to_perl($repl->execute($js));
-    $d->{result}
+    if (defined wantarray) {
+        #warn "Returning result of $js";
+        $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
+        my $d = $self->to_perl($repl->execute($js));
+        return $d->{result}
+    } else {
+        #warn "Executing $js";
+        $repl->execute($js);
+        ()
+    };
 };
 
 sub repl {$_[0]->{repl}};
@@ -931,8 +938,7 @@ sub __setAttr {
     my $json = $self->bridge->json;
     $attr = $json->encode($attr);
     ($value) = $self->__transform_arguments($value);
-    my $data = $self->bridge->js_call_to_perl_struct(<<JS);
-    // __setAttr
+    $self->bridge->js_call_to_perl_struct(<<JS);
 $rn.getLink($id)[$attr]=$value
 JS
 }
