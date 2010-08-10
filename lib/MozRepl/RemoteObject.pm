@@ -1255,7 +1255,8 @@ sub FETCH {
 sub STORE {
     my ($tied,$k,$val) = @_;
     my $obj = $tied->{impl};
-    $obj->__setAttr($k,$val)
+    $obj->__setAttr($k,$val);
+    () # force __setAttr to return nothing
 };
 
 sub FIRSTKEY {
@@ -1310,7 +1311,8 @@ sub FETCH {
 sub STORE {
     my ($tied,$k,$val) = @_;
     my $obj = $tied->{impl};
-    $obj->__setAttr($k,$val)
+    $obj->__setAttr($k,$val);
+    (); # force void context on __setAttr
 };
 
 sub PUSH {
