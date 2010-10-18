@@ -333,7 +333,6 @@ sub install_bridge {
     my $rn = $options{repl}->repl;
     #warn "<$rn>";
     $options{ json } ||= JSON->new->allow_nonref->ascii; # We send ASCII
-    #$options{ json } ||= JSON->new->allow_nonref->latin1;
 
     # Load the JS side of the JS <-> Perl bridge
     my $c = $objBridge; # make a copy
