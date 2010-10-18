@@ -20,6 +20,7 @@ t/03-unicode.t
 t/04-appversion.t
 t/10-xul-hud.t
 t/10-xul-hud.xul
+t/99-changes.t
 t/99-manifest.t
 t/99-pod.t
 t/99-todo.t

@@ -2,6 +2,8 @@
     . Fix ->__event() to create the event in the correct .document.
       This fixes intermittent errors that were raised if (for example)
       the Firefox Javascript Console was the topmost Firefox window.
+    . Add a test that checks that the Changes file has a well-formed date
+      for every version
 
 0.13 20100810
     . Squelch some warnings when global destruction pulls out the rug
