@@ -6,9 +6,17 @@ use File::Spec;
 use Cwd;
 use File::Basename;
 
-plan tests => 3;
-
-my $bridge = MozRepl::RemoteObject->install_bridge();
+my $bridge;
+my $ok = eval {
+    $bridge = MozRepl::RemoteObject->install_bridge();
+    1;
+};
+if (! $ok) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to MozRepl: $@";
+} else {
+    plan tests => 3;
+};
 
 my $openHUD = $bridge->declare(<<'JS');
 function (url,name,params) {
