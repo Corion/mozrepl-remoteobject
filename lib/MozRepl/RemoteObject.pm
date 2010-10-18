@@ -1114,7 +1114,7 @@ sub __event {
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
-            var event = content.document.createEvent('MouseEvents');
+            var event = target.ownerDocument.createEvent('MouseEvents');
             event.initMouseEvent(name, true, true, window,
                                  0, 0, 0, 0, 0, false, false, false,
                                  false, 0, null);
@@ -1124,7 +1124,7 @@ JS
     } else {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
-        var event = content.document.createEvent('Events');
+        var event = target.ownerDocument.createEvent('Events');
         event.initEvent(name, true, true);
         target.dispatchEvent(event);
     }
