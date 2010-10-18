@@ -504,7 +504,7 @@ sub js_call_to_perl_struct {
         $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
         @{ $self->queue } = ();
     };
-    $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
+    $js = "${queued}JSON.stringify(function(){var res=$js; return { result: res }}())";
     #warn "<<$js>>";
     my $d = $self->to_perl($repl->execute($js));
     $d->{result}
@@ -771,7 +771,7 @@ sub __transform_arguments {
     map {
         if (! defined) {
             'null'
-        } elsif (/^[0-9]+$/) {
+        } elsif (/^[1-9][0-9]*$/) {
             $_
         } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
             sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id
@@ -931,7 +931,7 @@ sub __setAttr {
     ($value) = $self->__transform_arguments($value);
     my $data = $self->bridge->js_call_to_perl_struct(<<JS);
     // __setAttr
-$rn.getLink($id)[$attr]=$value
+    $rn.getLink($id)[$attr]=$value
 JS
 }
 
