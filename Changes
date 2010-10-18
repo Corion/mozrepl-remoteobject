@@ -1,4 +1,9 @@
-0.13 to be released
+0.14 20101017
+    . Fix ->__event() to create the event in the correct .document.
+      This fixes intermittent errors that were raised if (for example)
+      the Firefox Javascript Console was the topmost Firefox window.
+
+0.13 20100810
     . Squelch some warnings when global destruction pulls out the rug
       from under our feet.
     . Don't fetch results from Firefox if we don't need them.

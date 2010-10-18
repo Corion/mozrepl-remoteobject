@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT];
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
                 MozRepl::RemoteObject::TiedHash
@@ -1113,7 +1113,7 @@ sub __event {
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
-            var event = content.document.createEvent('MouseEvents');
+            var event = target.ownerDocument.createEvent('MouseEvents');
             event.initMouseEvent(name, true, true, window,
                                  0, 0, 0, 0, 0, false, false, false,
                                  false, 0, null);
@@ -1123,7 +1123,7 @@ JS
     } else {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
-        var event = content.document.createEvent('Events');
+        var event = target.ownerDocument.createEvent('Events');
         event.initEvent(name, true, true);
         target.dispatchEvent(event);
     }
