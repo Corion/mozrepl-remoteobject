@@ -62,6 +62,27 @@ is scalar @values, 2, 'We have two values';
 @values = values %$foo;
 is scalar @values, 2, 'We have two values';
 
+delete $foo->{bar};
+@keys = sort keys %$foo;
+is_deeply \@keys, ['foo'], 'We can delete an item'
+    or diag Dumper \@keys;
+
+@values = values %$foo;
+is scalar @values, 1, 'We also implicitly remove the value for the key';
+
+# Test for filtering properties to the properties actually in an object
+# and not including inherited properties.
+ok !exists $foo->{hasOwnProperty}, "We filter properties correctly";
+$repl->expr(<<'JS');
+    Object.prototype.fooBar = 1;
+JS
+
+ok $foo->{fooBar}, "Object.prototype.fooBar is available in an inherited object if you know to ask for it";
+is_deeply [grep { /^fooBar$/ } keys %$foo], [], "We only show properties immediate to the object";
+$repl->expr(<<'JS');
+    delete Object.prototype.fooBar;
+JS
+
 #my $multi = $foo->__attr([qw[ bar foo ]]);
 #is scalar @$multi, 2, "Multi-fetch retrieves two values";
 #is $multi->[1], 1, "... and the second value is '1'";

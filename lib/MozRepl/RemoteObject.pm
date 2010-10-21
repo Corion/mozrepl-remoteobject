@@ -1283,6 +1283,15 @@ JS
     $exists->($obj,$key);
 }
 
+sub DELETE {
+    my ($tied,$key) = @_;
+    my $obj = $tied->{impl};
+    my $delete = $obj->bridge->declare(<<'JS');
+    function(elt,prop) {delete elt[prop]}
+JS
+    $delete->($obj,$key);
+}
+
 1;
 
 package # don't index this on CPAN
