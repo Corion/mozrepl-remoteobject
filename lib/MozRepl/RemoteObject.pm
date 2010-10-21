@@ -994,7 +994,9 @@ sub __keys { # or rather, __properties
     function(obj){
         var res = [];
         for (var el in obj) {
-            res.push(el);
+            if (obj.hasOwnProperty(el)) {
+                res.push(el);
+            };
         }
         return res
     }
@@ -1277,7 +1279,7 @@ sub EXISTS {
     my $obj = $tied->{impl};
     my $exists = $obj->bridge->declare(<<'JS');
     function(elt,prop) {
-        return prop in elt
+        return (prop in elt && elt.hasOwnProperty(prop))
     }
 JS
     $exists->($obj,$key);
