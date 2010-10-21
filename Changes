@@ -1,4 +1,4 @@
-0.15 to be released
+0.15 20101021
     . Filter object for only immediate properties. This means that inherited
       properties don't show up anymore in keys %$obj or using exists. You
       can still get at their values though.
