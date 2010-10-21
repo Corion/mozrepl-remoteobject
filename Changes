@@ -1,3 +1,11 @@
+0.15 to be released
+    . Filter object for only immediate properties. This means that inherited
+      properties don't show up anymore in keys %$obj or using exists. You
+      can still get at their values though.
+      See L<http://yuiblog.com/blog/2006/09/26/for-in-intrigue/> for a
+      discussion of filtering and why it should happen.
+    . Implement C<delete> (and tests) for hashes
+
 0.14 20101017
     . Fix ->__event() to create the event in the correct .document.
       This fixes intermittent errors that were raised if (for example)
