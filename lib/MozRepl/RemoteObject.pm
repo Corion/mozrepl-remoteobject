@@ -47,7 +47,7 @@ $VERSION = '0.15';
                ]);
 
 # This should go into __setup__ and attach itself to $repl as .link()
-$objBridge = <<JS;
+$objBridge = <<'JS';
 (function(repl){
 repl.link = function(obj) {
     // These values should go into a closure instead of attaching to the repl
@@ -143,9 +143,30 @@ repl.callMethod = function(id,fn,args) {
     return repl.wrapResults( f.apply(obj, args));
 };
 
-
+repl.callbackResponses = {};
 repl.makeCatchEvent = function(myid) {
         var id = myid;
+        // Allow talking to threads
+        netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
+        // Get the current thread.
+        var thread = Components.classes["@mozilla.org/thread-manager;1"].getService(Components.interfaces.nsIThreadManager).currentThread;
+        // Create an inner property to be used later as a notifier.
+        var delayed = true;
+        // Call JavaScript setTimeout function to check for arrival of results
+        // Ideally, we would have one timeout that dispatches all callbacks
+        // instead of one for each callback
+        var result = null;
+        var check = function(id) {
+    alert("* Checking for reply to " + id + " (" + repl.callbackResponses + ")");
+            if (repl.callbackResponses.hasOwnProperty(id)) {
+    alert("* Got reply");
+                result = delete repl.callbackResponses[id];
+                delayed = false;
+            } else {
+                window.setTimeout(arguments.callee, 100, id);
+    alert("* Rescheduled");
+            };
+        };
         return function() {
             var myargs = arguments;
             repl.eventQueue.push({
@@ -153,7 +174,25 @@ repl.makeCatchEvent = function(myid) {
                 ts   : Number(new Date()),
                 args : myargs
             });
+            alert(check);
+            window.setTimeout(check,1000,id);
+            /**
+             * Keep looping until this.delayed = false
+             */
+           while (delayed) {
+               /**
+                * This code will not freeze your browser as it's documented in here:
+                * https://developer.mozilla.org/en/Code_snippets/Threads#Waiting_for_a_background_task_to_complete
+                */
+                   thread.processNextEvent(true);
+           };
+           alert("Done : Delayed " +delayed + " - " + result);
+           return result;
         };
+};
+repl.sendCallbackResponse = function(myid,results) {
+    alert("*6 Storing response");
+    repl.callbackResponses[myid] = results
 };
 
 // This should return links to all installed functions
@@ -204,6 +243,7 @@ sub unwrap_json_result {
     if (my $events = delete $data->{events}) {
         my @ev = $self->link_ids( @$events );
         for my $ev (@ev) {
+            warn "Dispatching " . Dumper($ev);
             $self->dispatch_callback($ev);
         };
     };
@@ -544,7 +584,9 @@ sub dispatch_callback {
     my ($self,$info) = @_;
     my $cbid = $info->{cbid};
     my @args = @{ $info->{args} };
-    $self->{callbacks}->{$cbid}->{callback}->(@args);
+    my @result = $self->{callbacks}->{$cbid}->{callback}->(@args);
+    $self->sendCallbackResponse( $cbid, \@result );
+    # XXX Stuff result of the callback back to JS
 };
 
 =head2 C<< $bridge->remove_callback $callback >>
