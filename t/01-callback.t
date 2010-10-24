@@ -7,7 +7,7 @@ use MozRepl::RemoteObject;
 my $repl;
 my $ok = eval {
     $repl = MozRepl::RemoteObject->install_bridge(
-        #log => ['debug'],
+        log => ['debug'],
     );
     1;
 };
@@ -26,6 +26,9 @@ sub genObj {
     var res = {};
     res.foo = "bar";
     res.baz = "flirble";
+    res.foo_from_command = function () {
+        this.foo = this.oncommand()
+    };
     return res
 })()
 JS
@@ -109,3 +112,13 @@ $repl->poll;
 is_deeply \@events,
     ['in_perl'],
     "Delayed triggers trigger eventually (with Perl callback)";
+    
+# Check that Javascript can retrieve results from Perl callbacks
+my $magic = "magic $$";
+$obj = genObj($repl);
+is $obj->{foo}, 'bar', ".foo is set to 'bar' at the beginning";
+$obj->{oncommand} = sub {
+    return $magic;
+};
+$obj->foo_from_command();
+is $obj->{foo}, $magic, "Javascript can retrieve results from Perl callbacks";
