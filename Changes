@@ -1,3 +1,8 @@
+0.16 20101119
+    . Enable use_queue parameter (but leave it undocumented)
+    + Fix memory leak when using ->declare. This should fix the messages
+      during global destruction.
+
 0.15 20101021
     . Filter object for only immediate properties. This means that inherited
       properties don't show up anymore in keys %$obj or using exists. You

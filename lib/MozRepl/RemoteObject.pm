@@ -3,7 +3,7 @@ use strict;
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
-use Scalar::Util qw(refaddr);
+use Scalar::Util qw(refaddr weaken);
 
 =head1 NAME
 
@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT];
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
                 MozRepl::RemoteObject::TiedHash
@@ -286,7 +286,7 @@ sub install_bridge {
     $options{ repl } ||= $ENV{MOZREPL};
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];
-    $options{ use_queue } = 0; # > 0 means enqueue
+    $options{ use_queue } ||= 0; # > 0 means enqueue
 
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
@@ -332,7 +332,7 @@ sub install_bridge {
     
     my $rn = $options{repl}->repl;
     #warn "<$rn>";
-    $options{ json } ||= JSON->new->allow_nonref->ascii; # We send ASCII
+    $options{ json } ||= JSON->new->allow_nonref->ascii; # We talk ASCII
 
     # Load the JS side of the JS <-> Perl bridge
     my $c = $objBridge; # make a copy
@@ -449,7 +449,16 @@ until the bridge is torn down.
 
 sub declare {
     my ($self,$js) = @_;
-    $self->{functions}->{$js} ||= $self->expr($js);
+    if (! $self->{functions}->{$js}) {
+        $self->{functions}->{$js} = $self->expr($js);
+        # Weaken the backlink of the function
+        my $res = $self->{functions}->{$js};
+        my $ref = ref $res;
+        bless $res, "$ref\::HashAccess";
+        weaken $res->{bridge};
+        bless $res => $ref;
+    };
+    $self->{functions}->{$js}
 };
 
 sub link_ids {
@@ -577,19 +586,6 @@ sub poll {
         1==1
 JS
 };
-
-#sub DESTROY {
-#    local $@;
-#    my ($self) = @_;;
-#    my $rn = $self->name;
-#    $_[0]->expr(<<JS);
-#$rn.purgeLinks()
-#JS
-#};
-
-#sub TO_JSON {
-#    $_[0]->name
-#};
 
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
