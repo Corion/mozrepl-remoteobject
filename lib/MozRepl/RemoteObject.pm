@@ -872,7 +872,7 @@ sub DESTROY {
     return unless $self->__id();
     my $release_action;
     if ($release_action = ($self->__release_action || '')) {
-        $release_action =~ s/\s+$//;
+        $release_action =~ s/\s+$//mg;
         $release_action = join '', 
             'var self = repl.getLink(id);',
             $release_action,
