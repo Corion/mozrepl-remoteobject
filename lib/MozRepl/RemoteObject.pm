@@ -874,20 +874,19 @@ sub DESTROY {
     return unless $self->__id();
     my $release_action;
     if ($release_action = ($self->__release_action || '')) {
-        $release_action = <<JS;
-    var self = repl.getLink(id);
-        $release_action //
-    ;self = null;
-JS
+        $release_action =~ s/\s+$//;
+        $release_action = join '', 
+            'var self = repl.getLink(id);',
+            $release_action,
+            ';self = null;',
+        ;
     };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name; 
         if ($rn) { # not always there during global destruction
             # we don't want a result here!
             $self->bridge->exprq(<<JS);
-(function (repl,id) {$release_action
-    repl.breakLink(id);
-})($rn,$id)
+(function(repl,id){${release_action}repl.breakLink(id)})($rn,$id)
 JS
         };
         1
