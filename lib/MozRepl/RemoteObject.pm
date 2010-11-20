@@ -424,6 +424,13 @@ sub queued {
     };
 };
 
+sub DESTROY {
+    my ($self) = @_;
+    if ($self->{use_queue} and $self->queue and @{ $self->queue }) {
+        $self->poll;
+    };
+};
+
 =head2 C<< $bridge->declare($js) >>
 
 Shortcut to declare anonymous JS functions
