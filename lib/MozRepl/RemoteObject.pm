@@ -245,6 +245,8 @@ option.
 C<repl> - a premade L<MozRepl> instance to use, or alternatively a
 connection string to use
 
+=item *
+
 C<use_queue> - whether to queue destructors until the next command. This
 reduces the latency and amount of queries sent via L<MozRepl> by half,
 at the cost of a bit delayed release of objects on the remote side. The
@@ -1161,7 +1163,7 @@ JS
     $fn->($self,$type);
 };
 
-=head2 C<< MozRepl::RemoteObject::Instance->new bridge, ID, onDestroy >>
+=head2 C<< MozRepl::RemoteObject::Instance->new( $bridge, $ID, $onDestroy ) >>
 
 This creates a new Perl object that's linked to the
 Javascript object C<ID>. You usually do not call this
@@ -1453,7 +1455,7 @@ Implement fetching of more than one property at once through __attr()
 
 Implement automatic reblessing of JS objects into Perl objects
 based on a typemap instead of blessing everything into
-MozRepl::RemoteObject.
+MozRepl::RemoteObject::Instance.
 
 =item *
 
