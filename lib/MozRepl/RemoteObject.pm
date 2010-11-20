@@ -589,9 +589,7 @@ A crude no-op that can be used to just look if new events have arrived.
 =cut
 
 sub poll {
-    $_[0]->expr(<<'JS');
-        1==1
-JS
+    $_[0]->expr('1==1');
 };
 
 package # hide from CPAN
