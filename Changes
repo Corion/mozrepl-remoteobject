@@ -1,3 +1,6 @@
+0.17 to be released
+    . Added test for circular reference fixed in 0.16
+
 0.16 20101119
     . Enable use_queue parameter (but leave it undocumented)
     + Fix memory leak when using ->declare. This should fix the messages
