@@ -9,7 +9,7 @@ diag "--- Loading object functionality into repl\n";
 my $repl;
 my $ok = eval {
     $repl = MozRepl::RemoteObject->install_bridge(
-    log => ['debug'],
+        #log => ['debug'],
         use_queue => 1,
     );
     1;
