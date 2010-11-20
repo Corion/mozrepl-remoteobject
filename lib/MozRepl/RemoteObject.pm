@@ -416,9 +416,10 @@ sub queued {
     $cb->();
     # ideally, we would gather the results here and
     # also return those, if wanted.
-    if (! $self->{use_queue}--) {
+    if (--$self->{use_queue} == 0) {
         # flush the queue
-        my $js = join "//\n;//\n", @{ $self->queue };
+        #my $js = join "//\n;//\n", @{ $self->queue };
+        my $js = join "\n", map { /;$/? $_ : "$_;" } @{ $self->queue };
         # we don't want a result here!
         $self->repl->execute($js);
         @{ $self->queue } = ();
@@ -521,7 +522,9 @@ sub js_call_to_perl_struct {
     };
     my $queued = '';
     if (@{ $self->queue }) {
-        $queued = join( "//\n;\n", @{ $self->queue }) . "//\n;\n";
+        # This should become ->flush_queue()
+        $queued = join "\n", map { /;$/? $_ : "$_;" } @{ $self->queue };
+        #$queued = join( ";", @{ $self->queue }) . ";\n";
         @{ $self->queue } = ();
     };
     #warn "<<$js>>";
