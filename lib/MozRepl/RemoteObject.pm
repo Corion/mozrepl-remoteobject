@@ -371,6 +371,7 @@ sub expr_js {
     my ($self,$js) = @_;
     $js = $self->json->encode($js);
     my $rn = $self->name;
+    return '' unless $rn; # If we have no repl (name), we can't do anything anyway
 #warn "($rn)";
     $js = <<JS;
     (function(repl,code) {
