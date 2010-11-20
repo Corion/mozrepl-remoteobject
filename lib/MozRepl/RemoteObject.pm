@@ -883,6 +883,10 @@ sub DESTROY {
             ';self = null;',
         ;
     };
+    if (my $on_destroy = $self->__on_destroy) {
+        #warn "Calling on_destroy";
+        $on_destroy->($self);
+    };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name; 
         if ($rn) { # not always there during global destruction

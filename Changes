@@ -1,5 +1,13 @@
 0.17 to be released
     . Added test for circular reference fixed in 0.16
+    . Added more support for queueing. Destructors can now
+      be queued until program exit, repl shutdown or
+      until the next command is executed. As this is still experimental,
+      the
+        use_queue => 1
+      option remains undocumented.
+    + Actually call the callback set up by ->__on_destroy
+    . Added a test that the __on_destroy callbacks get called
 
 0.16 20101119
     . Enable use_queue parameter (but leave it undocumented)

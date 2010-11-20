@@ -17,7 +17,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 5;
+    plan tests => 6;
 };
 
 # create a nested object
@@ -46,3 +46,8 @@ ok $lives, "We survive the assignment";
 is $@, '', "No error";
 
 is $foo->{ bar }->{ bar }->[1]->{value}, 'deep2', "Assignment happened";
+
+my $destroyed;
+$foo->__on_destroy(sub{ $destroyed++});
+undef $foo;
+is $destroyed, 1, "Object destruction callback was invoked";
