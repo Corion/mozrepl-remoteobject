@@ -1420,21 +1420,6 @@ respective JS object type?
 
 =item *
 
-Create a lazy object release mechanism that adds object releases
-to a queue and only sends them when either $repl goes out
-of scope or another request (for a property etc.) is sent.
-
-This would reduce the TCP latency when manually descending
-through an object tree in a Perl-side loop.
-
-This might introduce interesting problems when objects
-get delayed until global destruction begins and the MozRepl
-gets shut down before all object destructions could be sent.
-
-This is an optimization and hence gets postponed.
-
-=item *
-
 Add truely lazy objects that don't allocate their JS counterparts
 until an C<< __attr() >> is requested or a method call is made.
 
