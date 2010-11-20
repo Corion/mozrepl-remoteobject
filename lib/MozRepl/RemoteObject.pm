@@ -238,6 +238,25 @@ If C<repl> is not a reference, it will be used instead of C<$ENV{MOZREPL}>.
 To replace the default JSON parser, you can pass it in using the C<json>
 option.
 
+=over 4
+
+=item *
+
+C<repl> - a premade L<MozRepl> instance to use, or alternatively a
+connection string to use
+
+C<use_queue> - whether to queue destructors until the next command. This
+reduces the latency and amount of queries sent via L<MozRepl> by half,
+at the cost of a bit delayed release of objects on the remote side. The
+release commands get queued until the next "real" command gets sent
+through L<MozRepl>.
+
+=item *
+
+C<launch> - the command line to launch the program that runs C<mozrepl>.
+
+=back
+
 =head3 Connect to a different machine
 
 If you want to connect to a Firefox instance on a different machine,
