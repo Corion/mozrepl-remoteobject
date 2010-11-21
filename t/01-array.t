@@ -15,7 +15,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 9;
+    plan tests => 11;
 };
 
 # create a nested object
@@ -53,3 +53,7 @@ is $val->{value}, 'deep', '... and the object contains our value';
 push @{ $bar }, 'asdf';
 is 0+@{ $bar }, 3, '... even pushing an element works';
 is $bar->[-1], 'asdf', '... and the value is actually stored';
+
+my $elt = pop @{ $bar };
+is $elt, 'asdf', 'We can pop the value back';
+is 0+@{ $bar }, 2, '... and that reduces the element count by one';
