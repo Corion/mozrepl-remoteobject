@@ -448,6 +448,31 @@ sub exprq {
     };
 }
 
+=head2 C<< as_list( $array ) >>
+
+    for $_ in (as_list $array) {
+        print $_->{innerHTML},"\n";
+    };
+
+Efficiently fetches all elements from C< @$array >. This is
+functionally equivalent to writing
+
+    @$array
+
+except that it involves much less roundtrips between Javascript
+and Perl.
+
+=cut
+
+sub as_list {
+    my ($array) = @_;
+    my $repl = $array->bridge;
+    my $as_array = $repl->declare(<<'JS','list');
+        function(a){return a}
+JS
+    $as_array->($array)
+};
+
 sub queued {
     my ($self,$cb) = @_;
     if (defined wantarray) {
