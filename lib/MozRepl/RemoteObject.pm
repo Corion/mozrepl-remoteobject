@@ -1297,16 +1297,21 @@ sub __as_array {
 
 sub __as_code {
     my $self = shift;
+    my $class = ref $self;
+    bless $self, "$class\::HashAccess";
+    my $id = $self->{id};
+    my $context = $self->{ return_context }
+                ? qq{,"$self->{ return_context }"}
+                : '';
+    bless $self, $class;
     return sub {
         my (@args) = @_;
-        my $id = $self->__id;
-        die unless $self->__id;
         
         my $rn = $self->bridge->name;
         @args = $self->__transform_arguments(@args);
         local $" = ',';
         my $js = <<JS;
-    $rn.callThis($id,[@args])
+    $rn.callThis($id,[@args]$context)
 JS
         return $self->bridge->unjson($js);
     };
