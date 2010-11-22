@@ -528,6 +528,9 @@ The function C<$fn> will remain declared
 on the Javascript side
 until the bridge is torn down.
 
+If you expect an array to be returned and want the array
+to be fetched as list, pass C<'list'> as the C<$context>.
+
 =cut
 
 sub declare {
