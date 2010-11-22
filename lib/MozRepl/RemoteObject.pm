@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK @ISA];
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 @ISA='Exporter';
 @EXPORT_OK=qw[as_list];
