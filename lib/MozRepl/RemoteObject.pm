@@ -498,7 +498,7 @@ until the bridge is torn down.
 =cut
 
 sub declare {
-    my ($self,$js) = @_;
+    my ($self,$js,$context) = @_;
     if (! $self->{functions}->{$js}) {
         $self->{functions}->{$js} = $self->expr($js);
         # Weaken the backlink of the function
@@ -506,6 +506,7 @@ sub declare {
         my $ref = ref $res;
         bless $res, "$ref\::HashAccess";
         weaken $res->{bridge};
+        $res->{return_context} = $context;
         bless $res => $ref;
     };
     $self->{functions}->{$js}
