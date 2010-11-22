@@ -85,26 +85,33 @@ repl.getAttr = function(id,attr) {
     return repl.wrapResults(v)
 };
 
-repl.wrapValue = function(v) {
-    // Should we return arrays as arrays instead of returning a ref to them?
+repl.wrapValue = function(v,context) {
     var payload;
-    if (  v instanceof String
+    if (context == "list") {
+        // The caller wants a lists instead of an array ref
+        // alert("Returning list " + v.length);
+        var r = [];
+        for (var i=0;i<v.length;i++){
+            r.push(repl.wrapValue(v[i]));
+        };
+        payload = { "result":r, "type":"list" };
+    } else if (v instanceof String
        || typeof(v) == "string"
        || v instanceof Number
        || typeof(v) == "number"
        || v instanceof Boolean
        || typeof(v) == "boolean"
        ) {
-        payload = { result: v, type: null }
+        payload = {"result":v, "type": null }
     } else {
-        payload = { result: repl.link(v), type: typeof(v) }
+        payload = {"result":repl.link(v),"type": typeof(v) }
     };
     return payload
 }
 
 repl.eventQueue = [];
-repl.wrapResults = function(v) {
-    var payload = repl.wrapValue(v);
+repl.wrapResults = function(v,context) {
+    var payload = repl.wrapValue(v,context);
     if (repl.eventQueue.length) {
         // cheap cop-out
         payload.events = [];
@@ -132,18 +139,18 @@ repl.dive = function(id,elts) {
     return repl.wrapResults(obj)
 };
 
-repl.callThis = function(id,args) {
+repl.callThis = function(id,args,context) {
     var obj = repl.getLink(id);
-    return repl.wrapResults( obj.apply(obj, args));
+    return repl.wrapResults(obj.apply(obj, args),context);
 };
 
-repl.callMethod = function(id,fn,args) { 
+repl.callMethod = function(id,fn,args,context) { 
     var obj = repl.getLink(id);
     var f = obj[fn];
     if (! f) {
         throw "Object has no function " + fn;
     }
-    return repl.wrapResults( f.apply(obj, args));
+    return repl.wrapResults(f.apply(obj, args),context);
 };
 
 
@@ -210,7 +217,14 @@ sub unwrap_json_result {
             $self->dispatch_callback($ev);
         };
     };
-    if ($data->{type}) {
+    my $t = $data->{type} || '';
+    if ($t eq 'list') {
+        return map {
+            $_->{type}
+            ? $self->link_ids( $_->{result} )
+            : $_->{result}
+        } @{ $data->{result} };
+    } elsif ($data->{type}) {
         return ($self->link_ids( $data->{result} ))[0]
     } else {
         return $data->{result}
@@ -392,14 +406,17 @@ You can also create Javascript functions and use them from Perl:
 =cut
 
 sub expr_js {
-    my ($self,$js) = @_;
+    my ($self,$js,$context) = @_;
     $js = $self->json->encode($js);
     my $rn = $self->name;
     return '' unless $rn; # If we have no repl (name), we can't do anything anyway
+    if ($context) { $context=qq{,"$context"}} else {
+        $context='';
+    };
 #warn "($rn)";
     $js = <<JS;
     (function(repl,code) {
-        return repl.wrapResults(eval(code))
+        return repl.wrapResults(eval(code)$context)
     })($rn,$js)
 JS
 }
