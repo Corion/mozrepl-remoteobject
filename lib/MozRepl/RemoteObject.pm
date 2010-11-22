@@ -384,7 +384,7 @@ sub install_bridge {
     bless \%options, $package
 };
 
-=head2 C<< $bridge->expr $js >>
+=head2 C<< $bridge->expr( $js, $context ) >>
 
 Runs the Javascript passed in through C< $js > and links
 the returned result to a Perl object or a plain
@@ -402,6 +402,14 @@ You can also create Javascript functions and use them from Perl:
       function (a,b) { return a+b }
   JS
   print $add->(2,3);
+
+The C<context> parameter allows you to specify that you
+expect a Javascript array and want it to be returned
+as list. To do that, specify C<'list'> as the C<$context> parameter:
+
+  for ($bridge->expr(<<JS,'list')) { print $_ };
+      [1,2,3,4]
+  JS
 
 =cut
 
@@ -423,8 +431,8 @@ JS
 
 # This is used by ->declare() so can't use it itself
 sub expr {
-    my ($self,$js) = @_;
-    return $self->unjson($self->expr_js($js));
+    my ($self,$js,$context) = @_;
+    return $self->unjson($self->expr_js($js,$context));
 }
 
 # the queue stuff is left undocumented because it's

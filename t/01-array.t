@@ -18,7 +18,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 22;
+    plan tests => 23;
 };
 
 # create a nested object
@@ -81,3 +81,8 @@ is 0+@$bar, 0, 'Splice empties the array';
 is 0+@arr, 2, 'Fetching all array elements returns the right count';
 is $arr[0], 'baz', 'First element is correct';
 isa_ok $arr[1], 'MozRepl::RemoteObject::Instance', 'Second element is of correct type';
+
+@arr = $repl->expr(<<JS,'list');
+      [1,2,3,4]
+JS
+is_deeply \@arr, [1,2,3,4], "List-expressions also work";
