@@ -38,8 +38,11 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $objBridge @CARP_NOT];
+use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK @ISA];
 $VERSION = '0.17';
+
+@ISA='Exporter';
+@EXPORT_OK=qw[as_list];
 
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
                 MozRepl::RemoteObject::TiedHash
