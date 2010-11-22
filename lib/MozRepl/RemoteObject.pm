@@ -1118,7 +1118,7 @@ JS
     return $getValues->($self);
 }
 
-=head2 C<< $obj->__xpath( $query [, $ref ] )>>
+=head2 C<< $obj->__xpath( $query [, $ref ] ) >>
 
 Executes an XPath query and returns the node
 snapshot result as a list.
