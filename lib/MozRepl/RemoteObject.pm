@@ -1377,7 +1377,11 @@ sub DELETE {
     my ($tied,$key) = @_;
     my $obj = $tied->{impl};
     my $delete = $obj->bridge->declare(<<'JS');
-    function(elt,prop) {delete elt[prop]}
+    function(elt,prop) {
+        var r=elt[prop];
+        delete elt[prop];
+        return r
+    }
 JS
     $delete->($obj,$key);
 }

@@ -7,14 +7,16 @@ use MozRepl::RemoteObject;
 
 my $repl;
 my $ok = eval {
-    $repl = MozRepl::RemoteObject->install_bridge();
+    $repl = MozRepl::RemoteObject->install_bridge(
+        #log => [qw[ debug ]],
+    );
     1;
 };
 if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 17;
+    plan tests => 19;
 };
 
 # create a nested object
@@ -62,10 +64,12 @@ is scalar @values, 2, 'We have two values';
 @values = values %$foo;
 is scalar @values, 2, 'We have two values';
 
-delete $foo->{bar};
+my $deleted = delete $foo->{bar};
 @keys = sort keys %$foo;
 is_deeply \@keys, ['foo'], 'We can delete an item'
     or diag Dumper \@keys;
+isa_ok $deleted, 'MozRepl::RemoteObject::Instance', "The deleted value";
+is $deleted->{baz}->{value}, 'deep', "The right value was deleted";
 
 @values = values %$foo;
 is scalar @values, 1, 'We also implicitly remove the value for the key';
