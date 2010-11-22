@@ -18,7 +18,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 23;
+    plan tests => 29;
 };
 
 # create a nested object
