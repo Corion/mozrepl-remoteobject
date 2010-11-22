@@ -1,3 +1,9 @@
+0.18 to be released
+    . Add test for pop(), actually make pop() work
+    . Add test for splice(), actually make splice() work
+    + Add as_list, an exportable function in MozRepl::RemoteObject,
+      that allows bulk-fetching of arrays.
+
 0.17 20101120
     . Added test for circular reference fixed in 0.16
     . Added more support for command queueing. Destructors can now

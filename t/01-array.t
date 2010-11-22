@@ -2,20 +2,23 @@
 use strict;
 use Test::More;
 
-use MozRepl::RemoteObject;
+use MozRepl::RemoteObject 'as_list';
 
 diag "--- Loading object functionality into repl\n";
 
 my $repl;
 my $ok = eval {
-    $repl = MozRepl::RemoteObject->install_bridge();
+    $repl = MozRepl::RemoteObject->install_bridge(
+        log => [qw[debug]],
+        use_queue => 1,
+    );
     1;
 };
 if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 11;
+    plan tests => 22;
 };
 
 # create a nested object
@@ -57,3 +60,24 @@ is $bar->[-1], 'asdf', '... and the value is actually stored';
 my $elt = pop @{ $bar };
 is $elt, 'asdf', 'We can pop the value back';
 is 0+@{ $bar }, 2, '... and that reduces the element count by one';
+
+my @arr = @$bar;
+is 0+@arr, 2, 'Fetching all array elements returns the right count';
+is $arr[0], 'baz', 'First element is correct';
+isa_ok $arr[1], 'MozRepl::RemoteObject::Instance', 'Second element is of correct type';
+
+# Fetch in one go:
+@arr = as_list $bar;
+#use Data::Dumper;
+#diag Dumper \@arr;
+is 0+@$bar, 2, 'Fetching leaves the array as is';
+is 0+@arr, 2, 'Fetching all array elements returns the right count';
+is $arr[0], 'baz', 'First element is correct';
+isa_ok $arr[1], 'MozRepl::RemoteObject::Instance', 'Second element is of correct type';
+
+# Fetch in one go, destructively:
+@arr = splice @$bar;
+is 0+@$bar, 0, 'Splice empties the array';
+is 0+@arr, 2, 'Fetching all array elements returns the right count';
+is $arr[0], 'baz', 'First element is correct';
+isa_ok $arr[1], 'MozRepl::RemoteObject::Instance', 'Second element is of correct type';
