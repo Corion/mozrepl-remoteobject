@@ -1433,16 +1433,22 @@ sub POP {
 };
 
 sub SPLICE {
-    my $tied = shift;
-    my ($from,$count) = @_;
-    if (@_) {
-        use Carp qw(croak);
-        croak "Unsplicing elements is not (yet) supported";
-    };
+    my ($tied,$from,$count) = (shift,shift,shift);
     my $obj = $tied->{impl};
     $from ||= 0;
     $count ||= $obj->{length};
-    MozRepl::RemoteObject::as_list $obj->splice($from,$count);
+    MozRepl::RemoteObject::as_list $obj->splice($from,$count,@_);
+};
+
+sub CLEAR {
+    my $tied = shift;
+    my $obj = $tied->{impl};
+    $obj->splice(0,$obj->{length});
+    ()
+};
+
+sub EXTEND {
+    # we acknowledge the advice
 };
 
 1;

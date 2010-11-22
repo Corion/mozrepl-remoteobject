@@ -86,3 +86,21 @@ isa_ok $arr[1], 'MozRepl::RemoteObject::Instance', 'Second element is of correct
       [1,2,3,4]
 JS
 is_deeply \@arr, [1,2,3,4], "List-expressions also work";
+
+# Check array assignment:
+$bar = genObj($repl,'tmp')->{bar};
+@$bar = ();
+is 0+@$bar, 0, "We can clear an array";
+
+$ok = eval {
+    @$bar = (1,2,3,4);
+    1;
+};
+ok $ok, "We can assign lists to arrays";
+is_deeply [as_list $bar], [1,2,3,4], "And we assign the right values";
+
+# Check that 4-arg splice is unsupported:
+@arr = splice @$bar, 1,2, 'b', 'c';
+is 0+@$bar, 4, 'We still have four elements';
+is_deeply \@arr, [2,3], "We spliced out the right values";
+is_deeply [as_list $bar], [1,'b','c',4], "We spliced in the right values";
