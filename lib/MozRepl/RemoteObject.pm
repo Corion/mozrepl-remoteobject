@@ -1416,8 +1416,7 @@ sub PUSH {
 sub POP {
     my $tied = shift;
     my $obj = $tied->{impl};
-    for (@_) {
-        $obj->pop($_);
+    $obj->pop();
     };
 };
 
