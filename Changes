@@ -1,4 +1,4 @@
-0.18 to be released
+0.18 20101122
     . Add test for pop(), actually make pop() work
     . Add test for splice(), actually make splice() work
     + Add as_list, an exportable function in MozRepl::RemoteObject,
