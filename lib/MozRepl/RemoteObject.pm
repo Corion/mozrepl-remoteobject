@@ -507,7 +507,7 @@ sub DESTROY {
     };
 };
 
-=head2 C<< $bridge->declare( $js ) >>
+=head2 C<< $bridge->declare( $js, $context ) >>
 
 Shortcut to declare anonymous JS functions
 that will be cached in the bridge. This
@@ -974,7 +974,7 @@ JS
     };
 }
 
-=head2 C<< $obj->__attr ATTRIBUTE >>
+=head2 C<< $obj->__attr( $attribute ) >>
 
 Read-only accessor to read the property
 of a Javascript object.
@@ -999,7 +999,7 @@ $rn.getAttr($id,$attr)
 JS
 }
 
-=head2 C<< $obj->__setAttr ATTRIBUTE, VALUE >>
+=head2 C<< $obj->__setAttr( $attribute, $value ) >>
 
 Write accessor to set a property of a Javascript
 object.
@@ -1025,7 +1025,7 @@ $rn.getLink($id)[$attr]=$value
 JS
 }
 
-=head2 C<< $obj->__dive @PATH >>
+=head2 C<< $obj->__dive( @PATH ) >>
 
 Convenience method to quickly dive down a property chain.
 
@@ -1087,7 +1087,7 @@ JS
     return @{ $getKeys->($self) };
 }
 
-=head2 C<< $obj->__values >>
+=head2 C<< $obj->__values() >>
 
 Returns the values of all properties
 as a list.
@@ -1280,11 +1280,11 @@ JS
 
 # tied interface reflection
 
-=head2 C<< $obj->__as_hash >>
+=head2 C<< $obj->__as_hash() >>
 
-=head2 C<< $obj->__as_array >>
+=head2 C<< $obj->__as_array() >>
 
-=head2 C<< $obj->__as_code >>
+=head2 C<< $obj->__as_code() >>
 
 Returns a reference to a hash/array/coderef. This is used
 by L<overload>. Don't use these directly.
