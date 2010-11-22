@@ -474,7 +474,7 @@ sub DESTROY {
     };
 };
 
-=head2 C<< $bridge->declare($js) >>
+=head2 C<< $bridge->declare( $js ) >>
 
 Shortcut to declare anonymous JS functions
 that will be cached in the bridge. This
@@ -1081,7 +1081,7 @@ JS
     return @{ $getValues->($self) };
 }
 
-=head2 C<< $obj->__xpath QUERY [, REF] >>
+=head2 C<< $obj->__xpath( $query [, $ref ] )>>
 
 Executes an XPath query and returns the node
 snapshot result as a list.
