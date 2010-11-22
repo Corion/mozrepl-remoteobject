@@ -1076,7 +1076,7 @@ is identical to
 sub __keys { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $getKeys = $self->bridge->declare(<<'JS');
+    my $getKeys = $self->bridge->declare(<<'JS', 'list');
     function(obj){
         var res = [];
         for (var el in obj) {
@@ -1087,7 +1087,7 @@ sub __keys { # or rather, __properties
         return res
     }
 JS
-    return @{ $getKeys->($self) };
+    return $getKeys->($self)
 }
 
 =head2 C<< $obj->__values() >>
@@ -1106,7 +1106,7 @@ is identical to
 sub __values { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
-    my $getValues = $self->bridge->declare(<<'JS');
+    my $getValues = $self->bridge->declare(<<'JS','list');
     function(obj){
         var res = [];
         for (var el in obj) {
@@ -1115,7 +1115,7 @@ sub __values { # or rather, __properties
         return res
     }
 JS
-    return @{ $getValues->($self) };
+    return $getValues->($self);
 }
 
 =head2 C<< $obj->__xpath( $query [, $ref ] )>>
@@ -1135,7 +1135,6 @@ sub __xpath {
     function(doc,q,ref) {
         var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
         var res = [];
-        var c = 0;
         for ( var i=0 ; i < xres.snapshotLength; i++ )
         {
             res.push( xres.snapshotItem(i));
@@ -1143,9 +1142,8 @@ sub __xpath {
         return res
     }
 JS
-    my $snap = $self->bridge->declare($js);
-    my $res = $snap->($self,$query,$ref);
-    @{ $res }
+    my $snap = $self->bridge->declare($js,'list');
+    $snap->($self,$query,$ref);
 }
 
 =head2 C<< $obj->__click >>
