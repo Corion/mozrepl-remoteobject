@@ -1,5 +1,6 @@
 package MozRepl::RemoteObject;
 use strict;
+use Exporter 'import';
 use JSON;
 use Carp qw(croak cluck);
 use MozRepl;
@@ -38,12 +39,10 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK @ISA];
-$VERSION = '0.18';
+use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK ];
+$VERSION = '0.19';
 
-@ISA='Exporter';
 @EXPORT_OK=qw[as_list];
-
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
                 MozRepl::RemoteObject::TiedHash
                 MozRepl::RemoteObject::TiedArray

@@ -1,7 +1,6 @@
 package MozRepl::Plugin::JSON2;
 use strict;
 use parent 'MozRepl::Plugin::Base';
-
 use vars '$VERSION';
 
 =head1 NAME
@@ -15,7 +14,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.18';
+$VERSION = '0.19';
 
 sub setup {
     my ($self, $ctx, $args) = @_;

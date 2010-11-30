@@ -22,6 +22,7 @@ WriteMakefile1(
                         'File::Basename' => 0,
                         'parent' => 0,
                         'IPC::Run' => 0, # to optionally launch Firefox
+                        'Exporter' => 0, # just to be more complete
                       }, # e.g., Module::Name => 1.1
     'ABSTRACT_FROM' => 'lib/MozRepl/RemoteObject.pm', # retrieve abstract from module
     'AUTHOR'        => 'Max Maischein <corion@cpan.org>',
