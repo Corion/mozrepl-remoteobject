@@ -7,6 +7,7 @@ MANIFEST			This list of files
 MANIFEST.skip
 t/01-array.t
 t/01-callback.t
+t/01-constant.t
 t/01-dive.t
 t/01-expr.t
 t/01-hash.t

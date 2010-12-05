@@ -40,7 +40,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK ];
-$VERSION = '0.19';
+$VERSION = '0.20';
 
 @EXPORT_OK=qw[as_list];
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
@@ -321,6 +321,7 @@ C<launch> option:
 sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
+    $options{ constants } ||= {};
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];
     $options{ use_queue } ||= 0; # > 0 means enqueue
@@ -554,6 +555,21 @@ sub link_ids {
            : undef
     } @_
 }
+
+=head2 C<< $bridge->constant( $NAME ) >>
+
+    my $i = $bridge->constant( 'Components.interfaces.nsIWebProgressListener.STATE_STOP' );
+
+Fetches and caches a Javascript constant. If you use this to fetch
+and cache Javascript objects, this will create memory leaks, as these objects
+will not get released.
+
+=cut
+
+sub constant {
+    my ($self, $name) = @_;
+    $self->{constants}->{ $name } ||= $self->expr( $name );
+};
 
 =head2 C<< $bridge->appinfo() >>
 
