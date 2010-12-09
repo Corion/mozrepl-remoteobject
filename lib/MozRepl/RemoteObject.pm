@@ -1003,13 +1003,17 @@ sub DESTROY {
     };
     if ($self->bridge) { # not always there during global destruction
         my $rn = $self->bridge->name; 
-        if ($rn) { # not always there during global destruction
+        #if ($rn) { # not always there during global destruction
             # we don't want a result here!
             $self->bridge->exprq(<<JS);
 (function(repl,id){${release_action}repl.breakLink(id)})($rn,$id)
 JS
-        };
+        #} else {
+        #    warn "Repl '$rn' has gone away already";
+        #};
         1
+    } else {
+        #warn "Can't release JS part of object $self / $id";
     };
 }
 
@@ -1291,6 +1295,7 @@ when your Perl program exits.
 
 sub new {
     my ($package,$bridge, $id,$release_action) = @_;
+    #warn "Created object $id";
     my $self = {
         id => $id,
         bridge => $bridge,
