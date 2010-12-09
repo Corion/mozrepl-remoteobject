@@ -667,11 +667,20 @@ JS
 sub dispatch_callback {
     my ($self,$info) = @_;
     my $cbid = $info->{cbid};
+    if (! $cbid) {
+        croak "Unknown callback fired with values @{ $info->{ args }}";
+    };
     my @args = @{ $info->{args} };
     $self->{callbacks}->{$cbid}->{callback}->(@args);
 };
 
-=head2 C<< $bridge->remove_callback $callback >>
+=head2 C<< $bridge->remove_callback( $callback ) >>
+
+    my $onload = sub {
+        ...
+    };
+    $js_object->{ onload } = $onload;
+    $bridge->remove_callback( $onload )
 
 If you want to remove a callback that you instated,
 this is the way.
