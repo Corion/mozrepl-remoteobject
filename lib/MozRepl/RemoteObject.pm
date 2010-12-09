@@ -503,6 +503,7 @@ sub queued {
 
 sub DESTROY {
     my ($self) = @_;
+    delete @{$self}{ qw( constants functions )};
     if ($self->{use_queue} and $self->queue and @{ $self->queue }) {
         $self->poll;
     };
