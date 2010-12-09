@@ -175,6 +175,7 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
+    #warn $js;
     s/^(\.+\>\s*)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
