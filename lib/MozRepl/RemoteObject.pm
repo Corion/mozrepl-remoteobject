@@ -379,9 +379,10 @@ sub install_bridge {
     $options{repl}->execute($c);
     
     $options{ functions } = {}; # cache
+    $options{ constants } = {}; # cache
     $options{ callbacks } = {}; # active callbacks
 
-    bless \%options, $package
+    bless \%options, $package;    
 };
 
 =head2 C<< $bridge->expr( $js, $context ) >>
