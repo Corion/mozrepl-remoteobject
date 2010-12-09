@@ -573,6 +573,7 @@ sub constant {
     if (! exists $self->{constants}->{$name}) {
         $self->{constants}->{$name} = $self->expr($name);
         if (ref $self->{constants}->{$name}) {
+            #warn "*** $name is an object.";
             # Need to weaken the backlink of the constant-object
             my $res = $self->{constants}->{$name};
             my $ref = ref $res;
