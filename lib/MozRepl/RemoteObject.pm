@@ -568,7 +568,18 @@ will not get released.
 
 sub constant {
     my ($self, $name) = @_;
-    $self->{constants}->{ $name } ||= $self->expr( $name );
+    if (! exists $self->{constants}->{$name}) {
+        $self->{constants}->{$name} = $self->expr($name);
+        if (ref $self->{constants}->{$name}) {
+            # Need to weaken the backlink of the constant-object
+            my $res = $self->{constants}->{$name};
+            my $ref = ref $res;
+            bless $res, "$ref\::HashAccess";
+            weaken $res->{bridge};
+            bless $res => $ref;
+        };
+    };
+    $self->{constants}->{ $name }
 };
 
 =head2 C<< $bridge->appinfo() >>
