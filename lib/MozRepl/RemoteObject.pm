@@ -629,8 +629,7 @@ sub js_call_to_perl_struct {
     my $queued = '';
     if (@{ $self->queue }) {
         # This should become ->flush_queue()
-        $queued = join "\n", map { /;$/? $_ : "$_;" } @{ $self->queue };
-        #$queued = join( ";", @{ $self->queue }) . ";\n";
+        $queued = join "\n", map { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue };
         @{ $self->queue } = ();
     };
     #warn "<<$js>>";
