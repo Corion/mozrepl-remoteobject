@@ -39,7 +39,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =cut
 
-use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK ];
+use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK $WARN_ON_LEAKS];
 $VERSION = '0.19';
 
 @EXPORT_OK=qw[as_list];
@@ -1022,7 +1022,9 @@ JS
         };
         1
     } else {
-        #warn "Can't release JS part of object $self / $id";
+        if ($MozRepl::RemoteObject::WARN_ON_LEAKS) {
+            warn "Can't release JS part of object $self / $id ($release_action)";
+        };
     };
 }
 
