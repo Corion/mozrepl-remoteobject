@@ -22,6 +22,9 @@ t/03-unicode.t
 t/04-appversion.t
 t/10-xul-hud.t
 t/10-xul-hud.xul
+t/11-memleak-callback.t
+t/11-memleak-constant.t
+t/11-memleak-declare.t
 t/11-memleak.t
 t/99-changes.t
 t/99-manifest.t
