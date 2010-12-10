@@ -663,6 +663,13 @@ JS
     my $res = $makeCatchEvent->($self,$cbid);
     croak "Couldn't create a callback"
         if (! $res);
+
+    # Need to weaken the backlink of the constant-object
+    my $ref = ref $res;
+    bless $res, "$ref\::HashAccess";
+    weaken $res->{bridge};
+    bless $res => $ref;
+    
     $self->{callbacks}->{$cbid} = { callback => $cb, jsproxy => $res };
     $res
 };
