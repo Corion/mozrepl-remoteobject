@@ -504,10 +504,12 @@ sub queued {
 
 sub DESTROY {
     my ($self) = @_;
+    #warn "Repl cleaning up";
     delete @{$self}{ qw( constants functions callbacks )};
     if ($self->{use_queue} and $self->queue and @{ $self->queue }) {
         $self->poll;
     };
+    #warn "Repl cleaned up";
 };
 
 =head2 C<< $bridge->declare( $js, $context ) >>

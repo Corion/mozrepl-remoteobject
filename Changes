@@ -1,7 +1,8 @@
-0.19 to be released
+0.19 20101211
     . Simplify Exporter usage
     . Add ->constant() method to (lazily) fetch Javascript constants
       and cache them on the Perl side of things.
+    . Add more tests to ensure that we have no memory cycles
 
 0.18 20101122
     . Add test for pop(), actually make pop() work
