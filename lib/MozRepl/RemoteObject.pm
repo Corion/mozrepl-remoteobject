@@ -108,16 +108,18 @@ repl.wrapValue = function(v,context) {
     return payload
 }
 
-repl.eventQueue = [];
+var eventQueue = [];
 repl.wrapResults = function(v,context) {
     var payload = repl.wrapValue(v,context);
-    if (repl.eventQueue.length) {
+    if (eventQueue.length) {
+        // XXX Push the (top-level) hashes directly
+        //payload.events = repl.wrapValue(eventQueue,'list');
         // cheap cop-out
         payload.events = [];
-        for (var ev in repl.eventQueue) {
-            payload.events.push(repl.link(repl.eventQueue[ev]));
+        for (var ev in eventQueue) {
+            payload.events.push(repl.link(eventQueue[ev]));
         };
-        repl.eventQueue = [];
+        eventQueue = [];
     };
     return payload;
 };
@@ -157,7 +159,7 @@ repl.makeCatchEvent = function(myid) {
         var id = myid;
         return function() {
             var myargs = arguments;
-            repl.eventQueue.push({
+            eventQueue.push({
                 cbid : id,
                 ts   : Number(new Date()),
                 args : myargs
