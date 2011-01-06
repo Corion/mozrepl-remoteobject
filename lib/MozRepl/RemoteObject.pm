@@ -643,6 +643,7 @@ to properly wrap objects but leave other values alone.
 
 sub js_call_to_perl_struct {
     my ($self,$js) = @_;
+    $self->{stats}->{roundtrip}++;
     my $repl = $self->repl;
     if (! $repl) {
         # Likely during global destruction
@@ -1084,6 +1085,7 @@ is identical to
 sub __attr {
     my ($self,$attr) = @_;
     die "No id given" unless $self->__id;
+    $self->bridge->{stats}->{fetch}++;
     my $id = $self->__id;
     my $rn = $self->bridge->name;
     my $json = $self->bridge->json;
@@ -1110,6 +1112,7 @@ sub __setAttr {
     my ($self,$attr,$value) = @_;
     die unless $self->__id;
     my $id = $self->__id;
+    $self->bridge->{stats}->{store}++;
     my $rn = $self->bridge->name;
     my $json = $self->bridge->json;
     $attr = $json->encode($attr);
@@ -1351,6 +1354,12 @@ sub new {
         id => $id,
         bridge => $bridge,
         release_action => $release_action,
+        stats => {
+            roundtrip => 0,
+            fetch => 0,
+            store => 0,
+            callback => 0,
+        },
     };
     bless $self, ref $package || $package;
 };
