@@ -109,3 +109,10 @@ $repl->poll;
 is_deeply \@events,
     ['in_perl'],
     "Delayed triggers trigger eventually (with Perl callback)";
+
+is $repl->{stats}->{callback}, 5, "We triggered 5 callbacks";
+
+cmp_ok $repl->{stats}->{roundtrip},'<',30, 'We needed less than 30 roundtrips';
+
+use Data::Dumper;
+diag Dumper $repl->{stats};

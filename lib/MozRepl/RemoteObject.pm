@@ -230,6 +230,7 @@ sub unwrap_json_result {
         # XXX Fetch complete events here,
         #     or alternatively, even pass complete events from JS
         for my $ev (@ev) {
+            $self->{stats}->{callback}++;
             $self->dispatch_callback($ev);
         };
     };
