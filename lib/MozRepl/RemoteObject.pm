@@ -227,6 +227,8 @@ sub unwrap_json_result {
     my ($self,$data) = @_;
     if (my $events = delete $data->{events}) {
         my @ev = $self->link_ids( @$events );
+        # XXX Fetch complete events here,
+        #     or alternatively, even pass complete events from JS
         for my $ev (@ev) {
             $self->dispatch_callback($ev);
         };
