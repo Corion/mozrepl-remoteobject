@@ -474,7 +474,8 @@ sub exprq {
         # later
         push @{ $self->{queue} }, $js;
     };
-    if (@{ $self->{queue} } > 9 or ! $self->{use_queue}) {
+    #if (@{ $self->{queue} } > 9 or ! $self->{use_queue}) {
+    if (! $self->{use_queue}) {
         # flush
         $self->js_call_to_perl_struct($js);
         # but we're not really interested in the result
@@ -654,16 +655,25 @@ sub js_call_to_perl_struct {
         # Likely during global destruction
         return
     };
-    my $queued = '';
+    my $queue_pre = '';
+    my $queue_post = '';
     if (@{ $self->queue }) {
         # This should become ->flush_queue()
-        $queued = join "\n", map { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue };
+        # Wrap all queued commands in a function,
+        # together with the payload command, so we only get one result
+        $queue_pre = join '',
+                     "(function(){",
+                     map( { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue }),
+                     "return ";
+        $queue_post = "})()";
+        
         @{ $self->queue } = ();
     };
     #warn "<<$js>>";
     if (defined wantarray) {
         #warn "Returning result of $js";
-        $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
+        $js = "${queue_pre}JSON.stringify( function(){ var res = $js; return { result: res }}())$queue_post";
+        #warn $js;
         my $res = $repl->execute($js);
         $res =~ s/^(?:\.+\>\s+)+//g;
         while ($res !~ /\S/) {
@@ -720,7 +730,7 @@ sub dispatch_callback {
     };
     if (exists $self->{callbacks}->{$cbid} and my $cb = $self->{callbacks}->{$cbid}->{callback}) {
         # Replace with goto &$cb ?
-        my @args = @{ $info->{args} };
+        my @args = as_list $info->{args};
         $cb->(@args);
     } else {
         # XXX This should be exported so you can learn where you leak
