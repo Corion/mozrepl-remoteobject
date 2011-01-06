@@ -70,8 +70,11 @@ repl.getLink = function(id) {
     return repl.linkedVars[ id ];
 };
 
-repl.breakLink = function(id) {
-    delete repl.linkedVars[ id ];
+repl.breakLink = function() {
+    var l = arguments.length;
+    for(i=0;i<l;i++) {
+        delete repl.linkedVars[ arguments[i] ];
+    };
 };
 
 repl.purgeLinks = function() {
