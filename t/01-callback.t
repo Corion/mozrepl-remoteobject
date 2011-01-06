@@ -35,8 +35,6 @@ JS
 my $obj = genObj($repl);
 isa_ok $obj, 'MozRepl::RemoteObject::Instance';
 
-my $setup_roundtrips = $repl->{stats}->{roundtrip};
-
 my $called = 0;
 my @events;
 $obj->{oncommand} = sub {
@@ -48,6 +46,7 @@ my $cb = $obj->{oncommand};
 isa_ok $obj->{oncommand},
     'MozRepl::RemoteObject::Instance',
     "We can store a subroutine as a callback";
+my $setup_roundtrips = $repl->{stats}->{roundtrip};
 
 $cb->('from_perl');
 is $called, 1, "We got called back on a direct call from Perl";
