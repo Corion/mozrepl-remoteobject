@@ -696,7 +696,11 @@ JS
     weaken $res->{bridge};
     bless $res => $ref;
     
-    $self->{callbacks}->{$cbid} = { callback => $cb, jsproxy => $res };
+    # XXX We should store the origin of a callback so
+    #     we can tell the user where it originated if it leaks
+    $self->{callbacks}->{$cbid} = {
+        callback => $cb, jsproxy => $res, where => [caller(1)],
+    };
     $res
 };
 
@@ -706,8 +710,15 @@ sub dispatch_callback {
     if (! $cbid) {
         croak "Unknown callback fired with values @{ $info->{ args }}";
     };
-    my @args = @{ $info->{args} };
-    $self->{callbacks}->{$cbid}->{callback}->(@args);
+    if (exists $self->{callbacks}->{$cbid} and my $cb = $self->{callbacks}->{$cbid}->{callback}) {
+        # Replace with goto &$cb ?
+        my @args = @{ $info->{args} };
+        $cb->(@args);
+    } else {
+        # XXX This should be exported so you can learn where you leak
+        #     callbacks in Firefox
+        warn "Unknown callback id $cbid (created in @{$self->{removed_callbacks}->{$cbid}->{where}})";
+    }
 };
 
 =head2 C<< $bridge->remove_callback( $callback ) >>
@@ -730,7 +741,8 @@ sub remove_callback {
     my ($self,@callbacks) = @_;
     for my $cb (@callbacks) {
         my $cbid = refaddr $cb;
-        delete $self->{callbacks}->{$cbid}
+        $self->{removed_callbacks}->{$cbid} = $self->{callbacks}->{$cbid}->{where};
+        delete $self->{callbacks}->{$cbid};
         # and if you don't have memory cycles, all will be fine
     };
 };
