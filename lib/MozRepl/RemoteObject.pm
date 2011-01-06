@@ -466,7 +466,9 @@ sub exprq {
         # just in case we need it?
         # later
         push @{ $self->{queue} }, $js;
-    } else {
+    };
+    if (@{ $self->{queue} } > 9 or ! $self->{use_queue}) {
+        # flush
         $self->js_call_to_perl_struct($js);
         # but we're not really interested in the result
     };
