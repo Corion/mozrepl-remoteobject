@@ -185,6 +185,12 @@ sub to_perl {
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
     };
+    
+    if (! /\S/) {
+        # We got an empty string back from the REPL ...
+        warn "Got empty string from REPL";
+        return;
+    }
     #warn "[[$_]]";
     # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
