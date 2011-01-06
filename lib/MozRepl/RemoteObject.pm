@@ -231,9 +231,7 @@ sub to_perl {
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if (my $events = delete $data->{events}) {
-        my @ev = @$events; # $self->link_ids( @$events );
-        # XXX Fetch complete events here,
-        #     or alternatively, even pass complete events from JS
+        my @ev = @$events;
         for my $ev (@ev) {
             $self->{stats}->{callback}++;
             ($ev->{args}) = $self->link_ids($ev->{args});
