@@ -347,6 +347,8 @@ sub install_bridge {
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];
     $options{ use_queue } ||= 0; # > 0 means enqueue
+    $options{ max_queue_size } ||= 5000; # mozrepl
+                                         # / Net::Telnet don't like too large commands
 
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
@@ -473,10 +475,11 @@ sub exprq {
         # just in case we need it?
         # later
         push @{ $self->{queue} }, $js;
-    };
-    #if (@{ $self->{queue} } > 9 or ! $self->{use_queue}) {
-    if (! $self->{use_queue}) {
-        # flush
+        if (@{ $self->{queue} } > $self->{ max_queue_size }) {
+            # flush queue
+            $self->poll;
+        };
+    } else {
         $self->js_call_to_perl_struct($js);
         # but we're not really interested in the result
     };
