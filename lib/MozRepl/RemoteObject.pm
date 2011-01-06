@@ -1070,6 +1070,8 @@ sub DESTROY {
         my $rn = $self->bridge->name; 
         if ($rn) { # not always there during global destruction
             # we don't want a result here!
+            # XXX Ideally, we should tell the bridge to just store our ID
+            # so it can batch up the vanilla breakLink calls, reducing traffic
             $self->bridge->exprq(<<JS);
 (function(repl,id){${release_action}repl.breakLink(id)})($rn,$id)
 JS
