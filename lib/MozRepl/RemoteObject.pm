@@ -113,12 +113,14 @@ repl.wrapResults = function(v,context) {
     var payload = repl.wrapValue(v,context);
     if (eventQueue.length) {
         // XXX Push the (top-level) hashes directly
-        //payload.events = repl.wrapValue(eventQueue,'list');
+        payload.events = eventQueue;
+        /*
         // cheap cop-out
         payload.events = [];
         for (var ev in eventQueue) {
             payload.events.push(repl.link(eventQueue[ev]));
         };
+        */
         eventQueue = [];
     };
     return payload;
@@ -162,7 +164,7 @@ repl.makeCatchEvent = function(myid) {
             eventQueue.push({
                 cbid : id,
                 ts   : Number(new Date()),
-                args : myargs
+                args : repl.link(myargs)
             });
         };
 };
@@ -226,11 +228,12 @@ sub to_perl {
 sub unwrap_json_result {
     my ($self,$data) = @_;
     if (my $events = delete $data->{events}) {
-        my @ev = $self->link_ids( @$events );
+        my @ev = @$events; # $self->link_ids( @$events );
         # XXX Fetch complete events here,
         #     or alternatively, even pass complete events from JS
         for my $ev (@ev) {
             $self->{stats}->{callback}++;
+            ($ev->{args}) = $self->link_ids($ev->{args});
             $self->dispatch_callback($ev);
         };
     };
