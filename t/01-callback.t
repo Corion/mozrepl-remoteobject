@@ -8,6 +8,7 @@ my $repl;
 my $ok = eval {
     $repl = MozRepl::RemoteObject->install_bridge(
         #log => ['debug'],
+        use_queue => 1,
     );
     1;
 };
@@ -15,7 +16,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 13;
+    plan tests => 15;
 };
 
 sub genObj {
@@ -33,6 +34,8 @@ JS
 
 my $obj = genObj($repl);
 isa_ok $obj, 'MozRepl::RemoteObject::Instance';
+
+my $setup_roundtrips = $repl->{stats}->{roundtrip};
 
 my $called = 0;
 my @events;
@@ -109,3 +112,15 @@ $repl->poll;
 is_deeply \@events,
     ['in_perl'],
     "Delayed triggers trigger eventually (with Perl callback)";
+
+is $repl->{stats}->{callback}, 5, "We triggered 5 callbacks";
+
+# ca. 3 roundtrips per callback:
+# 1 for the callback itself ( ->poll() )
+# 2 for fetching its arguments in the tests
+# the rest is for ephemeral setup and destructors
+
+cmp_ok $repl->{stats}->{roundtrip}-$setup_roundtrips,'<',30, 'We needed less than 30 roundtrips for the callbacks';
+
+use Data::Dumper;
+diag Dumper $repl->{stats};
