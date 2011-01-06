@@ -115,15 +115,7 @@ var eventQueue = [];
 repl.wrapResults = function(v,context) {
     var payload = repl.wrapValue(v,context);
     if (eventQueue.length) {
-        // XXX Push the (top-level) hashes directly
         payload.events = eventQueue;
-        /*
-        // cheap cop-out
-        payload.events = [];
-        for (var ev in eventQueue) {
-            payload.events.push(repl.link(eventQueue[ev]));
-        };
-        */
         eventQueue = [];
     };
     return payload;
@@ -717,8 +709,6 @@ JS
     weaken $res->{bridge};
     bless $res => $ref;
     
-    # XXX We should store the origin of a callback so
-    #     we can tell the user where it originated if it leaks
     $self->{callbacks}->{$cbid} = {
         callback => $cb, jsproxy => $res, where => [caller(1)],
     };
@@ -736,8 +726,6 @@ sub dispatch_callback {
         my @args = as_list $info->{args};
         $cb->(@args);
     } else {
-        # XXX This should be exported so you can learn where you leak
-        #     callbacks in Firefox
         warn "Unknown callback id $cbid (created in @{$self->{removed_callbacks}->{$cbid}->{where}})";
     }
 };
@@ -1073,8 +1061,6 @@ sub DESTROY {
         my $rn = $self->bridge->name; 
         if ($rn) { # not always there during global destruction
             # we don't want a result here!
-            # XXX Ideally, we should tell the bridge to just store our ID
-            # so it can batch up the vanilla breakLink calls, reducing traffic
             $self->bridge->exprq(<<JS);
 (function(repl,id){${release_action}repl.breakLink(id)})($rn,$id)
 JS

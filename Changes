@@ -1,3 +1,11 @@
+To-do:
+    . store the origin of a callback so
+      we can tell the user where it originated if it leaks
+    . Make the callback-leak warning configurable
+    . Make MozRepl::RemoteObject::Instance::DESTROY just
+      queue the id, and have MozRepl::RemoteObject call
+      repl.breakLink() with just the ids, reducing traffic
+
 0.20 20110106
     . Improve event sending/handling
     . Add max_queue_size to limit queue backlog
