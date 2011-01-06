@@ -1,3 +1,10 @@
+0.20 20110106
+    . Improve event sending/handling
+    . Add max_queue_size to limit queue backlog
+    . Add stress-test for queue backlog
+    . Collect statistics about roundtrips,callbacks,fetch,store
+      in $repl->{stats}
+
 0.19 20101211
     . Simplify Exporter usage
     . Add ->constant() method to (lazily) fetch Javascript constants
