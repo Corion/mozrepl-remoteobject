@@ -177,10 +177,15 @@ JS
 sub to_perl {
     my ($self,$js) = @_;
     local $_ = $js;
-    #warn $js;
-    s/^(\.+\>\s*)+//; # remove Mozrepl continuation prompts
+    #s/^(\.+\>\s*)+//; # remove Mozrepl continuation prompts
     s/^"//;
     s/"$//;
+    
+    if (/\.+>/) {
+        warn "Continuation prompt found in [$_]";
+    }
+    
+    #warn $js;
     # reraise JS errors from perspective of caller
     if (/^!!!\s+(.*)$/m) {
         croak "MozRepl::RemoteObject: $1";
@@ -191,6 +196,7 @@ sub to_perl {
         warn "Got empty string from REPL";
         return;
     }
+    $js = $_;
     #warn "[[$_]]";
     # effin' .toSource() sends us \xHH escapes, and JSON doesn't
     # know what to do with them. So I pass them through unharmed :-(
@@ -199,7 +205,7 @@ sub to_perl {
     local $@;
     my $json = $self->json;
     if (! eval {
-        $res = $json->decode($_);
+        $res = $json->decode($js);
         1
     }) {
         my $err = $@;
@@ -209,7 +215,7 @@ sub to_perl {
         };
         $offset -= 10;
         $offset = 0 if $offset < 0;
-        warn sprintf "(Sub)string is [%s]", substr($_,$offset,20);
+        warn sprintf "(Sub)string is [%s]", substr($js,$offset,20);
         die $@
     };
     $res
@@ -648,7 +654,15 @@ sub js_call_to_perl_struct {
     if (defined wantarray) {
         #warn "Returning result of $js";
         $js = "${queued}JSON.stringify( function(){ var res = $js; return { result: res }}())";
-        my $d = $self->to_perl($repl->execute($js));
+        my $res = $repl->execute($js);
+        $res =~ s/^(?:\.+\>\s+)+//g;
+        while ($res !~ /\S/) {
+            # Gobble up continuation prompts
+            warn "No result yet from repl";
+            $res = $repl->execute(";\n");
+            $res =~ s/^(?:\.+\>\s+)+//g;
+        };
+        my $d = $self->to_perl($res);
         return $d->{result}
     } else {
         #warn "Executing $js";
