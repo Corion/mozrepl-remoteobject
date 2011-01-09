@@ -6,6 +6,9 @@ To-do:
       queue the id, and have MozRepl::RemoteObject call
       repl.breakLink() with just the ids, reducing traffic
 
+0.21 20110109
+    . Remove a debugging help that crashed the module when it was called...
+
 0.20 20110106
     . Improve event sending/handling
     . Add max_queue_size to limit queue backlog
