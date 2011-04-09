@@ -6,6 +6,9 @@ use AnyEvent::Strict;
 use Carp qw(croak);
 use MozRepl::Plugin::JSON2;
 
+use vars qw[$VERSION];
+$VERSION = '0.22';
+
 =head1 NAME
 
 AnyEvent-enabled MozRepl client
