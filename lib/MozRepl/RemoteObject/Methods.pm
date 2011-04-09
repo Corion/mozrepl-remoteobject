@@ -2,6 +2,9 @@ package MozRepl::RemoteObject::Methods;
 use strict;
 use Scalar::Util qw(blessed);
 
+use vars qw[$VERSION];
+$VERSION = '0.22';
+
 =head1 NAME
 
 MozRepl::RemoteObject::Methods - Perl methods for mozrepl objects
