@@ -60,7 +60,6 @@ Default is
 =cut
 
 sub new {
-    # ...
     my ($class, %args) = @_;
     bless {
         hdl => undef,
