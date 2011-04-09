@@ -523,6 +523,7 @@ sub queued {
         #my $js = join "//\n;//\n", @{ $self->queue };
         my $js = join "\n", map { /;$/? $_ : "$_;" } @{ $self->queue };
         # we don't want a result here!
+        # This is where we would do ->execute_async on AnyEvent
         $self->repl->execute($js);
         @{ $self->queue } = ();
     };
@@ -676,6 +677,7 @@ sub js_call_to_perl_struct {
         #warn "Returning result of $js";
         $js = "${queue_pre}JSON.stringify( function(){ var res = $js; return { result: res }}())$queue_post";
         #warn $js;
+        # When going async, we would want to turn this into a callback
         my $res = $repl->execute($js);
         $res =~ s/^(?:\.+\>\s+)+//g;
         while ($res !~ /\S/) {
@@ -688,6 +690,7 @@ sub js_call_to_perl_struct {
         return $d->{result}
     } else {
         #warn "Executing $js";
+        # When going async, we would want to turn this into a callback
         $repl->execute($js);
         ()
     };
