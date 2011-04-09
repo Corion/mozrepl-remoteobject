@@ -22,7 +22,9 @@ isa_ok $foo, 'MozRepl::RemoteObject::Instance', "We hold onto a remote object in
 
 my $second;
 $ok = eval {
-    $second = MozRepl::RemoteObject->install_bridge();
+    $second = MozRepl::RemoteObject->install_bridge(
+        #log => [qw[debug]],
+    );
     1;
 };
 ok $ok, "We can create a second bridge instance";
