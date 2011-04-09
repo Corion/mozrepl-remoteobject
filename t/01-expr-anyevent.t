@@ -1,9 +1,11 @@
 #!perl -w
 use strict;
-use Test::More tests => 2;
+use Test::More tests => 5;
 
 use MozRepl::RemoteObject;
 use MozRepl::AnyEvent;
+
+# XXX Need to protect against Firefox not available!
 
 my $arepl = MozRepl::AnyEvent->new();
 $arepl->setup();
