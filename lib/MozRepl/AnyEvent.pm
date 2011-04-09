@@ -95,7 +95,7 @@ sub execute_async {
     #$self->hdl->push_read(sub {
     #    # XXX Log data coming in
     #    warn "Received data <$_[0]->{rbuf}>";
-    #    0 # continue dumping
+    #    return $_[0]->{rbuf} =~ /repl\d*> /;
     #});
     
     $self->hdl->push_read( regex => $self->{prompt}, 
