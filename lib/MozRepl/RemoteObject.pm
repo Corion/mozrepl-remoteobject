@@ -1230,6 +1230,11 @@ JS
 
 =head2 C<< $obj->__xpath( $query [, $ref ] ) >>
 
+B<DEPRECATED> - this method will vanish in 0.23.
+Use L<MozRepl::RemoteObject::Util::xpath> instead:
+
+  $obj->MozRepl::RemoteObject::Util::xpath( $query )
+
 Executes an XPath query and returns the node
 snapshot result as a list.
 
