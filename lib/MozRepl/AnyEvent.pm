@@ -32,15 +32,15 @@ sub log {
 
 sub setup_async {
     my $cb = pop;
-    my ($self,%options) = @_;
-    my $client = delete $options{ client } || {};
+    my ($self,$options) = @_;
+    my $client = delete $options->{ client } || {};
     $client->{port} ||= 4242;
     $client->{host} ||= 'localhost';
     
     my $json = MozRepl::Plugin::JSON2->new();
     $cb ||= AnyEvent->condvar;
     
-    $self->{log} = +{ map { $_ => 1 } @{$options{ log }} };
+    $self->{log} = +{ map { $_ => 1 } @{$options->{ log }} };
     
     my $hdl = AnyEvent::Handle->new(
         connect => [ $client->{host}, $client->{port} ],
@@ -74,9 +74,9 @@ sub setup_async {
 };
 
 sub setup {
-    my ($self,%options) = @_;
+    my ($self,$options) = @_;
     my $done = AnyEvent->condvar;
-    $self->setup_async(%options, sub { $done->send });
+    $self->setup_async($options, sub { $done->send });
     $done->recv;
 };
 
