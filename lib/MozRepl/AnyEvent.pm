@@ -17,7 +17,7 @@ sub new {
     my ($class, %args) = @_;
     bless {
         hdl => undef,
-        prompt => qr/^(?:\.\.\.\.>\s)*(repl\d*)>\s+/m,
+        prompt => qr/^(?:\.+>\s)*(repl\d*)>\s+/m,
         execute_stack => [],
         %args
     } => $class;    
