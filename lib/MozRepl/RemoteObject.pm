@@ -1307,7 +1307,7 @@ Javascript object C<ID>. You usually do not call this
 directly but use C<< $bridge->link_ids @IDs >>
 to wrap a list of Javascript ids with Perl objects.
 
-The C<onDestroy> parameter should contain a Javascript
+The C<$onDestroy> parameter should contain a Javascript
 string that will be executed when the Perl object is
 released.
 The Javascript string is executed in its own scope
