@@ -5,6 +5,24 @@ To-do:
     . Make MozRepl::RemoteObject::Instance::DESTROY just
       queue the id, and have MozRepl::RemoteObject call
       repl.breakLink() with just the ids, reducing traffic
+    . Automatically load the AnyEvent backend if needed.
+
+0.22 to be released
+    . Added experimental AnyEvent-compatible backend MozRepl::AnyEvent
+      This backend does not yet support asynchronous execution. It
+      just plays well with other AnyEvent-enabled modules.
+      It is not automatically loaded.
+    ! Start of deprecation cycle for methods injected to the JS objects.
+      ->__xpath will be moved to MozRepl::RemoteObject::Util::xpath
+      Change
+          $obj->__xpath(...)
+      to
+          $obj->MozRepl::RemoteObject::Util::xpath( ... )
+      This makes the object cleaner and you shouldn't have many places
+      where you call C<< ->__xpath >> anyway, as it is not available on
+      most JS objects anyway.
+      
+      This method will go away in 0.23.
 
 0.21 20110109
     . Remove a debugging help that crashed the module when it was called...
