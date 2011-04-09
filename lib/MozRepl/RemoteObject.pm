@@ -955,13 +955,7 @@ Perl object.
 
 =cut
 
-sub __id {
-    my $class = ref $_[0];
-    bless $_[0], "$class\::HashAccess";
-    my $id = $_[0]->{id};
-    bless $_[0], $class;
-    $id
-};
+*__id = \&MozRepl::RemoteObject::Methods::id;
 
 =head2 C<< $obj->__on_destroy >>
 
@@ -970,17 +964,7 @@ that gets invoked from C<< DESTROY >>.
 
 =cut
 
-sub __on_destroy {
-    my $class = ref $_[0];
-    bless $_[0], "$class\::HashAccess";
-    my $d = $_[0]->{on_destroy};
-    if (@_ == 2) {
-        $_[0]->{on_destroy} = $_[1];
-    };
-    bless $_[0], $class;
-    $d
-};
-
+*__on_destroy = \&MozRepl::RemoteObject::Methods::on_destroy;
 
 =head2 C<< $obj->bridge >>
 
@@ -990,13 +974,7 @@ Perl object.
 
 =cut
 
-sub bridge {
-    my $class = ref $_[0];
-    bless $_[0], "$class\::HashAccess";
-    my $bridge = $_[0]->{bridge};
-    bless $_[0], $class;
-    $bridge
-};
+*bridge = \&MozRepl::RemoteObject::Methods::bridge;
 
 =head2 C<< $obj->__release_action >>
 

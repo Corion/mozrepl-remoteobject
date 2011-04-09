@@ -99,6 +99,56 @@ sub transform_arguments {
     } @_
 };
 
+# Helper to centralize the reblessing
+sub hash_get {
+    my $class = ref $_[0];
+    bless $_[0], "$class\::HashAccess";
+    my $res = $_[0]->{ $_[1] };
+    bless $_[0], $class;
+    $res
+};
+
+sub hash_get_set {
+    my $class = ref $_[0];
+    bless $_[0], "$class\::HashAccess";
+    my $k = $_[-1];
+    my $res = $_[0]->{ $k };
+    if (@_ == 3) {
+        $_[0]->{$k} = $_[1];
+    };
+    bless $_[0], $class;
+    $res
+};
+
+=head2 C<< $obj->MozRepl::RemoteObject::Methods::id >>
+
+Readonly accessor for the internal object id
+that connects the Javascript object to the
+Perl object.
+
+=cut
+
+sub id { hash_get( $_[0], 'id' ) };
+
+=head2 C<< $obj->MozRepl::RemoteObject::Methods::on_destroy >>
+
+Accessor for the callback
+that gets invoked from C<< DESTROY >>.
+
+=cut
+
+sub on_destroy { hash_get_set( @_, 'on_destroy' )};
+
+=head2 C<< $obj->MozRepl::RemoteObject::Methods::bridge >>
+
+Readonly accessor for the bridge
+that connects the Javascript object to the
+Perl object.
+
+=cut
+
+sub bridge { hash_get( $_[0], 'bridge' )};
+
 1;
 
 __END__
