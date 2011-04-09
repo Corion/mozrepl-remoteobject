@@ -192,16 +192,14 @@ the condvar to wait for the response.
 
 sub execute_async {
     my ($self, $command, $cb) = @_;
-    $self->log( debug => "Sending [$command]");
-    # XXX Log command going out
+    $self->log( info => "Sending command", $command);
     $cb ||= AnyEvent->condvar;
     $self->hdl->push_write( $command );
-    $self->log(debug => "Waiting for " . $self->{prompt});
+    $self->log(debug => "Waiting for prompt", $self->{prompt});
 
     # Push a log-peek
     #$self->hdl->push_read(sub {
-    #    # XXX Log data coming in
-    #    warn "Received data <$_[0]->{rbuf}>";
+    #    $self->log(debug => "Received data", $_[0]->{rbuf});
     #    return $_[0]->{rbuf} =~ /repl\d*> /;
     #});
     
@@ -209,8 +207,7 @@ sub execute_async {
         timeout => 10,
         sub {
         $_[1] =~ s/$self->{prompt}$//;
-        # XXX Log data coming in
-        $self->log(debug => "Received data", $_[1]);
+        $self->log(info => "Received data", $_[1]);
         $cb->($_[1]);
     });
     $cb
