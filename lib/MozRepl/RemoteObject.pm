@@ -3,7 +3,6 @@ use strict;
 use Exporter 'import';
 use JSON;
 use Carp qw(croak cluck);
-use MozRepl;
 use Scalar::Util qw(refaddr weaken);
 
 =head1 NAME
@@ -332,9 +331,16 @@ C<launch> option:
 
 =cut
 
+sub require_module($) {
+    local $_ = shift;
+    s{::|'}{/}g;
+    require "$_.pm"; # dies if the file is not found
+};
+
 sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
+    my $repl_class = delete $options{ repl_class } || $ENV{MOZREPL_CLASS} || 'MozRepl';
     $options{ constants } ||= {};
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];
@@ -352,7 +358,8 @@ sub install_bridge {
             push @host_port, port => $2
                 if defined $2;
         };
-        $options{repl} = MozRepl->new();
+        require_module $repl_class;
+        $options{repl} = $repl_class->new();
         RETRY: {
             my $ok = eval {
                 $options{repl}->setup({
