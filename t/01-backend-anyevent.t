@@ -5,7 +5,17 @@ use Test::More tests => 2;
 use MozRepl::AnyEvent;
 
 my $repl = MozRepl::AnyEvent->new();
-$repl->setup();
+
+my $ok = eval {
+    $repl->setup();
+    1;
+};
+if (! $ok) {
+    my $err = $@;
+    plan skip_all => "Couldn't connect to Firefix: $@";
+} else {
+    plan tests => 2;
+};
 
 ok "We survived";
 
