@@ -28,7 +28,7 @@ METHOD name contains characters not valid in a Perl variable name
 To invoke a Javascript objects native C<< __invoke >> method (if such a
 thing exists), please use:
 
-    $object->__invoke('__invoke', @args);
+    $object->MozRepl::RemoteObject::Methods::invoke('__invoke', @args);
 
 This method can be used to call the Javascript functions with the
 same name as other convenience methods implemented
