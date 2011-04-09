@@ -781,8 +781,10 @@ package # hide from CPAN
 use strict;
 use Carp qw(croak cluck);
 use Scalar::Util qw(blessed refaddr);
+use MozRepl::RemoteObject::Methods;
 push @Carp::CARP_NOT, __PACKAGE__;
 
+# Move to ::methods
 use overload '%{}' => '__as_hash',
              '@{}' => '__as_array',
              '&{}' => '__as_code',
@@ -860,7 +862,8 @@ sub AUTOLOAD {
     my $fn = $MozRepl::RemoteObject::Instance::AUTOLOAD;
     $fn =~ s/.*:://;
     my $self = shift;
-    return $self->__invoke($fn,@_)
+    #return $self->__invoke($fn,@_)
+    return $self->MozRepl::RemoteObject::Methods::invoke($fn,@_)
 }
 
 =head1 EVENTS / CALLBACKS
@@ -923,21 +926,7 @@ by this package:
 
 =cut
 
-sub __invoke {
-    my ($self,$fn,@args) = @_;
-    my $id = $self->__id;
-    die unless $self->__id;
-    
-    ($fn) = $self->__transform_arguments($fn);
-    my $rn = $self->bridge->name;
-    @args = $self->__transform_arguments(@args);
-    #use Data::Dumper;
-    local $" = ',';
-    my $js = <<JS;
-$rn.callMethod($id,$fn,[@args])
-JS
-    return $self->bridge->unjson($js);
-}
+*__invoke = \&MozRepl::RemoteObject::Methods::invoke;
 
 =head2 C<< $obj->__transform_arguments(@args) >>
 
@@ -956,29 +945,7 @@ as a number through to Javascript, or to pass digits as a Javascript string.
 
 =cut
  
-sub __transform_arguments {
-    my $self = shift;
-    my $json = $self->bridge->json;
-    map {
-        if (! defined) {
-             'null'
-        } elsif (/^(?:[1-9][0-9]*|0+)$/) {
-            $_
-        } elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
-            sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id
-        } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
-            $_->name
-        } elsif (ref and ref eq 'CODE') { # callback
-            my $cb = $self->bridge->make_callback($_);
-            sprintf "%s.getLink(%d)", $self->bridge->name,
-                                      $cb->__id
-        } elsif (ref) {
-            $json->encode($_);
-        } else {
-            $json->encode($_)
-        }
-    } @_
-};
+*__transform_arguments = \&MozRepl::RemoteObject::Methods::transform_arguments;
 
 =head2 C<< $obj->__id >>
 
@@ -1231,9 +1198,9 @@ JS
 =head2 C<< $obj->__xpath( $query [, $ref ] ) >>
 
 B<DEPRECATED> - this method will vanish in 0.23.
-Use L<MozRepl::RemoteObject::Util::xpath> instead:
+Use L<MozRepl::RemoteObject::Methods::xpath> instead:
 
-  $obj->MozRepl::RemoteObject::Util::xpath( $query )
+  $obj->MozRepl::RemoteObject::Methods::xpath( $query )
 
 Executes an XPath query and returns the node
 snapshot result as a list.
