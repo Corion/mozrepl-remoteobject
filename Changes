@@ -7,7 +7,7 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
-0.22 to be released
+0.22 20110411
     . Added experimental AnyEvent-compatible backend MozRepl::AnyEvent
       This backend does not yet support asynchronous execution. It
       just plays well with other AnyEvent-enabled modules.
