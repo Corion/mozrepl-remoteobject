@@ -7,6 +7,11 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
+0.23 20110415
+    . Fix test failures
+    . Postpone deprecation period of methods added to JS objects
+      a bit. All methods will remain until after 0.25.
+
 0.22 20110411
     . Added experimental AnyEvent-compatible backend MozRepl::AnyEvent
       This backend does not yet support asynchronous execution. It

@@ -2,17 +2,25 @@
 use strict;
 use Test::More;
 
-use MozRepl::AnyEvent;
-
-my $repl = MozRepl::AnyEvent->new();
-
 my $ok = eval {
+    require AnyEvent;
+    1;
+};
+my $err = $@;
+
+my $repl;
+if ($ok) {
+    require MozRepl::AnyEvent;
+    $repl = MozRepl::AnyEvent->new();
+};
+
+$ok and $ok = eval {
     $repl->setup();
     1;
 };
 if (! $ok) {
-    my $err = $@;
-    plan skip_all => "Couldn't connect to Firefix: $@";
+    $err ||= $@;
+    plan skip_all => "Couldn't connect to Firefox: $err";
 } else {
     plan tests => 2;
 };

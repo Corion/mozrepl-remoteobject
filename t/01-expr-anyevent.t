@@ -3,18 +3,24 @@ use strict;
 use Test::More;
 
 use MozRepl::RemoteObject;
-use MozRepl::AnyEvent;
 
-# XXX Need to protect against Firefox not available!
-
-my $arepl = MozRepl::AnyEvent->new();
 my $ok = eval {
-    $arepl->setup();
+    require MozRepl::AnyEvent;
     1;
 };
+my $err = $@;
+
+my $arepl;
+if ($ok) {
+    $arepl = MozRepl::AnyEvent->new();
+    $ok = eval {
+        $arepl->setup();
+        1;
+    };
+};
 if (! $ok) {
-    my $err = $@;
-    plan skip_all => "Couldn't connect to Firefix: $@";
+    $err ||= $@;
+    plan skip_all => "Couldn't connect to Firefix: $err";
 } else {
     plan tests => 5;
 };
