@@ -87,59 +87,72 @@ sub log {
     };
 };
 
-=head2 C<< $repl->setup_async( $options, $cb ) >>
+=head2 C<< $repl->setup_async( $options ) >>
 
   my $repl = MozRepl::AnyEvent->setup({
       client => { host => 'localhost',
                   port => 4242,
                 },
        log   => ['debug'],
+       cv    => $cv,
   });
 
 Sets up the repl connection. See L<MozRepl>::setup for detailed documentation.
 
-Returns a CV to wait on that signals when setup is done.
+The optional CV will get the repl through C<< ->send() >>.
+
+Returns the CV to wait on that signals when setup is done.
 
 =cut
 
 sub setup_async {
-    my $cb = pop;
     my ($self,$options) = @_;
     my $client = delete $options->{ client } || {};
     $client->{port} ||= 4242;
     $client->{host} ||= 'localhost';
     $options->{log} ||= [];
+    my $cb = delete $options->{cv} || AnyEvent->condvar;
     
     my $json = MozRepl::Plugin::JSON2->new();
-    $cb ||= AnyEvent->condvar;
     
     $self->{log} = +{ map { $_ => 1 } @{$options->{ log }} };
     
     my $hdl = $self->{hdl} || AnyEvent::Handle->new(
         connect => [ $client->{host}, $client->{port} ],
+        on_error => sub {
+            $self->log('error',$_[2]);
+            $self->{error} = $_[2];
+            $cb->send();
+            undef $cb;
+            undef $self;
+        },
+        
+        on_connect => sub {
+            my ($hdl,$host,$port) = @_;
+            $self->log('debug', "Connected to $host:$port");
+            $hdl->push_read( regex => $self->{prompt}, sub {
+                my ($handle, $data) = @_;
+                $data =~ /$self->{prompt}/m
+                    or croak "Couldn't find REPL name in '$data'";
+                $self->{name} = $1;
+                $self->log('debug', "Repl name is '$1'");
+                
+                # Load our JSON handler into Firefox
+                # Fake this so we can keep the same API
+                push @{ $self->{execute_stack}}, sub {
+                    # Tell anybody interested that we're connected now
+                    $self->log('debug', "Connected now");
+                    $cb->send($self)
+                };
+                
+                # This calls $self->execute, which pops the callback from 
+                # the stack and runs it
+                $json->setup( $self );
+            });
+        },
     );
-
    
     # Read the welcome banner
-    $hdl->push_read( regex => $self->{prompt}, sub {
-        my ($handle, $data) = @_;
-        $data =~ /$self->{prompt}/m
-            or croak "Couldn't find REPL name in '$data'";
-        $self->{name} = $1;
-        $self->log('debug', "Repl name is '$1'");
-        
-        # Load our JSON handler into Firefox
-        # Fake this so we can keep the same API
-        push @{ $self->{execute_stack}}, sub {
-            # Tell anybody interested that we're connected now
-            $self->log('debug', "Connected now");
-            $cb->($self)
-        };
-        
-        # This calls $self->execute, which pops the callback from 
-        # the stack and runs it
-        $json->setup( $self );
-    });
     $self->{hdl} = $hdl;
     
     $cb
@@ -155,9 +168,12 @@ inside.
 
 sub setup {
     my ($self,$options) = @_;
-    my $done = AnyEvent->condvar;
-    $self->setup_async($options, sub { $done->send });
-    $done->recv;
+    my $done = $self->setup_async($options);
+    my @res = $done->recv;
+    if (not @res=$done->recv) {
+        # reraise error
+        die $self->{error}
+    };
 };
 
 =head2 C<< $repl->repl >>

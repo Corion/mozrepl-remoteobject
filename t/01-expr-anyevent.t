@@ -11,12 +11,10 @@ my $ok = eval {
 my $err = $@;
 
 my $arepl;
-if ($ok) {
+$ok and $ok = eval {
     $arepl = MozRepl::AnyEvent->new();
-    $ok = eval {
-        $arepl->setup();
-        1;
-    };
+    $arepl->setup();
+    1;
 };
 if (! $ok) {
     $err ||= $@;

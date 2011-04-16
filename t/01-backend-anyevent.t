@@ -9,12 +9,10 @@ my $ok = eval {
 my $err = $@;
 
 my $repl;
-if ($ok) {
-    require MozRepl::AnyEvent;
-    $repl = MozRepl::AnyEvent->new();
-};
 
 $ok and $ok = eval {
+    require MozRepl::AnyEvent;
+    $repl = MozRepl::AnyEvent->new();
     $repl->setup();
     1;
 };

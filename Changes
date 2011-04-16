@@ -7,6 +7,10 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
+0.24 20110416
+    . Redo connect logic in ->setup, so that we handle cases
+      where MozRepl is unavailable gracefully.
+
 0.23 20110415
     . Fix test failures
     . Postpone deprecation period of methods added to JS objects
