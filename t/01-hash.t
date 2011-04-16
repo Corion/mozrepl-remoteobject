@@ -90,3 +90,18 @@ JS
 #my $multi = $foo->__attr([qw[ bar foo ]]);
 #is scalar @$multi, 2, "Multi-fetch retrieves two values";
 #is $multi->[1], 1, "... and the second value is '1'";
+
+# Now also test complex assignment and retrieval
+$foo->{complex} = {
+    a => [ { nested => 'structure' } ]
+};
+ok $foo->{complex}, "We assign something to 'complex'";
+
+# And use JS to retrieve the structure
+my $get_complex = $repl->expr(<<JS);
+function(val) {
+    return val.complex.a[0].nested;
+}
+JS
+is $get_complex->($foo), 'structure',
+    "We can assign complex data structures from Perl and access them from JS";
