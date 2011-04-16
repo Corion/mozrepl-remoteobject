@@ -11,7 +11,7 @@ $VERSION = '0.24';
 
 =head1 NAME
 
-AnyEvent-enabled MozRepl client
+MozRepl::AnyEvent - AnyEvent-enabled MozRepl client
 
 =head1 SYNOPSIS
 
@@ -24,6 +24,17 @@ for what L<MozRepl::RemoteObject> uses. It does not
 provide plugin support. If you want a fully compatible
 AnyEvent-enabled L<MozRepl>, please consider porting L<Net::Telnet>
 to L<AnyEvent::Handle>.
+
+Instead of using the process environment, you can also pass
+the backend class using the C<repl_class> parameter in the constructor:
+
+  use MozRepl::RemoteObject;
+  my $bridge = MozRepl::RemoteObject->install_bridge(
+      repl_class => 'MozRepl::AnyEvent',
+  );
+
+The module in C<repl_class> will be loaded through C<require>. If the module
+does not load, the fatal error will propagate. No fallbacks are tried.
 
 =head1 METHODS
 
