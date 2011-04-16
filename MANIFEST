@@ -9,6 +9,7 @@ MANIFEST			This list of files
 MANIFEST.skip
 t/00-load.t
 t/01-array.t
+t/01-backend-anyevent-timer.t
 t/01-backend-anyevent.t
 t/01-callback-overhead.t
 t/01-callback.t
