@@ -22,7 +22,7 @@ if (! $ok) {
     $err ||= $@;
     plan skip_all => "Couldn't connect to Firefox: $err";
 } else {
-    plan tests => 3;
+    plan tests => 2;
 };
 
 ok "We survived";
