@@ -7,7 +7,7 @@ use Carp qw(croak);
 use MozRepl::Plugin::JSON2;
 
 use vars qw[$VERSION];
-$VERSION = '0.23';
+$VERSION = '0.24';
 
 =head1 NAME
 
