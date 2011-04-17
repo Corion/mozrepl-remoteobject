@@ -262,6 +262,8 @@ If C<repl> is not passed in, C<$ENV{MOZREPL}> will be used
 to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
 is not set, the default of C<localhost:4242> will be used.
 
+C<$ENV{MOZREPL}> will get untainted!
+
 If C<repl> is not a reference, it will be used instead of C<$ENV{MOZREPL}>.
 
 To replace the default JSON parser, you can pass it in using the C<json>
@@ -341,6 +343,9 @@ sub install_bridge {
     my ($package, %options) = @_;
     $options{ repl } ||= $ENV{MOZREPL};
     my $repl_class = delete $options{ repl_class } || $ENV{MOZREPL_CLASS} || 'MozRepl';
+    # Untaint repl class
+    $repl_class =~ /^((?:\w+::)+\w+)$/
+        and $repl_class = $1;
     $options{ constants } ||= {};
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];

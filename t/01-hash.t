@@ -1,4 +1,4 @@
-#!perl -w
+#!perl -wT
 use strict;
 use Data::Dumper;
 use Test::More;
