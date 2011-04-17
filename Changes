@@ -7,15 +7,17 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
-0.24 20110416
-    . Redo connect logic in ->setup, so that we handle cases
-      where MozRepl is unavailable gracefully.
+0.25 to be released
     . Add CLEAR method to tied objects so now list-assignment
       to a hash works:
       
           %$foo = (Just => 'another', Javascript => 'Hacker');
           $foo->{Just} # another
           $foo->{Javascript} # Hacker
+
+0.24 20110416
+    . Redo connect logic in ->setup, so that we handle cases
+      where MozRepl is unavailable gracefully.
 
 0.23 20110415
     . Fix test failures
