@@ -1043,13 +1043,15 @@ is identical to
 
 sub __attr {
     my ($self,$attr) = @_;
-    die "No id given" unless $self->__id;
-    $self->bridge->{stats}->{fetch}++;
-    my $id = $self->__id;
-    my $rn = $self->bridge->name;
-    my $json = $self->bridge->json;
+    my $id = MozRepl::RemoteObject::Methods::id($self)
+        or die "No id given";
+    
+    my $bridge = MozRepl::RemoteObject::Methods::bridge($self);
+    $bridge->{stats}->{fetch}++;
+    my $rn = $bridge->name;
+    my $json = $bridge->json;
     $attr = $json->encode($attr);
-    return $self->bridge->unjson(<<JS);
+    return $bridge->unjson(<<JS);
 $rn.getAttr($id,$attr)
 JS
 }
@@ -1069,11 +1071,12 @@ is identical to
 
 sub __setAttr {
     my ($self,$attr,$value) = @_;
-    die unless $self->__id;
-    my $id = $self->__id;
-    $self->bridge->{stats}->{store}++;
-    my $rn = $self->bridge->name;
-    my $json = $self->bridge->json;
+    my $id = MozRepl::RemoteObject::Methods::id($self)
+        or die "No id given";
+    my $bridge = $self->bridge;
+    $bridge->{stats}->{store}++;
+    my $rn = $bridge->name;
+    my $json = $bridge->json;
     $attr = $json->encode($attr);
     ($value) = $self->__transform_arguments($value);
     $self->bridge->js_call_to_perl_struct(<<JS);
