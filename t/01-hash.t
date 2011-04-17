@@ -16,7 +16,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 19;
+    plan tests => 25;
 };
 
 # create a nested object
@@ -105,3 +105,17 @@ function(val) {
 JS
 is $get_complex->($foo), 'structure',
     "We can assign complex data structures from Perl and access them from JS";
+
+$ok = eval {
+    %$foo = (
+        flirble => 'bar',
+        fizz    => 'buzz',
+    );
+    1;
+};
+ok $ok, "We survive hash-list-assignment"
+    or diag $@;
+is_deeply [sort keys %$foo], [qw[fizz flirble]], "We get the correct keys";
+
+is $foo->{flirble}, 'bar', "Key assignment (flirble)";
+is $foo->{fizz}, 'buzz', "Key assignment (fizz)";

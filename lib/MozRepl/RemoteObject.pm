@@ -1454,6 +1454,26 @@ JS
     $delete->($obj,$key);
 }
 
+sub CLEAR  {
+    my ($tied,$key) = @_;
+    my $obj = $tied->{impl};
+    my $clear = $obj->bridge->declare(<<'JS');
+    function(obj) {
+        var del = [];
+        for (var prop in obj) {
+            if (obj.hasOwnProperty(prop)) {
+                del.push(prop);
+            };
+        };
+        for (var i=0;i<del.length;i++) {
+            delete obj[del[i]]
+        };
+        return del
+    }
+JS
+    $clear->($obj);
+};
+
 1;
 
 package # don't index this on CPAN
