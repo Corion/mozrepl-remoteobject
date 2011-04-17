@@ -262,8 +262,6 @@ If C<repl> is not passed in, C<$ENV{MOZREPL}> will be used
 to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
 is not set, the default of C<localhost:4242> will be used.
 
-C<$ENV{MOZREPL}> will get untainted!
-
 If C<repl> is not a reference, it will be used instead of C<$ENV{MOZREPL}>.
 
 To replace the default JSON parser, you can pass it in using the C<json>
@@ -329,6 +327,18 @@ C<launch> option:
 
     MozRepl::RemoteObject->install_bridge(
         launch => ['iceweasel','-repl','666']
+    );
+
+=head3 Using a custom Mozrepl class
+
+By default, any class named in C<$ENV{MOZREPL}> will get loaded and used
+as the MozRepl backend. That value will get untainted!
+If you want to prevent C<$ENV{MOZREPL}>
+from getting used, pass an explicit class name using the C<repl_class>
+option.
+
+    MozRepl::RemoteObject->install_bridge(
+        repl_class => 'MozRepl::AnyEvent',
     );
 
 =cut
