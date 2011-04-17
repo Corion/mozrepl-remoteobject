@@ -3,6 +3,7 @@ Makefile.old
 *.tar.gz
 pm_to_blib
 blib/
+cover_db/
 .releaserc
 MozRepl-RemoteObject-*/
 MozRepl-RemoteObject-*.tar
