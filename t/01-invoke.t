@@ -6,7 +6,9 @@ use MozRepl::RemoteObject;
 
 my $repl;
 my $ok = eval {
-    $repl = MozRepl::RemoteObject->install_bridge();
+    $repl = MozRepl::RemoteObject->install_bridge(
+        #log => [qw[debug info]],
+    );
     1;
 };
 if (! $ok) {
@@ -57,7 +59,8 @@ $res = $obj->id('abc');
 is $res, 'abc', "Can pass alphanumerical parameters";
 
 $res = $obj->id($obj);
-ok $res == $obj, "Can pass MozRepl::RemoteObject parameters";
+
+ok $res == $obj, "Can pass MozRepl::RemoteObject::Instance parameters";
 
 my $js = <<'JS';
 function(val) {
