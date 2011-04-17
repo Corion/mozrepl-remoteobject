@@ -200,12 +200,14 @@ sub object_identity {
     return if (   ! $other 
                or ! ref $other
                or ! blessed $other
-               or ! $other->isa(__PACKAGE__));
+               or ! $other->isa('MozRepl::RemoteObject::Instance')
+               or ! $self->isa('MozRepl::RemoteObject::Instance'));
     my $left = id($self)
         or die "Internal inconsistency - no id found for $self";
     my $right = id($other);
-    my $rn = bridge($self)->name;
-    my $data = bridge($self)->js_call_to_perl_struct(<<JS);
+    my $bridge = bridge($self);
+    my $rn = $bridge->name;
+    my $data = $bridge->js_call_to_perl_struct(<<JS);
     // __object_identity
 $rn.getLink($left)===$rn.getLink($right)
 JS
