@@ -18,7 +18,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 29;
+    plan tests => 30;
 };
 
 # create a nested object
@@ -40,6 +40,8 @@ isa_ok $bar, 'MozRepl::RemoteObject::Instance';
 
 my @elements = @{ $bar };
 is 0+@elements, 2, 'We have two elements';
+
+is 0+@{ $bar }, 2, 'We have two elements (scalar context)';
 
 #diag $_ for @$bar;
 
