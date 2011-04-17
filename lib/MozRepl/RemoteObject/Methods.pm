@@ -48,13 +48,13 @@ sub invoke {
     die unless $self->__id;
     
     ($fn) = $self->MozRepl::RemoteObject::Methods::transform_arguments($fn);
-    my $rn = $self->bridge->name;
+    my $rn = bridge($self)->name;
     @args = $self->MozRepl::RemoteObject::Methods::transform_arguments(@args);
     local $" = ',';
     my $js = <<JS;
 $rn.callMethod($id,$fn,[@args])
 JS
-    return $self->bridge->unjson($js);
+    return bridge($self)->unjson($js);
 }
 
 =head2 C<< $obj->MozRepl::RemoteObject::Methods::transform_arguments(@args) >>
@@ -76,7 +76,7 @@ as a number through to Javascript, or to pass digits as a Javascript string.
  
 sub transform_arguments {
     my $self = shift;
-    my $json = $self->bridge->json;
+    my $json = bridge($self)->json;
     map {
         if (! defined) {
              'null'
@@ -84,13 +84,13 @@ sub transform_arguments {
             $_
         #} elsif (ref and blessed $_ and $_->isa(__PACKAGE__)) {
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject::Instance')) {
-            sprintf "%s.getLink(%d)", $_->bridge->name, $_->__id
+            sprintf "%s.getLink(%d)", bridge($_)->name, id($_)
         } elsif (ref and blessed $_ and $_->isa('MozRepl::RemoteObject')) {
             $_->name
         } elsif (ref and ref eq 'CODE') { # callback
             my $cb = $self->bridge->make_callback($_);
-            sprintf "%s.getLink(%d)", $self->bridge->name,
-                                      $cb->__id
+            sprintf "%s.getLink(%d)", bridge($self)->name,
+                                      id($cb)
         } elsif (ref) {
             $json->encode($_);
         } else {
