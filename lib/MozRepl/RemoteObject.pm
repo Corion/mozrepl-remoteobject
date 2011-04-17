@@ -782,7 +782,7 @@ use strict;
 use Carp qw(croak cluck);
 use Scalar::Util qw(blessed refaddr);
 use MozRepl::RemoteObject::Methods;
-push @Carp::CARP_NOT, __PACKAGE__;
+push @Carp::CARP_NOT, __PACKAGE__, 'MozRepl::RemoteObject::Methods';
 
 use overload '%{}' => 'MozRepl::RemoteObject::Methods::as_hash',
              '@{}' => 'MozRepl::RemoteObject::Methods::as_array',
