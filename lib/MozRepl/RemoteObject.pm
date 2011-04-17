@@ -784,11 +784,10 @@ use Scalar::Util qw(blessed refaddr);
 use MozRepl::RemoteObject::Methods;
 push @Carp::CARP_NOT, __PACKAGE__;
 
-# Move to ::methods
-use overload '%{}' => '__as_hash',
-             '@{}' => '__as_array',
-             '&{}' => '__as_code',
-             '=='  => '__object_identity',
+use overload '%{}' => 'MozRepl::RemoteObject::Methods::as_hash',
+             '@{}' => 'MozRepl::RemoteObject::Methods::as_array',
+             '&{}' => 'MozRepl::RemoteObject::Methods::as_code',
+             '=='  => 'MozRepl::RemoteObject::Methods::object_identity',
              '""'  => sub { overload::StrVal $_[0] };
 
 #sub TO_JSON {
@@ -1328,69 +1327,6 @@ sub new {
         },
     };
     bless $self, ref $package || $package;
-};
-
-sub __object_identity {
-    my ($self,$other) = @_;
-    return if (   ! $other 
-               or ! ref $other
-               or ! blessed $other
-               or ! $other->isa(__PACKAGE__));
-    die unless $self->__id;
-    my $left = $self->__id;
-    my $right = $other->__id;
-    my $rn = $self->bridge->name;
-    my $data = $self->bridge->js_call_to_perl_struct(<<JS);
-    // __object_identity
-$rn.getLink($left)===$rn.getLink($right)
-JS
-}
-
-# tied interface reflection
-
-=head2 C<< $obj->__as_hash() >>
-
-=head2 C<< $obj->__as_array() >>
-
-=head2 C<< $obj->__as_code() >>
-
-Returns a reference to a hash/array/coderef. This is used
-by L<overload>. Don't use these directly.
-
-=cut
-
-sub __as_hash {
-    my $self = shift;
-    tie my %h, 'MozRepl::RemoteObject::TiedHash', $self;
-    \%h;
-};
-
-sub __as_array {
-    my $self = shift;
-    tie my @a, 'MozRepl::RemoteObject::TiedArray', $self;
-    \@a;
-};
-
-sub __as_code {
-    my $self = shift;
-    my $class = ref $self;
-    bless $self, "$class\::HashAccess";
-    my $id = $self->{id};
-    my $context = $self->{ return_context }
-                ? qq{,"$self->{ return_context }"}
-                : '';
-    bless $self, $class;
-    return sub {
-        my (@args) = @_;
-        
-        my $rn = $self->bridge->name;
-        @args = $self->__transform_arguments(@args);
-        local $" = ',';
-        my $js = <<JS;
-    $rn.callThis($id,[@args]$context)
-JS
-        return $self->bridge->unjson($js);
-    };
 };
 
 package # don't index this on CPAN

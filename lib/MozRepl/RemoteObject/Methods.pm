@@ -149,6 +149,68 @@ Perl object.
 
 sub bridge { hash_get( $_[0], 'bridge' )};
 
+=head2 C<< MozRepl::RemoteObject::Methods::as_hash($obj) >>
+
+=head2 C<< MozRepl::RemoteObject::Methods::as_array($obj) >>
+
+=head2 C<< MozRepl::RemoteObject::Methods::as_code($obj) >>
+
+Returns a reference to a hash/array/coderef. This is used
+by L<overload>. Don't use these directly.
+
+=cut
+
+
+sub as_hash {
+    my $self = shift;
+    tie my %h, 'MozRepl::RemoteObject::TiedHash', $self;
+    \%h;
+};
+
+sub as_array {
+    my $self = shift;
+    tie my @a, 'MozRepl::RemoteObject::TiedArray', $self;
+    \@a;
+};
+
+sub as_code {
+    my $self = shift;
+    my $class = ref $self;
+    my $id = id($self);
+    my $context = hash_get($self, 'return_context');
+    $context = $context
+               ? qq{,"$context"}
+               : '';
+    return sub {
+        my (@args) = @_;
+        my $bridge = bridge($self);
+        
+        my $rn = $bridge->name;
+        @args = transform_arguments($self,@args);
+        local $" = ',';
+        my $js = <<JS;
+    $rn.callThis($id,[@args]$context)
+JS
+        return $bridge->unjson($js);
+    };
+};
+
+sub object_identity {
+    my ($self,$other) = @_;
+    return if (   ! $other 
+               or ! ref $other
+               or ! blessed $other
+               or ! $other->isa(__PACKAGE__));
+    my $left = id($self)
+        or die "Internal inconsistency - no id found for $self";
+    my $right = id($other);
+    my $rn = bridge($self)->name;
+    my $data = bridge($self)->js_call_to_perl_struct(<<JS);
+    // __object_identity
+$rn.getLink($left)===$rn.getLink($right)
+JS
+}
+
 1;
 
 __END__
