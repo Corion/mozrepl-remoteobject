@@ -861,7 +861,6 @@ sub AUTOLOAD {
     my $fn = $MozRepl::RemoteObject::Instance::AUTOLOAD;
     $fn =~ s/.*:://;
     my $self = shift;
-    #return $self->__invoke($fn,@_)
     return $self->MozRepl::RemoteObject::Methods::invoke($fn,@_)
 }
 
