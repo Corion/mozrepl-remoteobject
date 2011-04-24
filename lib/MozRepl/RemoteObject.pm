@@ -359,6 +359,7 @@ sub install_bridge {
     $options{ constants } ||= {};
     $options{ log } ||= [qw/ error/];
     $options{ queue } ||= [];
+    $options{ bufsize } ||= 10_240_000;
     $options{ use_queue } ||= 0; # > 0 means enqueue
     $options{ max_queue_size } ||= 5000; # mozrepl
                                          # / Net::Telnet don't like too large commands
@@ -387,6 +388,13 @@ sub install_bridge {
                     log => $options{ log },
                     plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
                 });
+                
+                if (my $bufsize = delete $args{ bufsize }) {
+                    if ($options{ repl }->repl->can('client')) {
+                        $options{ repl }->repl->client->telnet->max_buffer_length($bufsize);
+                    };
+                };
+
                 1;
             };
             if (! $ok ) {
@@ -797,7 +805,8 @@ use strict;
 use Carp qw(croak cluck);
 use Scalar::Util qw(blessed refaddr);
 use MozRepl::RemoteObject::Methods;
-push @Carp::CARP_NOT, __PACKAGE__, 'MozRepl::RemoteObject::Methods';
+use vars qw(@CARP_NOT);
+@CARP_NOT = 'MozRepl::RemoteObject::Methods';
 
 use overload '%{}' => 'MozRepl::RemoteObject::Methods::as_hash',
              '@{}' => 'MozRepl::RemoteObject::Methods::as_array',

@@ -14,6 +14,10 @@ To-do:
           %$foo = (Just => 'another', Javascript => 'Hacker');
           $foo->{Just} # another
           $foo->{Javascript} # Hacker
+          
+    . Add the C<bufsize> parameter to ->install_bridge
+      for setting the Net::Telnet buffer size
+    . Don't list MozRepl::RemoteObject::Methods in carp()
 
 0.24 20110416
     . Redo connect logic in ->setup, so that we handle cases
