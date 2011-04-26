@@ -389,7 +389,7 @@ sub install_bridge {
                     plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
                 });
                 
-                if (my $bufsize = delete $args{ bufsize }) {
+                if (my $bufsize = delete $options{ bufsize }) {
                     if ($options{ repl }->repl->can('client')) {
                         $options{ repl }->repl->client->telnet->max_buffer_length($bufsize);
                     };
