@@ -14,7 +14,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.24';
+$VERSION = '0.25';
 
 sub setup {
     my ($self, $ctx, $args) = @_;
