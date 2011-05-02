@@ -9,6 +9,7 @@ my $ok = eval {
     $repl = MozRepl::RemoteObject->install_bridge(
         #log => ['debug'],
         use_queue => 1,
+        #max_queue_size => 1000,
     );
     1;
 };

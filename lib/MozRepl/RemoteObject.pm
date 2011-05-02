@@ -362,7 +362,7 @@ sub install_bridge {
     $options{ queue } ||= [];
     $options{ bufsize } ||= 10_240_000;
     $options{ use_queue } ||= 0; # > 0 means enqueue
-    $options{ max_queue_size } ||= 5000; # mozrepl
+    $options{ max_queue_size } ||= 1000; # mozrepl
                                          # / Net::Telnet don't like too large commands
 
     if (! ref $options{repl}) { # we have host:port
