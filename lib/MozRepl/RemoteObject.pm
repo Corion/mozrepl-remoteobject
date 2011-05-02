@@ -227,6 +227,7 @@ sub unwrap_json_result {
             $self->{stats}->{callback}++;
             ($ev->{args}) = $self->link_ids($ev->{args});
             $self->dispatch_callback($ev);
+            undef $ev; # release the memory early!
         };
     };
     my $t = $data->{type} || '';
