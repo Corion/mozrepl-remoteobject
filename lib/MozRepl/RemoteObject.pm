@@ -390,8 +390,8 @@ sub install_bridge {
                 });
                 
                 if (my $bufsize = delete $options{ bufsize }) {
-                    if ($options{ repl }->repl->can('client')) {
-                        $options{ repl }->repl->client->telnet->max_buffer_length($bufsize);
+                    if ($options{ repl }->can('client')) {
+                        $options{ repl }->client->telnet->max_buffer_length($bufsize);
                     };
                 };
 
