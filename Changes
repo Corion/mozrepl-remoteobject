@@ -7,6 +7,9 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
+0.26 20110502
+    ! Bugfix: Actually process the C<bufsize> parameter again
+
 0.25 20110426
     . Add CLEAR method to tied objects so now list-assignment
       to a hash works:
