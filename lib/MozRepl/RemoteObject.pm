@@ -387,7 +387,8 @@ sub install_bridge {
                         }
                     },
                     log => $options{ log },
-                    plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
+                    #plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
+                    plugins => { plugins => [] }, # The custom JSON serializer is not needed?!
                 });
                 
                 if (my $bufsize = delete $options{ bufsize }) {

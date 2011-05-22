@@ -27,7 +27,9 @@ $ok = eval {
     );
     1;
 };
-ok $ok, "We can create a second bridge instance";
+
+ok $ok, "We can create a second bridge instance"
+    or diag $@;
 
 my $bar = $repl->declare(<<'JS')->();
     function () { return { val: "bar" } }
