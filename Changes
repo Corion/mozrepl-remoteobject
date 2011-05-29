@@ -7,6 +7,11 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
+0.27 to be released
+    + The Javascript code now catches eval() errors and
+      returns a structured exception to Perl. The
+      Perl interface does not change.
+
 0.26 20110502
     ! Bugfix: Actually process the C<bufsize> parameter again
 
