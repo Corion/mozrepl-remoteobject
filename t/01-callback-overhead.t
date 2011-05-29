@@ -22,6 +22,7 @@ if (! $ok) {
 
 # Number of callbacks
 my $callbacks = 10000;
+my $start = time;
 
 sub genObj {
     my ($repl) = @_;
@@ -60,6 +61,8 @@ $trigger_command->($callbacks,$obj,'from_js');
 is $called, $callbacks, "We got called $callbacks times";
 
 $repl->poll; # flush the queue
+my $taken = time - $start;
+$taken ||= 1;
 
 # 2 is the magic number of roundtrips needed for triggering the callback
 # We have some additional overhead based on max_queue_size, so let's be generous
@@ -69,3 +72,5 @@ cmp_ok $repl->{stats}->{roundtrip}-$setup_roundtrips, '<', $callbacks*1.1+2,
 
 use Data::Dumper;
 diag Dumper $repl->{stats};
+
+diag sprintf "%0.2f iterations/s", $repl->{stats}->{roundtrip} / $taken
