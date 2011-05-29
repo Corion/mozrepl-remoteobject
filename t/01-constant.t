@@ -6,7 +6,9 @@ use MozRepl::RemoteObject;
 
 my $repl;
 my $ok = eval {
-    $repl = MozRepl::RemoteObject->install_bridge();
+    $repl = MozRepl::RemoteObject->install_bridge(
+        #log => [qw[debug]],
+    );
     1;
 };
 if (! $ok) {
