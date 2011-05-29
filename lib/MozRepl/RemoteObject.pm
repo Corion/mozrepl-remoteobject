@@ -163,6 +163,28 @@ repl.makeCatchEvent = function(myid) {
         };
 };
 
+repl.ejs = function (queue,js) {
+    try {
+        eval(queue);
+    } catch(e) {
+        // Silently eat those errors
+        // alert("Error in queue: " + e.message + "["+queue+"]");
+    };
+    try {
+        var res = eval(js);
+        return JSON.stringify({ "status":"ok", "result": res });
+    } catch(e) {
+        //for (var x in e) { alert(x)};
+        return JSON.stringify({
+            "status":"error",
+            "name": e.name,
+            "message": e.message ? e.message : e,
+            //"line":e.lineNumber,
+            "command":js
+        });
+    };
+};
+
 // This should return links to all installed functions
 // so we can get rid of nasty details of ->expr()
 // return repl.wrapResults({});
@@ -467,14 +489,12 @@ sub expr_js {
     $js = $self->json->encode($js);
     my $rn = $self->name;
     return '' unless $rn; # If we have no repl (name), we can't do anything anyway
-    if ($context) { $context=qq{,"$context"}} else {
-        $context='';
+    if ($context) { $context=qq{"$context"}} else {
+        $context='""';
     };
 #warn "($rn)";
     $js = <<JS;
-    (function(repl,code) {
-        return repl.wrapResults(eval(code)$context)
-    })($rn,$js)
+repl.wrapResults(eval($js),$context)
 JS
 }
 
@@ -690,17 +710,15 @@ sub js_call_to_perl_struct {
         # Wrap all queued commands in a function,
         # together with the payload command, so we only get one result
         $queue_pre = join '',
-                     "(function(){",
+                     #"(function(){",
                      map( { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue }),
-                     "return ";
-        $queue_post = "})()";
+                     #"return ";
         
         @{ $self->queue } = ();
     };
     #warn "<<$js>>";
     if (defined wantarray) {
-        #warn "Returning result of $js";
-        $js = "${queue_pre}JSON.stringify( function(){ var res = $js; return { result: res }}())$queue_post";
+        $js = sprintf q<%s.ejs(%s,%s)>, $self->repl->repl, map { $self->json->encode($_) } $queue_pre, $js;
         #warn $js;
         # When going async, we would want to turn this into a callback
         my $res = $repl->execute($js);
@@ -712,7 +730,11 @@ sub js_call_to_perl_struct {
             $res =~ s/^(?:\.+\>\s+)+//g;
         };
         my $d = $self->to_perl($res);
-        return $d->{result}
+        if ($d->{status} eq 'ok') {
+            return $d->{result}
+        } else {
+            croak ((ref $self).": $d->{name}: $d->{message}");
+        };
     } else {
         #warn "Executing $js";
         # When going async, we would want to turn this into a callback
