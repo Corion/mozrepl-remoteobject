@@ -1,7 +1,6 @@
 .gitignore
 Changes
 lib/MozRepl/AnyEvent.pm
-lib/MozRepl/Plugin/JSON2.pm
 lib/MozRepl/RemoteObject.pm
 lib/MozRepl/RemoteObject/Methods.pm
 Makefile.PL

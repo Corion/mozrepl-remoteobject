@@ -16,6 +16,9 @@ To-do:
     + More UTF-8 handling on the Perl side of the connection. All
       received strings are now actively decoded to unicode strings
       before being handed to JSON.pm
+      
+    + The JS API now uses the native JSON encoder of Firefox
+      instead of using a hand-rolled JSON encoder.
 
 0.26 20110502
     ! Bugfix: Actually process the C<bufsize> parameter again
