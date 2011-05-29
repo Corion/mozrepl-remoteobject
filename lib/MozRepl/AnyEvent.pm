@@ -4,7 +4,6 @@ use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Strict;
 use Carp qw(croak);
-use MozRepl::Plugin::JSON2;
 
 use vars qw[$VERSION];
 $VERSION = '0.26';
@@ -124,8 +123,6 @@ sub setup_async {
     $options->{log} ||= [];
     my $cb = delete $options->{cv} || AnyEvent->condvar;
     
-    my $json = MozRepl::Plugin::JSON2->new();
-    
     $self->{log} = +{ map { $_ => 1 } @{$options->{ log }} };
     
     my $hdl = $self->{hdl} || AnyEvent::Handle->new(
@@ -147,18 +144,9 @@ sub setup_async {
                     or croak "Couldn't find REPL name in '$data'";
                 $self->{name} = $1;
                 $self->log('debug', "Repl name is '$1'");
-                
-                # Load our JSON handler into Firefox
-                # Fake this so we can keep the same API
-                push @{ $self->{execute_stack}}, sub {
                     # Tell anybody interested that we're connected now
                     $self->log('debug', "Connected now");
                     $cb->send($self)
-                };
-                
-                # This calls $self->execute, which pops the callback from 
-                # the stack and runs it
-                $json->setup( $self );
             });
         },
     );
