@@ -207,8 +207,7 @@ sub object_identity {
     my $right = id($other);
     my $bridge = bridge($self);
     my $rn = $bridge->name;
-    my $data = $bridge->js_call_to_perl_struct(<<JS);
-    // __object_identity
+    my $data = $bridge->expr(<<JS);
 $rn.getLink($left)===$rn.getLink($right)
 JS
 }

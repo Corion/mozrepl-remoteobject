@@ -135,6 +135,7 @@ sub setup_async {
     
     my $hdl = $self->{hdl} || AnyEvent::Handle->new(
         connect => [ $client->{host}, $client->{port} ],
+        #no_delay => 1, # reduce latency, seems to have no effect
         on_error => sub {
             $self->log('error',$_[2]);
             $self->{error} = $_[2];

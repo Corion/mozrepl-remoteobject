@@ -81,9 +81,16 @@ repl.purgeLinks = function() {
     repl.linkedIdNext = 1;
 };
 
+repl.JSON_ok = function(val,context) {
+    return JSON.stringify({
+        "status":"ok",
+        "result": repl.wrapResults(val,context)
+    });
+};
+
 repl.getAttr = function(id,attr) {
     var v = repl.getLink(id)[attr];
-    return repl.wrapResults(v)
+    return repl.JSON_ok(v)
 };
 
 repl.wrapValue = function(v,context) {
@@ -133,12 +140,12 @@ repl.dive = function(id,elts) {
             throw "Cannot dive: " + last + "." + e + " is empty.";
         };
     };
-    return repl.wrapResults(obj)
+    return repl.JSON_ok(obj)
 };
 
 repl.callThis = function(id,args,context) {
     var obj = repl.getLink(id);
-    return repl.wrapResults(obj.apply(obj, args),context);
+    return repl.JSON_ok(obj.apply(obj, args),context);
 };
 
 repl.callMethod = function(id,fn,args,context) { 
@@ -147,7 +154,7 @@ repl.callMethod = function(id,fn,args,context) {
     if (! f) {
         throw "Object has no function " + fn;
     }
-    return repl.wrapResults(f.apply(obj, args),context);
+    return repl.JSON_ok(f.apply(obj, args),context);
 };
 
 
@@ -163,16 +170,19 @@ repl.makeCatchEvent = function(myid) {
         };
 };
 
-repl.ejs = function (queue,js) {
+repl.q = function (queue) {
     try {
         eval(queue);
     } catch(e) {
         // Silently eat those errors
         // alert("Error in queue: " + e.message + "["+queue+"]");
     };
+};
+
+repl.ejs = function (js,context) {
     try {
         var res = eval(js);
-        return JSON.stringify({ "status":"ok", "result": res });
+        return repl.JSON_ok(res,context);
     } catch(e) {
         //for (var x in e) { alert(x)};
         return JSON.stringify({
@@ -494,7 +504,7 @@ sub expr_js {
     };
 #warn "($rn)";
     $js = <<JS;
-repl.wrapResults(eval($js),$context)
+$rn.ejs($js,$context)
 JS
 }
 
@@ -718,10 +728,14 @@ sub js_call_to_perl_struct {
     };
     #warn "<<$js>>";
     if (defined wantarray) {
-        $js = sprintf q<%s.ejs(%s,%s)>, $self->repl->repl, map { $self->json->encode($_) } $queue_pre, $js;
+        my @js;
+        if ($queue_pre) {
+            push @js, sprintf "%s.q(%s)", $self->repl->repl, $self->json->encode($queue_pre);
+        };
+        push @js, sprintf q<%s.ejs(%s)>, $self->repl->repl, map { $self->json->encode($_) } $js;
         #warn $js;
         # When going async, we would want to turn this into a callback
-        my $res = $repl->execute($js);
+        my $res = $repl->execute(join";",$js);
         $res =~ s/^(?:\.+\>\s+)+//g;
         while ($res !~ /\S/) {
             # Gobble up continuation prompts
