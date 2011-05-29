@@ -91,7 +91,7 @@ repl.JSON_ok = function(val,context) {
 
 repl.getAttr = function(id,attr) {
     var v = repl.getLink(id)[attr];
-    return repl.JSON_ok(v)
+    return v
 };
 
 repl.wrapValue = function(v,context) {
@@ -141,22 +141,22 @@ repl.dive = function(id,elts) {
             throw "Cannot dive: " + last + "." + e + " is empty.";
         };
     };
-    return repl.JSON_ok(obj)
+    return obj
 };
 
-repl.callThis = function(id,args,context) {
+repl.callThis = function(id,args) {
     var obj = repl.getLink(id);
-    var res = repl.JSON_ok(obj.apply(obj, args),context);
+    var res = obj.apply(obj, args);
     return res
 };
 
-repl.callMethod = function(id,fn,args,context) { 
+repl.callMethod = function(id,fn,args) { 
     var obj = repl.getLink(id);
     var f = obj[fn];
     if (! f) {
         throw "Object has no function " + fn;
     }
-    return repl.JSON_ok(f.apply(obj, args),context);
+    return f.apply(obj, args);
 };
 
 
@@ -283,8 +283,8 @@ sub unwrap_json_result {
 
 # Call JS and return the unwrapped result
 sub unjson {
-    my ($self,$js) = @_;
-    my $data = $self->js_call_to_perl_struct($js);
+    my ($self,$js,$context) = @_;
+    my $data = $self->js_call_to_perl_struct($js,$context);
     return $self->unwrap_json_result($data);    
 };
 
@@ -501,16 +501,17 @@ as list. To do that, specify C<'list'> as the C<$context> parameter:
 
 sub expr_js {
     my ($self,$js,$context) = @_;
-    $js = $self->json->encode($js);
+    #$js = $self->json->encode($js);
     my $rn = $self->name;
     return '' unless $rn; # If we have no repl (name), we can't do anything anyway
-    if ($context) { $context=qq{"$context"}} else {
-        $context='""';
-    };
+    #if ($context) { $context=qq{"$context"}} else {
+    #    $context='""';
+    #};
 #warn "($rn)";
-    $js = <<JS;
-$rn.ejs($js,$context)
-JS
+#    $js = <<JS;
+#$rn.ejs($js,$context)
+#JS
+    ($js,$context)
 }
 
 # This is used by ->declare() so can't use it itself
@@ -695,7 +696,7 @@ sub appinfo {
 JS
 };
 
-=head2 C<< $bridge->js_call_to_perl_struct $js >>
+=head2 C<< $bridge->js_call_to_perl_struct( $js, $context ) >>
 
 Takes a scalar with JS code, executes it, and returns
 the result as a Perl structure.
@@ -708,10 +709,16 @@ This is a very low level method. You are better advised to use
 C<< $bridge->expr() >> as that will know
 to properly wrap objects but leave other values alone.
 
+C<$context> is passed through and tells the Javascript side
+whether to return arrays as objects or as lists. Pass
+C<list> if you want a list of results instead of a reference
+to a Javascript C<array> object.
+
 =cut
 
 sub js_call_to_perl_struct {
-    my ($self,$js) = @_;
+    my ($self,$js,$context) = @_;
+    $context ||= '';
     $self->{stats}->{roundtrip}++;
     my $repl = $self->repl;
     if (! $repl) {
@@ -732,15 +739,17 @@ sub js_call_to_perl_struct {
         @{ $self->queue } = ();
     };
     #warn "<<$js>>";
+    my @js;
+    if ($queue_pre) {
+        push @js, sprintf "%s.q(%s)", $self->repl->repl, $self->json->encode($queue_pre);
+    };
+    push @js, sprintf q<%s.ejs(%s,"%s")>, $self->repl->repl, $self->json->encode($js), $context;
+    $js = join ";", @js;
+    
     if (defined wantarray) {
-        my @js;
-        if ($queue_pre) {
-            push @js, sprintf "%s.q(%s)", $self->repl->repl, $self->json->encode($queue_pre);
-        };
-        push @js, sprintf q<%s.ejs(%s)>, $self->repl->repl, map { $self->json->encode($_) } $js;
         #warn $js;
         # When going async, we would want to turn this into a callback
-        my $res = $repl->execute(join";",$js);
+        my $res = $repl->execute($js);
         $res =~ s/^(?:\.+\>\s+)+//g;
         while ($res !~ /\S/) {
             # Gobble up continuation prompts
@@ -1086,7 +1095,7 @@ sub DESTROY {
 (function(repl,id){${release_action}repl.breakLink(id)})($rn,$id)
 JS
         } else {
-        #    warn "Repl '$rn' has gone away already";
+            warn "Repl '$rn' has gone away already";
         };
         1
     } else {
@@ -1110,7 +1119,7 @@ is identical to
 =cut
 
 sub __attr {
-    my ($self,$attr) = @_;
+    my ($self,$attr,$context) = @_;
     my $id = MozRepl::RemoteObject::Methods::id($self)
         or die "No id given";
     
@@ -1119,7 +1128,7 @@ sub __attr {
     my $rn = $bridge->name;
     my $json = $bridge->json;
     $attr = $json->encode($attr);
-    return $bridge->unjson(<<JS);
+    return $bridge->unjson(<<JS,$context);
 $rn.getAttr($id,$attr)
 JS
 }

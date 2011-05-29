@@ -178,9 +178,9 @@ sub as_code {
     my $class = ref $self;
     my $id = id($self);
     my $context = hash_get($self, 'return_context');
-    $context = $context
-               ? qq{,"$context"}
-               : '';
+    #$context = $context
+    #           ? qq{,"$context"}
+    #           : '';
     return sub {
         my (@args) = @_;
         my $bridge = bridge($self);
@@ -189,9 +189,10 @@ sub as_code {
         @args = transform_arguments($self,@args);
         local $" = ',';
         my $js = <<JS;
-    $rn.callThis($id,[@args]$context)
+    $rn.callThis($id,[@args])
 JS
-        return $bridge->unjson($js);
+        #return $bridge->unjson($js,$context);
+        return $bridge->expr($js,$context);
     };
 };
 
