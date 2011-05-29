@@ -7,7 +7,9 @@ use MozRepl::RemoteObject;
 
 my $repl;
 my $ok = eval {
-    $repl = MozRepl::RemoteObject->install_bridge();
+    $repl = MozRepl::RemoteObject->install_bridge(
+        #log => [qw[debug]],
+    );
     1;
 };
 if (! $ok) {
@@ -35,7 +37,10 @@ JS
 is $identity, 'true', "Object identity in Javascript works";
 
 my $adder = $repl->expr(<<JS);
-    function(a,b) { return a+b }
+    function(a,b) { 
+        // alert(a+b);
+        return a+b
+    }
 JS
 isa_ok $adder, 'MozRepl::RemoteObject::Instance';
 
@@ -47,7 +52,8 @@ is $five, 5, "Anonymous functions in Javascript work as well";
 use charnames ':full';
 my $unicode = "\N{WHITE SMILING FACE}";
 my $result = $adder->("[$unicode","$unicode]");
-is $result, "[$unicode$unicode]", "Passing unicode in and out works";
+is $result, "[$unicode$unicode]", "Passing unicode in and out works"
+    or do { diag sprintf "%02x", ord($_) for split //, $result};
 
 my $ae = "\N{LATIN CAPITAL LETTER A WITH DIAERESIS}";
 my $latin1 = encode('Latin-1',$ae);
