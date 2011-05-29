@@ -228,9 +228,10 @@ sub execute_async {
     $self->hdl->push_read( regex => $self->{prompt}, 
         timeout => 10,
         sub {
-        $_[1] =~ s/$self->{prompt}$//;
-        $self->log(info => "Received data", $_[1]);
-        $cb->($_[1]);
+            $_[1] =~ s/$self->{prompt}$//;
+            #warn "<<$_[1]>>";
+            $self->log(info => "Received data", $_[1]);
+            $cb->($_[1]);
     });
     $cb
 };
