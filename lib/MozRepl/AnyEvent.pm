@@ -125,6 +125,14 @@ sub setup_async {
     
     $self->{log} = +{ map { $_ => 1 } @{$options->{ log }} };
     
+    # Also enable the lower log levels
+    my @levels = qw( error warn info debug );
+    for (reverse(1..$#levels)) {
+        if ($self->{log}->{ $levels[ $_ ]}) {
+            $self->{log}->{ $levels[ $_-1 ]} = 1;
+        };
+    };
+    
     my $hdl = $self->{hdl} || AnyEvent::Handle->new(
         connect => [ $client->{host}, $client->{port} ],
         on_error => sub {
