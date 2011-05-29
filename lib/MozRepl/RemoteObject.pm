@@ -716,6 +716,7 @@ sub js_call_to_perl_struct {
     } else {
         #warn "Executing $js";
         # When going async, we would want to turn this into a callback
+        # This produces additional, bogus prompts...
         $repl->execute($js);
         ()
     };
