@@ -145,7 +145,8 @@ repl.dive = function(id,elts) {
 
 repl.callThis = function(id,args,context) {
     var obj = repl.getLink(id);
-    return repl.JSON_ok(obj.apply(obj, args),context);
+    var res = repl.JSON_ok(obj.apply(obj, args),context);
+    return res
 };
 
 repl.callMethod = function(id,fn,args,context) { 
@@ -233,7 +234,10 @@ sub to_perl {
     local $@;
     my $json = $self->json;
     if (! eval {
+        
         $res = $json->decode($js);
+        #use Data::Dumper;
+        #warn Dumper $res;
         1
     }) {
         my $err = $@;
