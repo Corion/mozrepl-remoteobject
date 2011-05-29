@@ -716,6 +716,11 @@ to a Javascript C<array> object.
 
 =cut
 
+sub repl_API {
+    my ($self,$call,@args) = @_;
+    return sprintf q<%s.%s(%s);>, $self->repl->repl, $call, join ",", map { $self->json->encode($_) } @args;
+};
+
 sub js_call_to_perl_struct {
     my ($self,$js,$context) = @_;
     $context ||= '';
@@ -725,25 +730,17 @@ sub js_call_to_perl_struct {
         # Likely during global destruction
         return
     };
-    my $queue_pre = '';
-    my $queue_post = '';
-    if (@{ $self->queue }) {
-        # This should become ->flush_queue()
-        # Wrap all queued commands in a function,
-        # together with the payload command, so we only get one result
-        $queue_pre = join '',
-                     #"(function(){",
-                     map( { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue }),
-                     #"return ";
+    my $queue = join '',
+                     map( { /;$/? $_ : "$_;" } map { s/\s*$//; $_ } @{ $self->queue });
         
-        @{ $self->queue } = ();
-    };
+    @{ $self->queue } = ();
+
     #warn "<<$js>>";
     my @js;
-    if ($queue_pre) {
-        push @js, sprintf "%s.q(%s)", $self->repl->repl, $self->json->encode($queue_pre);
+    if ($queue) {
+        push @js, $self->repl_API('q', $queue);
     };
-    push @js, sprintf q<%s.ejs(%s,"%s")>, $self->repl->repl, $self->json->encode($js), $context;
+    push @js, $self->repl_API('ejs', $js, $context );
     $js = join ";", @js;
     
     if (defined wantarray) {
