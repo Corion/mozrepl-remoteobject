@@ -2,6 +2,7 @@ package MozRepl::RemoteObject;
 use strict;
 use Exporter 'import';
 use JSON;
+use Encode qw(decode);
 use Carp qw(croak cluck);
 use Scalar::Util qw(refaddr weaken);
 
@@ -225,11 +226,11 @@ sub to_perl {
         warn "Got empty string from REPL";
         return;
     }
-    $js = $_;
+
+    # In the case that we don't have a unicode string
+    # already, decode the string from UTF-8
+    $js = decode('UTF-8', $_);
     #warn "[[$_]]";
-    # effin' .toSource() sends us \xHH escapes, and JSON doesn't
-    # know what to do with them. So I pass them through unharmed :-(
-    #s/\\x/\\u00/g; # this is not safe against \\xHH, but at the moment I don't care
     my $res;
     local $@;
     my $json = $self->json;

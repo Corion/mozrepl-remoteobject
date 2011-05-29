@@ -11,6 +11,9 @@ To-do:
     + The Javascript code now catches eval() errors and
       returns a structured exception to Perl. The
       Perl interface does not change.
+    + More UTF-8 handling on the Perl side of the connection. All
+      received strings are now actively decoded to unicode strings
+      before being handed to JSON.pm
 
 0.26 20110502
     ! Bugfix: Actually process the C<bufsize> parameter again

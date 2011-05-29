@@ -3,6 +3,7 @@ use strict;
 use AnyEvent;
 use AnyEvent::Handle;
 use AnyEvent::Strict;
+use Encode qw(decode);
 use Carp qw(croak);
 
 use vars qw[$VERSION];
@@ -232,6 +233,10 @@ sub execute_async {
             $_[1] =~ s/$self->{prompt}$//;
             #warn "<<$_[1]>>";
             $self->log(info => "Received data", $_[1]);
+            # We could decode from UTF-8 here already,
+            # but that would mean differnt logic between
+            # MozRepl.pm and MozRepl::AnyEvent.pm
+            # $cb->(decode('UTF-8' => $_[1]));
             $cb->($_[1]);
     });
     $cb
