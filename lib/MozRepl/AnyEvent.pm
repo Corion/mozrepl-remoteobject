@@ -134,13 +134,15 @@ sub setup_async {
         };
     };
     
-    my $hdl = $self->{hdl} || AnyEvent::Handle->new(
+    my $hdl; $hdl = $self->{hdl} || AnyEvent::Handle->new(
         connect => [ $client->{host}, $client->{port} ],
         #no_delay => 1, # reduce latency, seems to have no effect
         on_error => sub {
             $self->log('error',$_[2]);
             $self->{error} = $_[2];
             $cb->send();
+            delete $self->{hdl};
+            $_[0]->destroy;
             undef $cb;
             undef $self;
         },
@@ -179,10 +181,11 @@ sub setup {
     my ($self,$options) = @_;
     my $done = $self->setup_async($options);
     my @res = $done->recv;
-    if (not @res=$done->recv) {
+    if (not @res) {
         # reraise error
         die $self->{error}
     };
+    @res
 };
 
 =head2 C<< $repl->repl >>
