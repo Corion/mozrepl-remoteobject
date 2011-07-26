@@ -424,8 +424,7 @@ sub install_bridge {
                         }
                     },
                     log => $options{ log },
-                    #plugins => { plugins => [qw[ JSON2 ]] }, # I'm loading my own JSON serializer
-                    plugins => { plugins => [] }, # The custom JSON serializer is not needed?!
+                    plugins => { plugins => [] },
                 });
                 
                 if (my $bufsize = delete $options{ bufsize }) {
@@ -451,6 +450,44 @@ sub install_bridge {
                 }
             }
         };
+    };
+    
+    if(! exists $options{ no_native_JSON }) {
+        # Autodetect whether we need the custom JSON serializer
+        
+        # It's required on Firefox 3.0 only
+        my $capabilities = $options{ repl }->execute(
+          join "",
+              'Components.classes["@mozilla.org/xre/app-info;1"].',
+              'getService(Components.interfaces.nsIXULAppInfo).version',
+              '+"!\\u30BD";'."\n"
+        );
+        $capabilities =~ s/^"(.*)"\s*$/$1/;
+        $capabilities =~ s/^"//;
+        $capabilities =~ s/"$//;
+        my ($version, $unicode) = split /!/, $capabilities;
+    
+        #warn $unicode;
+        #warn sprintf "%02x",$_ for map{ord} split //, $unicode;
+            
+        if($unicode eq "\x{E3}\x{82}\x{BD}") {
+            # \u30BD encoded as UTF-8, so we can transport unicode properly
+        } else {
+            $options{ no_native_JSON } ||= "No Unicode handling";
+        };
+            
+        if ($version =~ /(3\.0\.\d+)/) { # Firefox 3.0
+            $options{ no_native_JSON } ||= "Firefox $1";
+        };
+    };
+    
+    if ($options{ no_native_JSON }) {
+        # send our own JSON encoder
+        #warn "Installing custom JSON encoder ($options{ native_JSON })";
+        require MozRepl::Plugin::JSON2;
+        
+        my $json2 = MozRepl::Plugin::JSON2->new()->process('setup');
+        $options{ repl }->execute($json2);
     };
     
     my $rn = $options{repl}->repl;

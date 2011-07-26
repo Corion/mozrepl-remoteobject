@@ -17,6 +17,8 @@ if (! $ok) {
     plan tests => 1;
 };
 
+diag "Using native JSON: " . ($repl->{ no_native_JSON } ? $repl->{ no_native_JSON } : 'yes');
+
 my $appinfo = $repl->appinfo;
 
 isa_ok $appinfo, 'MozRepl::RemoteObject::Instance',
