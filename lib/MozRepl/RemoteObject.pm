@@ -294,7 +294,7 @@ sub unjson {
 
 Installs the Javascript C<< <-> >> Perl bridge. If you pass in
 an existing L<MozRepl> instance, it must have L<MozRepl::Plugin::JSON2>
-loaded.
+loaded if you're running on a browser without native JSON support.
 
 If C<repl> is not passed in, C<$ENV{MOZREPL}> will be used
 to find the ip address and portnumber to connect to. If C<$ENV{MOZREPL}>
