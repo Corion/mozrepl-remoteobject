@@ -379,6 +379,20 @@ option.
         repl_class => 'MozRepl::AnyEvent',
     );
 
+=head3 Preventing/forcing native JSON
+
+The Javascript part of MozRepl::RemoteObject will try to detect whether
+to use the native Mozilla C<JSON> object or whether to supply its own
+JSON encoder from L<MozRepl::Plugin::JSON2>. To prevent the autodetection,
+pass the C<js_JSON> option:
+
+  js_JSON => 'native', # force to use the native JSON object
+
+  js_JSON => '', # force the json2.js encoder
+
+The autodetection detects whether the connection has a native JSON
+encoder and whether it properly transports UTF-8.
+
 =cut
 
 sub require_module($) {
@@ -452,42 +466,57 @@ sub install_bridge {
         };
     };
     
-    if(! exists $options{ no_native_JSON }) {
+    if(! exists $options{ js_JSON }) {
         # Autodetect whether we need the custom JSON serializer
         
         # It's required on Firefox 3.0 only
         my $capabilities = $options{ repl }->execute(
           join "",
+              # Extract version
               'Components.classes["@mozilla.org/xre/app-info;1"].',
-              'getService(Components.interfaces.nsIXULAppInfo).version',
-              '+"!\\u30BD";'."\n"
+              'getService(Components.interfaces.nsIXULAppInfo).version+"!"',
+              # Native JSON object available?
+              q{+eval("var r;try{r=JSON.stringify('\u30BD');}catch(e){r=''};r")},
+               # UTF-8 transport detection
+              '+"!\u30BD"',
+              ";\n" 
         );
         $capabilities =~ s/^"(.*)"\s*$/$1/;
         $capabilities =~ s/^"//;
         $capabilities =~ s/"$//;
-        my ($version, $unicode) = split /!/, $capabilities;
+        #warn "[$capabilities]";
+        my ($version, $have_native, $unicode) = split /!/, $capabilities;
     
         #warn $unicode;
         #warn sprintf "%02x",$_ for map{ord} split //, $unicode;
-            
-        if($unicode eq "\x{E3}\x{82}\x{BD}") {
-            # \u30BD encoded as UTF-8, so we can transport unicode properly
-        } else {
-            $options{ no_native_JSON } ||= "No Unicode handling";
+        if ($have_native eq '') {
+            $options{ js_JSON } ||= "json2; No native JSON object found ($version)";
         };
-            
-        if ($version =~ /(3\.0\.\d+)/) { # Firefox 3.0
-            $options{ no_native_JSON } ||= "Firefox $1";
+        if( lc $have_native eq lc q{"\u30bd"} # values get escaped
+            or $have_native eq qq{"\x{E3}\x{82}\x{BD}"} # values get encoded as UTF-8
+          ) {
+            # so we can transport unicode properly
+            $options{ js_JSON } ||= 'native';
+        } else {
+            $options{ js_JSON } ||= "json2; Transport not UTF-8-safe";
         };
     };
     
-    if ($options{ no_native_JSON }) {
+    if ($options{ js_JSON } ne 'native') {
         # send our own JSON encoder
         #warn "Installing custom JSON encoder ($options{ native_JSON })";
         require MozRepl::Plugin::JSON2;
         
         my $json2 = MozRepl::Plugin::JSON2->new()->process('setup');
         $options{ repl }->execute($json2);
+        
+        # Now, immediately check whether our transport is UTF-8 safe:
+        my $utf8 = $options{ repl }->execute(
+              q{JSON.stringify('\u30BD')}.";\n"
+        );
+        $utf8 =~ s/\s*$//;
+        lc $utf8 eq lc q{""\u30bd""}
+            or warn "Transport still not UTF-8 safe: [$utf8]";
     };
     
     my $rn = $options{repl}->repl;
