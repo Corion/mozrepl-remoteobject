@@ -484,7 +484,7 @@ sub install_bridge {
         $capabilities =~ s/^"(.*)"\s*$/$1/;
         $capabilities =~ s/^"//;
         $capabilities =~ s/"$//;
-        #warn "[$capabilities]";
+        #warn "Capabilities: [$capabilities]";
         my ($version, $have_native, $unicode) = split /!/, $capabilities;
     
         #warn $unicode;
