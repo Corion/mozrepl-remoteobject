@@ -8,12 +8,12 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
 
 0.27 to be released
-    ! Firefox 3.0 is now unsupported due to using the native JSON
-      encoder. If you really need Firefox 3.0 support, please get
-      in touch with me.
-      
-      The module is now tested with Firefox 3.5, Firefox 4, 
-      Firefox 5 and Firefox 6 Beta
+    + The module is now tested with
+        Firefox 3.0.9
+        Firefox 3.5.x
+        Firefox 4.0.1
+        Firefox 5
+        Firefox 6 Beta
 
     + The Javascript code now catches eval() errors and
       returns a structured exception to Perl. The
@@ -25,7 +25,14 @@ To-do:
       before being handed to JSON.pm
       
     + The JS API now uses the native JSON encoder of Firefox
-      instead of using a hand-rolled JSON encoder.
+      instead of using a hand-rolled JSON encoder when possible. The
+      conditions are:
+        a) Native JSON must be available
+        b) The transport of Unicode characters must survive from
+           Javascript back to Perl. This only works natively with
+           a patched version mozrepl, see
+             https://github.com/bard/mozrepl/pull/17
+      This should be autodetected.
 
 0.26 20110502
     ! Bugfix: Actually process the C<bufsize> parameter again
