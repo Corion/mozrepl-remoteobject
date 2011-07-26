@@ -17,7 +17,7 @@ if (! $ok) {
     plan tests => 1;
 };
 
-diag "Using native JSON: " . ($repl->{ no_native_JSON } ? $repl->{ no_native_JSON } : 'yes');
+diag "JS JSON encoder: $repl->{ js_JSON }";
 
 my $appinfo = $repl->appinfo;
 
