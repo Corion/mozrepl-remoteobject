@@ -234,13 +234,10 @@ __setup__
 */
 
 
-// Create a JSON object only if one does not already exist. We create the
+// Nuke the potentially existing JSON object. We create the
 // methods in a closure to avoid creating global variables.
 
-var JSON;
-if (!JSON) {
-    JSON = {};
-}
+var JSON = {};
 
 (function () {
     "use strict";
