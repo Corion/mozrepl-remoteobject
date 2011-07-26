@@ -7,7 +7,7 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
 
-0.27 to be released
+0.27 20110726
     + The module is now tested with
         Firefox 3.0.9
         Firefox 3.5.x
