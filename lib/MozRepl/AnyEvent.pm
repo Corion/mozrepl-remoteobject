@@ -156,9 +156,10 @@ sub setup_async {
                     or croak "Couldn't find REPL name in '$data'";
                 $self->{name} = $1;
                 $self->log('debug', "Repl name is '$1'");
-                    # Tell anybody interested that we're connected now
-                    $self->log('debug', "Connected now");
-                    $cb->send($self)
+                
+                # Tell anybody interested that we're connected now
+                $self->log('debug', "Connected now");
+                $cb->send($self)
             });
         },
     );
