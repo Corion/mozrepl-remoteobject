@@ -14,7 +14,7 @@ the MozRepl::RemoteObject JSON encoding/decoding.
 
 =cut
 
-$VERSION = '0.26';
+$VERSION = '0.27';
 
 sub setup {
     my ($self, $ctx, $args) = @_;
@@ -38,7 +38,11 @@ sub execute {
 
 1;
 
-=head1 json2.js
+=head1 MODIFIED VERSION OF json2.js
+
+This distribution contains a hacked, UTF-8 safe version of the json2.js
+encoder. This is for channels that don't transfer data in an UTF-8 safe
+manner. It is slower than using a native JSON encoder on the Javascript side.
 
     http://www.JSON.org/json2.js
     2011-02-23
@@ -266,8 +270,10 @@ if (!JSON) {
             };
     }
 
+    //var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+    //    escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
     var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+        escapable = /[\\\"\x00-\x1f\x7f-\xff\u0100-\uffff]/g, // escape EVERYTHING
         gap,
         indent,
         meta = {    // table of character substitutions
