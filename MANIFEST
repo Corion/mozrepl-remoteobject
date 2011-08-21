@@ -20,6 +20,7 @@ t/01-expr-anyevent.t
 t/01-expr.t
 t/01-hash.t
 t/01-invoke.t
+t/01-multiline-string.t
 t/01-object.t
 t/01-queue.t
 t/01-release-action.t

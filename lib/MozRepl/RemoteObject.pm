@@ -524,18 +524,38 @@ sub install_bridge {
     
     my $rn = $options{repl}->repl;
     $options{ json } ||= JSON->new->allow_nonref->ascii; # We talk ASCII
+    # Is this still true? It seems to be even when we find an UTF-8 safe
+    # transport above. This needs some investigation.
+    
+    # Switch the Perl-repl to multiline input mode
+    # Well, better use a custom interactor and pass JSON messages that
+    # are self-delimited and contain no newlines. Newline for a new message.
+    
+    # Switch the JS-repl to multiline input mode
+    $options{repl}->execute("$rn.setenv('inputMode','multiline');undefined;\n");
 
     # Load the JS side of the JS <-> Perl bridge
     my $c = $objBridge; # make a copy
     $c =~ s/\[%\s+rn\s+%\]/$rn/g; # cheap templating
     #warn $c;
-    $options{repl}->execute($c);
+    
+    $package->execute_command($c, %options);
     
     $options{ functions } = {}; # cache
     $options{ constants } = {}; # cache
     $options{ callbacks } = {}; # active callbacks
 
     bless \%options, $package;    
+};
+
+sub execute_command {
+    my ($self, $command, %options) = @_;
+    $options{ repl } ||= $self->repl;
+    $options{ command_sep } ||= $self->command_sep
+        unless exists $options{ command_sep };
+    $command =~ s/\s+$//;
+    $command .= $options{ command_sep };
+    $options{repl}->execute($command);
 };
 
 =head2 C<< $bridge->expr( $js, $context ) >>
@@ -653,7 +673,7 @@ sub queued {
         my $js = join "\n", map { /;$/? $_ : "$_;" } @{ $self->queue };
         # we don't want a result here!
         # This is where we would do ->execute_async on AnyEvent
-        $self->repl->execute($js);
+        $self->execute_command($js);
         @{ $self->queue } = ();
     };
 };
@@ -814,12 +834,12 @@ sub js_call_to_perl_struct {
     if (defined wantarray) {
         #warn $js;
         # When going async, we would want to turn this into a callback
-        my $res = $repl->execute($js);
+        my $res = $self->execute_command($js);
         $res =~ s/^(?:\.+\>\s+)+//g;
         while ($res !~ /\S/) {
             # Gobble up continuation prompts
             warn "No result yet from repl";
-            $res = $repl->execute(";\n");
+            $res = $self->execute_command(";"); # no-op
             $res =~ s/^(?:\.+\>\s+)+//g;
         };
         my $d = $self->to_perl($res);
@@ -832,7 +852,7 @@ sub js_call_to_perl_struct {
         #warn "Executing $js";
         # When going async, we would want to turn this into a callback
         # This produces additional, bogus prompts...
-        $repl->execute($js);
+        $self->execute_command($js);
         ()
     };
 };
