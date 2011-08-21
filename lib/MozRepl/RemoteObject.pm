@@ -523,7 +523,6 @@ sub install_bridge {
     };
     
     my $rn = $options{repl}->repl;
-    #warn "<$rn>";
     $options{ json } ||= JSON->new->allow_nonref->ascii; # We talk ASCII
 
     # Load the JS side of the JS <-> Perl bridge
