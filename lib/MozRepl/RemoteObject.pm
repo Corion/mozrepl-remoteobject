@@ -417,6 +417,7 @@ sub install_bridge {
     # / Net::Telnet don't like too large commands
     $options{ max_queue_size } ||= 1000;
     
+    $options{ command_sep } ||= "\n--end-remote-input\n";
 
     if (! ref $options{repl}) { # we have host:port
         my @host_port;
@@ -838,6 +839,7 @@ sub js_call_to_perl_struct {
 };
 
 sub repl {$_[0]->{repl}};
+sub command_sep {$_[0]->{command_sep}};
 sub json {$_[0]->{json}};
 sub name {$_[0]->{repl}?$_[0]->{repl}->repl:undef};
 sub queue {$_[0]->{queue}};
