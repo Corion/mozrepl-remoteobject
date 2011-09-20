@@ -183,7 +183,7 @@ repl.q = function (queue) {
 
 repl.ejs = function (js,context) {
     try {
-        var res = eval("expr="+js);
+        var res = eval(js);
         return repl.JSON_ok(res,context);
     } catch(e) {
         //for (var x in e) { alert(x)};
@@ -718,7 +718,7 @@ to be fetched as list, pass C<'list'> as the C<$context>.
 sub declare {
     my ($self,$js,$context) = @_;
     if (! $self->{functions}->{$js}) {
-        $self->{functions}->{$js} = $self->expr($js);
+        $self->{functions}->{$js} = $self->expr("var f=$js;\n;f");
         # Weaken the backlink of the function
         my $res = $self->{functions}->{$js};
         my $ref = ref $res;

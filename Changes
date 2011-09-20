@@ -14,6 +14,13 @@ To-do:
       This should eliminate the "no result yet from mozrepl"
       warnings and make input/response somewhat better.
     . Fix a buglet in the memleak test
+    ! Function generation using ->expr() needs the following
+      idiom to work with Firefox 6+:
+          f=function() {
+            ...
+          }; f
+      Ideally, use ->declare() to declare functions.
+
 
 0.27 20110726
     + The module is now tested with

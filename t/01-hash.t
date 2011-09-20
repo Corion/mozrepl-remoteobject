@@ -99,9 +99,9 @@ ok $foo->{complex}, "We assign something to 'complex'";
 
 # And use JS to retrieve the structure
 my $get_complex = $repl->expr(<<JS);
-function(val) {
+f=function(val) {
     return val.complex.a[0].nested;
-}
+};f
 JS
 is $get_complex->($foo), 'structure',
     "We can assign complex data structures from Perl and access them from JS";

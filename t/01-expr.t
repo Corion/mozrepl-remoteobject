@@ -37,10 +37,10 @@ JS
 is $identity, 'true', "Object identity in Javascript works";
 
 my $adder = $repl->expr(<<JS);
-    function(a,b) { 
+    f=function(a,b) { 
         // alert(a+b);
         return a+b
-    }
+    };f
 JS
 isa_ok $adder, 'MozRepl::RemoteObject::Instance';
 

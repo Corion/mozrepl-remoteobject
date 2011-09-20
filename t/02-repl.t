@@ -19,7 +19,7 @@ diag "--- Loading object functionality into repl\n";
 #MozRepl::RemoteObject->install_bridge($repl);
 
 my $id = $repl->expr(<<JS);
-function(v) { return v }
+f=function(v) { return v };f
 JS
 
 my $JSrepl = $id->($repl);
