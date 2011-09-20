@@ -30,6 +30,7 @@ my $old = \&MozRepl::RemoteObject::DESTROY;
     };
 };
 
+undef $f;
 undef $repl;
 
 is $destroyed, 1, "Bridge with callback gets destroyed";
