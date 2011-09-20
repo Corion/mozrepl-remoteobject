@@ -6,6 +6,14 @@ To-do:
       queue the id, and have MozRepl::RemoteObject call
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
+    . Implement ->can() for MozRepl objects
+
+0.28 to be released
+    + Switch to "multiline" input mode.
+    
+      This should eliminate the "no result yet from mozrepl"
+      warnings and make input/response somewhat better.
+    . Fix a buglet in the memleak test
 
 0.27 20110726
     + The module is now tested with
