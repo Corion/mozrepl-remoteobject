@@ -183,7 +183,7 @@ repl.q = function (queue) {
 
 repl.ejs = function (js,context) {
     try {
-        var res = eval(js);
+        var res = eval("expr="+js);
         return repl.JSON_ok(res,context);
     } catch(e) {
         //for (var x in e) { alert(x)};
