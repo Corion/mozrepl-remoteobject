@@ -212,7 +212,8 @@ sub to_perl {
     s/"$//;
     
     if (/\.+>/) {
-        warn "Continuation prompt found in [$_]";
+        # This should now be eliminated!
+        die "Continuation prompt found in [$_]";
     }
     
     #warn $js;
