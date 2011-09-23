@@ -8,7 +8,7 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.28 to be released
+0.28 20110923
     + Switch to "multiline" input mode.
     
       This should eliminate the "no result yet from mozrepl"
@@ -20,6 +20,13 @@ To-do:
             ...
           }; f
       Ideally, use ->declare() to declare functions.
+    + The module is now tested with
+        Firefox 3.0.9
+        Firefox 3.5.x
+        Firefox 4.0.1
+        Firefox 5
+        Firefox 6.0.1
+        Firefox 7 Beta 5
 
 
 0.27 20110726
