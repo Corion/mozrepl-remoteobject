@@ -3,7 +3,7 @@ use strict;
 use Exporter 'import';
 use JSON;
 use Encode qw(decode);
-use Carp qw(croak cluck);
+use Carp qw(croak);
 use Scalar::Util qw(refaddr weaken);
 
 =head1 NAME
@@ -942,7 +942,7 @@ sub poll {
 package # hide from CPAN
     MozRepl::RemoteObject::Instance;
 use strict;
-use Carp qw(croak cluck);
+use Carp qw(croak);
 use Scalar::Util qw(blessed refaddr);
 use MozRepl::RemoteObject::Methods;
 use vars qw(@CARP_NOT);
