@@ -588,25 +588,10 @@ as list. To do that, specify C<'list'> as the C<$context> parameter:
 
 =cut
 
-sub expr_js {
-    my ($self,$js,$context) = @_;
-    #$js = $self->json->encode($js);
-    my $rn = $self->name;
-    return '' unless $rn; # If we have no repl (name), we can't do anything anyway
-    #if ($context) { $context=qq{"$context"}} else {
-    #    $context='""';
-    #};
-#warn "($rn)";
-#    $js = <<JS;
-#$rn.ejs($js,$context)
-#JS
-    ($js,$context)
-}
-
 # This is used by ->declare() so can't use it itself
 sub expr {
     my ($self,$js,$context) = @_;
-    return $self->unjson($self->expr_js($js,$context));
+    return $self->unjson($js,$context);
 }
 
 # the queue stuff is left undocumented because it's
