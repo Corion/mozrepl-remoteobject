@@ -8,6 +8,22 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.29 to be released    + The module is now tested with
+        Firefox 3.0.9
+        Firefox 3.5.x
+        Firefox 4.0.1
+        Firefox 5
+        Firefox 6.0.1
+        Firefox 7.0.1
+        Firefox 8
+    . Firefox 8 needs a very recent version of the mozrepl Add-on,
+      for example 1.1.0 available from
+      https://github.com/bard/mozrepl/tags
+      Older versions will not work due to "script caching" in Firefox
+      that prevents the repl from ever returning anything but the first result.
+      If you are upgrading Firefox to version 8, you will see failure symptoms
+      like
+        Transport still not UTF-8 safe: "8.0!"?!? 
 0.28 20110923
     + Switch to "multiline" input mode.
     
@@ -27,7 +43,6 @@ To-do:
         Firefox 5
         Firefox 6.0.1
         Firefox 7 Beta 5
-
 
 0.27 20110726
     + The module is now tested with
