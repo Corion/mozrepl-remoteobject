@@ -16,13 +16,15 @@ To-do:
         Firefox 6.0.1
         Firefox 7.0.1
         Firefox 8
-    . Firefox 8 needs a very recent version of the mozrepl Add-on,
+        Firefox 9
+    . Firefox 8 onwards need a very recent version of the mozrepl Add-on,
       for example 1.1.0 available from
-      https://github.com/bard/mozrepl/tags
+        https://github.com/bard/mozrepl/tags
       Older versions will not work due to "script caching" in Firefox
       that prevents the repl from ever returning anything but the first result.
-      If you are upgrading Firefox to version 8, you will see failure symptoms
-      like
+      If you are upgrading Firefox to version 8 or later, you will see failure
+      symptoms like
+      
         Transport still not UTF-8 safe: "8.0!"?!? 
 0.28 20110923
     + Switch to "multiline" input mode.
