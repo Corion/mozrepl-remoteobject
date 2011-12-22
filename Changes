@@ -8,7 +8,10 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.29 to be released    + The module is now tested with
+0.29 20111222
+    . This version is mostly a cleanup version with clearer failure
+      diagnostics. If MozRepl::RemoteObject is currently working for you,
+      there is no need to upgrade.    + The module is now tested with
         Firefox 3.0.9
         Firefox 3.5.x
         Firefox 4.0.1
