@@ -520,7 +520,7 @@ sub install_bridge {
         );
         $utf8 =~ s/\s*$//;
         lc $utf8 eq lc q{""\u30bd""}
-            or warn "Transport still not UTF-8 safe: [$utf8]. Do you have mozrepl 1.1.0 or later installed?";
+            or warn "Transport still not UTF-8 safe: [$utf8].\nDo you have mozrepl 1.1.0 or later installed?";
     };
     
     my $rn = $options{repl}->repl;
