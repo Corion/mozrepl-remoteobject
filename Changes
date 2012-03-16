@@ -8,6 +8,9 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.30 201203xx
+    ! Fix a destructor clobbering $@ indirectly
+      This led to $@ being empty even though an exception was thrown.
 0.29 20111222
     . This version is mostly a cleanup version with clearer failure
       diagnostics. If MozRepl::RemoteObject is currently working for you,

@@ -666,6 +666,7 @@ sub queued {
 
 sub DESTROY {
     my ($self) = @_;
+    local $@;
     #warn "Repl cleaning up";
     delete @{$self}{ qw( constants functions callbacks )};
     if ($self->{use_queue} and $self->queue and @{ $self->queue }) {
