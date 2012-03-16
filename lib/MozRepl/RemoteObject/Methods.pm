@@ -232,7 +232,7 @@ Max Maischein C<corion@cpan.org>
 
 =head1 COPYRIGHT (c)
 
-Copyright 2011 by Max Maischein C<corion@cpan.org>.
+Copyright 2011-2012 by Max Maischein C<corion@cpan.org>.
 
 =head1 LICENSE
 
