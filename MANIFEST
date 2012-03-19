@@ -30,6 +30,7 @@ t/02-multiple-instances.t
 t/02-repl.t
 t/02-synopsis.t
 t/03-unicode.t
+t/04-looong-input.t
 t/10-xul-hud.t
 t/10-xul-hud.xul
 t/11-memleak-callback.t

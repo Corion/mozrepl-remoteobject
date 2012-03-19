@@ -10,7 +10,8 @@ To-do:
 
 0.30 20120316
     ! Fix a destructor clobbering $@ indirectly
-      This led to $@ being empty even though an exception was thrown.
+      This led to $@ being empty even though an exception was thrown.
+    . Add a test for long function bodies
 0.29 20111222
     . This version is mostly a cleanup version with clearer failure
       diagnostics. If MozRepl::RemoteObject is currently working for you,
