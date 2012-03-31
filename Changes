@@ -16,11 +16,13 @@ To-do:
 0.30 20120316
     ! Fix a destructor clobbering $@ indirectly
       This led to $@ being empty even though an exception was thrown.
-    . Add a test for long function bodies
+    . Add a test for long function bodies
+
 0.29 20111222
     . This version is mostly a cleanup version with clearer failure
       diagnostics. If MozRepl::RemoteObject is currently working for you,
-      there is no need to upgrade.    + The module is now tested with
+      there is no need to upgrade.
+    + The module is now tested with
         Firefox 3.0.9
         Firefox 3.5.x
         Firefox 4.0.1
@@ -37,7 +39,8 @@ To-do:
       If you are upgrading Firefox to version 8 or later, you will see failure
       symptoms like
       
-        Transport still not UTF-8 safe: "8.0!"?!? 
+        Transport still not UTF-8 safe: "8.0!"?!? 
+
 0.28 20110923
     + Switch to "multiline" input mode.
     
@@ -50,7 +53,8 @@ To-do:
             ...
           }; f
       Ideally, use ->declare() to declare functions.
-    + The module is now tested with
+
+    + The module is now tested with
         Firefox 3.0.9
         Firefox 3.5.x
         Firefox 4.0.1
