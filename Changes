@@ -8,6 +8,11 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.31 to be released
+    ! Do not rely on obj.hasOwnProperty being available.
+      We now always use Object.hasOwnProperty, to avoid calling methods
+      on a Javascript object.
+
 0.30 20120316
     ! Fix a destructor clobbering $@ indirectly
       This led to $@ being empty even though an exception was thrown.

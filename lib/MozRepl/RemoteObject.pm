@@ -1282,11 +1282,18 @@ is identical to
 sub __keys { # or rather, __properties
     my ($self,$attr) = @_;
     die unless $self;
+    
+    # We do not want to rely on the object actually supporting
+    # .hasOwnProperty, so we support both, it having .hasOwnProperty
+    # and using Object.hasOwnProperty
     my $getKeys = $self->bridge->declare(<<'JS', 'list');
     function(obj){
         var res = [];
+        var hop = // obj.hasOwnProperty
+                  Object.hasOwnProperty
+                  ;
         for (var el in obj) {
-            if (obj.hasOwnProperty(el)) {
+            if (hop.apply(obj, [el])){
                 res.push(el);
             };
         }

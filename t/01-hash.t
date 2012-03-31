@@ -16,7 +16,7 @@ if (! $ok) {
     my $err = $@;
     plan skip_all => "Couldn't connect to MozRepl: $@";
 } else {
-    plan tests => 25;
+    plan tests => 26;
 };
 
 # create a nested object
@@ -119,3 +119,29 @@ is_deeply [sort keys %$foo], [qw[fizz flirble]], "We get the correct keys";
 
 is $foo->{flirble}, 'bar', "Key assignment (flirble)";
 is $foo->{fizz}, 'buzz', "Key assignment (fizz)";
+
+# Check that we don't rely on obj.hasOwnPrototype to work
+diag $repl->expr(<<'JS');
+    window.document.title
+JS
+my $getLinks = $repl->declare(<<'JS', 'list');
+function() {
+    var d = window.getBrowser().selectedTab.linkedBrowser.contentWindow.document;
+    var xres = d.evaluate('//a',d,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+    var res = [];
+    for ( var i=0 ; i < xres.snapshotLength; i++ )
+    {
+        res.push( xres.snapshotItem(i));
+    };
+    return res
+}
+JS
+my @links = $getLinks->();
+if( @links ) {
+    my @keys;
+    @keys = sort keys %{ $links[0] };
+    my $lives = eval { @keys = sort keys %{ $links[0] }; 1};
+    ok $lives, "We survive asking for the keys of a hasOwnProperty-less class";
+} else {
+    ok 1, "No links found";
+};
