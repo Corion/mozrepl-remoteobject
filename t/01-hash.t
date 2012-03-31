@@ -121,9 +121,6 @@ is $foo->{flirble}, 'bar', "Key assignment (flirble)";
 is $foo->{fizz}, 'buzz', "Key assignment (fizz)";
 
 # Check that we don't rely on obj.hasOwnPrototype to work
-diag $repl->expr(<<'JS');
-    window.document.title
-JS
 my $getLinks = $repl->declare(<<'JS', 'list');
 function() {
     var d = window.getBrowser().selectedTab.linkedBrowser.contentWindow.document;
