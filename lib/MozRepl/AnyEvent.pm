@@ -7,7 +7,7 @@ use Encode qw(decode);
 use Carp qw(croak);
 
 use vars qw[$VERSION];
-$VERSION = '0.30';
+$VERSION = '0.31';
 
 =head1 NAME
 

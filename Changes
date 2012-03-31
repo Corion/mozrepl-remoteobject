@@ -8,7 +8,7 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.31 to be released
+0.31 20120331
     ! Do not rely on obj.hasOwnProperty being available.
       We now always use Object.hasOwnProperty, to avoid calling methods
       on a Javascript object.
