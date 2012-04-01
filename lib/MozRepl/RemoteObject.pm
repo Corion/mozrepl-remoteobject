@@ -1058,6 +1058,11 @@ many fronts so that has been postponed.
 
 =head1 OBJECT METHODS
 
+These methods are considered to be internal. You usually
+do not want to call them from your code. They are
+documented here for the rare case you might need to use them directly
+instead of treating the objects as Perl structures.
+
 =head2 C<< $obj->__invoke(METHOD, ARGS) >>
 
 The C<< ->__invoke() >> object method is an alternate way to
