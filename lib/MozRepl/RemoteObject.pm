@@ -1251,6 +1251,9 @@ JS
 
 =head2 C<< $obj->__dive( @PATH ) >>
 
+B<DEPRECATED> - this method will vanish somewhere after 0.23.
+Use L<MozRepl::RemoteObject::Methods::dive> instead.
+
 Convenience method to quickly dive down a property chain.
 
 If any element on the path is missing, the method dies
@@ -1268,17 +1271,7 @@ forest with Perl, but otherwise identical.
 
 =cut
 
-sub __dive {
-    my ($self,@path) = @_;
-    die unless $self->__id;
-    my $id = $self->__id;
-    my $rn = $self->bridge->name;
-    (my $path) = $self->__transform_arguments(\@path);
-    
-    my $data = $self->bridge->unjson(<<JS);
-$rn.dive($id,$path)
-JS
-}
+*__dive = \&MozRepl::RemoteObject::Methods::dive;
 
 =head2 C<< $obj->__keys() >>
 
@@ -1356,7 +1349,7 @@ JS
 
 =head2 C<< $obj->__xpath( $query [, $ref ] ) >>
 
-B<DEPRECATED> - this method will vanish in 0.23.
+B<DEPRECATED> - this method will vanish somewhere after 0.23.
 Use L<MozRepl::RemoteObject::Methods::xpath> instead:
 
   $obj->MozRepl::RemoteObject::Methods::xpath( $query )

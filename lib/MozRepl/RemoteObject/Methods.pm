@@ -213,6 +213,39 @@ $rn.getLink($left)===$rn.getLink($right)
 JS
 }
 
+=head2 C<< MozRepl::RemoteObject::Methods::dive($obj) >>
+
+Convenience method to quickly dive down a property chain.
+
+If any element on the path is missing, the method dies
+with the error message which element was not found.
+
+This method is faster than descending through the object
+forest with Perl, but otherwise identical.
+
+  my $obj = $tab->{linkedBrowser}
+                ->{contentWindow}
+                ->{document}
+                ->{body}
+
+  my $obj = $tab->MozRepl::RemoteObject::Methods::dive(
+      qw(linkedBrowser contentWindow document body)
+  );
+
+=cut
+
+sub dive {
+    my ($self,@path) = @_;
+    die unless id($self);
+    my $id = id($self);
+    my $rn = bridge($self)->name;
+    (my $path) = transform_arguments($self)->(\@path);
+    
+    my $data = bridge($self)->unjson(<<JS);
+$rn.dive($id,$path)
+JS
+}
+
 1;
 
 __END__
