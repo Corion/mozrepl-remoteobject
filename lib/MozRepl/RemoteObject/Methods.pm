@@ -232,10 +232,10 @@ forest with Perl, but otherwise identical.
 
 sub dive {
     my ($self,@path) = @_;
-    die unless id($self);
     my $id = id($self);
+    die unless $id;
     my $rn = bridge($self)->name;
-    (my $path) = transform_arguments($self)->(\@path);
+    (my $path) = transform_arguments($self,\@path);
     
     my $data = bridge($self)->unjson(<<JS);
 $rn.dive($id,$path)
