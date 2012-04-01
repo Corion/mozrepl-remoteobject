@@ -7,6 +7,9 @@ To-do:
       repl.breakLink() with just the ids, reducing traffic
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
+    . Move MozRepl::AnyEvent to multi-line input mode
+      instead of the repl.
+    . Add JSON detection etc. to MozRepl::AnyEvent
 
 0.31 20120331
     ! Do not rely on obj.hasOwnProperty being available.
