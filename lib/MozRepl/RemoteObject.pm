@@ -577,6 +577,7 @@ You can also create Javascript functions and use them from Perl:
       function (a,b) { return a+b }
   JS
   print $add->(2,3);
+  # prints 5
 
 The C<context> parameter allows you to specify that you
 expect a Javascript array and want it to be returned
@@ -585,6 +586,9 @@ as list. To do that, specify C<'list'> as the C<$context> parameter:
   for ($bridge->expr(<<JS,'list')) { print $_ };
       [1,2,3,4]
   JS
+
+This is slightly more efficient than passing back an array reference
+and then fetching all elements.
 
 =cut
 
@@ -631,7 +635,9 @@ functionally equivalent to writing
     @$array
 
 except that it involves much less roundtrips between Javascript
-and Perl.
+and Perl. If you find yourself using this, consider
+declaring a Javascript function with C<list> context
+by using C<< ->declare >> instead.
 
 =cut
 
@@ -698,6 +704,8 @@ until the bridge is torn down.
 
 If you expect an array to be returned and want the array
 to be fetched as list, pass C<'list'> as the C<$context>.
+This is slightly more efficient than passing an array reference
+to Perl and fetching the single elements from Perl.
 
 =cut
 
