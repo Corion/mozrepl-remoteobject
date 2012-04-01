@@ -1760,13 +1760,6 @@ This would lead to implementing a full two-way message bus.
 
 =item *
 
-Consider implementing a mozrepl "interactor" to remove
-the prompting of C<mozrepl> alltogether.
-Interactors only exist in the development releases
-of C<mozrepl>.
-
-=item *
-
 Should I make room for promises as well?
 
   my ($foo,$bar);
