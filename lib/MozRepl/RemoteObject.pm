@@ -1061,7 +1061,9 @@ many fronts so that has been postponed.
 These methods are considered to be internal. You usually
 do not want to call them from your code. They are
 documented here for the rare case you might need to use them directly
-instead of treating the objects as Perl structures.
+instead of treating the objects as Perl structures. The
+official way to access these functions is by using
+L<MozRepl::RemoteObject::Methods> instead.
 
 =head2 C<< $obj->__invoke(METHOD, ARGS) >>
 
@@ -1280,15 +1282,19 @@ JS
 
 =head2 C<< $obj->__keys() >>
 
-Returns the names of all properties
-of the javascript object as a list.
+Please use instead:
+
+    keys %$obj
+
+The function returns the names of all properties
+of the javascript object as a list, just like the C<keys>
+Perl function.
 
   $obj->__keys()
 
 is identical to
 
   keys %$obj
-
 
 =cut
 
@@ -1317,6 +1323,10 @@ JS
 }
 
 =head2 C<< $obj->__values() >>
+
+Please use instead:
+
+    values %$obj
 
 Returns the values of all properties
 as a list.
