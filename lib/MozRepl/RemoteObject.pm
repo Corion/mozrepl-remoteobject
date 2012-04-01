@@ -841,6 +841,7 @@ sub js_call_to_perl_struct {
         if ($d->{status} eq 'ok') {
             return $d->{result}
         } else {
+            no warnings 'uninitialized';
             croak ((ref $self).": $d->{name}: $d->{message}");
         };
     } else {
