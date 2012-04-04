@@ -1364,21 +1364,28 @@ on HTMLdocument nodes.
 =cut
 
 sub __xpath {
-    my ($self,$query,$ref) = @_; # $self is a HTMLdocument
+    my ($self,$query,$ref,$cont) = @_; # $self is a HTMLdocument
     $ref ||= $self;
     my $js = <<'JS';
-    function(doc,q,ref) {
+    function(doc,q,ref,cont) {
         var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+        var map;
+        if( cont ) {
+            map = cont;
+        } else {
+            // Default is identity
+            map = function(e){ return e };
+        };
         var res = [];
         for ( var i=0 ; i < xres.snapshotLength; i++ )
         {
-            res.push( xres.snapshotItem(i));
+            res.push( map(xres.snapshotItem(i)));
         };
         return res
     }
 JS
     my $snap = $self->bridge->declare($js,'list');
-    $snap->($self,$query,$ref);
+    $snap->($self,$query,$ref,$cont);
 }
 
 =head2 C<< $obj->__click >>
