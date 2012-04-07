@@ -209,6 +209,62 @@ $rn.getLink($left)===$rn.getLink($right)
 JS
 }
 
+=head2 C<< $obj->MozRepl::RemoteObject::Methods::xpath( $query [, $ref, $cont ] ) >>
+
+Executes an XPath query and returns the node
+snapshot result as a list.
+
+This is a convenience method that should only be called
+on HTMLdocument nodes.
+
+The optional C<$ref> parameter can be a DOM node relative to which a
+relative XPath expression will be evaluated. It defaults to C<undef>.
+
+The optional C<$cont> parameter can be a Javascript function that
+will get applied to every result. This can be used to directly map
+each DOM node in the XPath result to an attribute. For example
+for efficiently fetching the text value of an XPath query resulting in
+textnodes, the two snippets are equivalent, but the latter executes
+less roundtrips between Perl and Javascript:
+
+    my @text = map { $_->{nodeValue} }
+        $obj->MozRepl::RemoteObject::Methods::xpath( '//p/text()' )
+
+
+    my $fetch_nodeValue = $bridge->declare(<<JS);
+        function (e){ return e.nodeValue }
+    JS
+    my @text = map { $_->{nodeValue} }
+        $obj->MozRepl::RemoteObject::Methods::xpath( '//p/text()', undef, $fetch_nodeValue )
+
+=cut
+
+sub xpath {
+    my ($self,$query,$ref,$cont) = @_; # $self is a HTMLdocument
+    $ref ||= $self;
+    my $js = <<'JS';
+    function(doc,q,ref,cont) {
+        var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+        var map;
+        if( cont ) {
+            map = cont;
+        } else {
+            // Default is identity
+            map = function(e){ return e };
+        };
+        var res = [];
+        for ( var i=0 ; i < xres.snapshotLength; i++ )
+        {
+            res.push( map(xres.snapshotItem(i)));
+        };
+        return res
+    }
+JS
+    my $snap = $self->bridge->declare($js,'list');
+    $snap->($self,$query,$ref,$cont);
+}
+
+
 =head2 C<< MozRepl::RemoteObject::Methods::dive($obj) >>
 
 Convenience method to quickly dive down a property chain.
