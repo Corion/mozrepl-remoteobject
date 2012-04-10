@@ -8,6 +8,10 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.32 20120410
+    ! Fix for using MozRepl::RemoteObject with WWW::Mechanize::Firefox 0.65
+    . Move the __dive method to MozRepl::RemoteObject::Methods
+
 0.31 20120331
     ! Do not rely on obj.hasOwnProperty being available.
       We now always use Object.hasOwnProperty, to avoid calling methods
