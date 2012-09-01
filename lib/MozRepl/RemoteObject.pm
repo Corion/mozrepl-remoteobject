@@ -1439,7 +1439,7 @@ sub __event {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
             var event = target.ownerDocument.createEvent('MouseEvents');
-            event.initMouseEvent(name, true, true, window,
+            event.initMouseEvent(name, true, true, target.ownerDocument.defaultView,
                                  0, 0, 0, 0, 0, false, false, false,
                                  false, 0, null);
             target.dispatchEvent(event);
