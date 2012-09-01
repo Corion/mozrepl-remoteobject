@@ -8,6 +8,13 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.33 20120901
+    . ->__click() directly calls target.click() if the target has
+      a .click field.
+    . Eliminated random guessing of the "window" object for mouse
+      events in favour of deriving the window from the defaultView
+      property of the document.
+
 0.32 20120410
     ! Fix for using MozRepl::RemoteObject with WWW::Mechanize::Firefox 0.65
     . Move the __dive method to MozRepl::RemoteObject::Methods
