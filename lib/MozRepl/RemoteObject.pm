@@ -1438,6 +1438,11 @@ sub __event {
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name) {
+            if( target.click ) {
+                target.click();
+                return;
+            };
+            
             var event = target.ownerDocument.createEvent('MouseEvents');
             event.initMouseEvent(name, true, true, target.ownerDocument.defaultView,
                                  0, 0, 0, 0, 0, false, false, false,
