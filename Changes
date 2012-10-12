@@ -8,6 +8,18 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.34 to be released
+    ! Firefox 16 now seems to treat String concatenation with the "+"
+      operator in a bad way:
+          "\u30BD\u30FC\u30B7\u30E3\u30EB\u30FB\u30CD\u30C3"
+          + "\u30C8\u30EF\u30FC\u30AD\u30F3\u30B0 \u30B5\u30FC"
+      results in NaN , which means that something in there gets
+      interpreted as number. This is different from previous Firefox
+      versions.
+      The change is only in the tests - they now use Array.join("")
+      for string concatenation.
+
+
 0.33 20120901
     . ->__click() directly calls target.click() if the target has
       a .click field.
