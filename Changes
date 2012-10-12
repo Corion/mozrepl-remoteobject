@@ -8,7 +8,7 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.34 to be released
+0.34 20121012
     ! Firefox 16 now seems to treat String concatenation with the "+"
       operator in a bad way:
           "\u30BD\u30FC\u30B7\u30E3\u30EB\u30FB\u30CD\u30C3"
