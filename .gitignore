@@ -9,3 +9,4 @@ MozRepl-RemoteObject-*/
 MozRepl-RemoteObject-*.tar
 MozRepl-RemoteObject-*.tar.gz
 *.bak
+MYMETA.*

@@ -19,3 +19,4 @@ CVS/
 \B\.svn\b
 \B\.git\b
 ^cover_db/
+^MYMETA.*
