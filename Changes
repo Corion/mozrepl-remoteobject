@@ -8,7 +8,7 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.35 To be released
+0.35 20130403
     ! Changed the XPath evaluation from using
       XPathResult.ORDERED_NODE_SNAPSHOT_TYPE to XPathResult.ANY_TYPE. This
       may or may not influence the results you get from ->xpath() calls.
