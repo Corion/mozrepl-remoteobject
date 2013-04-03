@@ -3,7 +3,7 @@ use strict;
 use Scalar::Util qw(blessed);
 
 use vars qw[$VERSION];
-$VERSION = '0.35';
+$VERSION = '0.36';
 
 =head1 NAME
 
@@ -237,7 +237,8 @@ less roundtrips between Perl and Javascript:
     my @text = map { $_->{nodeValue} }
         $obj->MozRepl::RemoteObject::Methods::xpath( '//p/text()', undef, $fetch_nodeValue )
 
-Note that the result type is fetched with C< XPathResult.ANY_TYPE >.
+Note that the result type is fetched with C< XPathResult.ORDERED_NODE_SNAPSHOT_TYPE >.
+There is no support for retrieving results as C< XPathResult.ANY_TYPE > yet.
 
 =cut
 
@@ -246,7 +247,7 @@ sub xpath {
     $ref ||= $self;
     my $js = <<'JS';
     function(doc,q,ref,cont) {
-        var xres = doc.evaluate(q,ref,null,XPathResult.ANY_TYPE, null );
+        var xres = doc.evaluate(q,ref,null,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
         var map;
         if( cont ) {
             map = cont;

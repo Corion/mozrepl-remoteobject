@@ -8,6 +8,10 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.36 20130403
+    ! Revert 0.35 - it fails with WWW::Mechanize::Firefox,
+      which I should have tested before releasing.
+
 0.35 20130403
     ! Changed the XPath evaluation from using
       XPathResult.ORDERED_NODE_SNAPSHOT_TYPE to XPathResult.ANY_TYPE. This
