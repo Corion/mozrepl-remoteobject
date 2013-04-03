@@ -8,6 +8,15 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.35 To be released
+    ! Changed the XPath evaluation from using
+      XPathResult.ORDERED_NODE_SNAPSHOT_TYPE to XPathResult.ANY_TYPE. This
+      may or may not influence the results you get from ->xpath() calls.
+      This widens the amount of valid XPath queries - you can now query
+      for string results in addition to nodes.
+      People tell me that Firefox still returns nodes in document (depth
+      first) order.
+
 0.34 20121012
     ! Firefox 16 now seems to treat String concatenation with the "+"
       operator in a bad way:
