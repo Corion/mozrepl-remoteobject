@@ -8,6 +8,13 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.37 20130825
+    . Fix MozRepl::RemoteObject raising an invalid
+      "Continuation prompt detected" error (RT #88100)
+      Diagnosis, test code and fix by Daniel Stadie
+      The test requires WWW::Mechanize::Firefox and lives
+      in that module.
+
 0.36 20130403
     ! Revert 0.35 - it fails with WWW::Mechanize::Firefox,
       which I should have tested before releasing.

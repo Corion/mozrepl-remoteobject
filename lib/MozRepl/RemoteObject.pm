@@ -40,7 +40,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 =cut
 
 use vars qw[$VERSION $objBridge @CARP_NOT @EXPORT_OK $WARN_ON_LEAKS];
-$VERSION = '0.36';
+$VERSION = '0.37';
 
 @EXPORT_OK=qw[as_list];
 @CARP_NOT = (qw[MozRepl::RemoteObject::Instance
@@ -211,7 +211,7 @@ sub to_perl {
     s/^"//;
     s/"$//;
     
-    if (/\.+>/) {
+    if (/^(\.+>\s*)+/) {
         # This should now be eliminated!
         die "Continuation prompt found in [$_]";
     }
