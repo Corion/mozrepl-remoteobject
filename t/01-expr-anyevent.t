@@ -44,7 +44,7 @@ my $identity = $repl->expr(<<JS);
     repl === repl.getLink($repl_id)
 JS
 
-is $identity, 'true', "Object identity in Javascript works";
+ok $identity, "Object identity in Javascript works";
 
 my $adder = $repl->expr(<<JS);
     f=function(a,b) { return a+b };f
