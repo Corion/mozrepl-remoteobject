@@ -1433,19 +1433,21 @@ user entering a value into a field:
 =cut
 
 sub __event {
-    my ($self,$type) = @_;
+    my ($self,$type,@args) = @_;
     my $fn;
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
-        function(target,name) {
+        function(target,name,x,y) {
             if( target.click ) {
                 target.click();
                 return;
             };
+            if(!x) x= 0;
+            if(!y) y= 0;
             
             var event = target.ownerDocument.createEvent('MouseEvents');
             event.initMouseEvent(name, true, true, target.ownerDocument.defaultView,
-                                 0, 0, 0, 0, 0, false, false, false,
+                                 0, x, y, x, y, false, false, false,
                                  false, 0, null);
             target.dispatchEvent(event);
         }
@@ -1459,7 +1461,7 @@ JS
     }
 JS
     };
-    $fn->($self,$type);
+    $fn->($self,$type,@args);
 };
 
 =head2 C<< MozRepl::RemoteObject::Instance->new( $bridge, $ID, $onDestroy ) >>
