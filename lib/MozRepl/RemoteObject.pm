@@ -1395,8 +1395,8 @@ on HTMLdocument nodes or their children.
 =cut
 
 sub __click {
-    my ($self) = @_; # $self is a HTMLdocument or a descendant!
-    $self->__event('click');
+    my ($self, @args) = @_; # $self is a HTMLdocument or a descendant!
+    $self->__event('click', @args);
 }
 
 =head2 C<< $obj->__change >>
@@ -1438,16 +1438,16 @@ sub __event {
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name,x,y) {
-            if( target.click ) {
-                target.click();
-                return;
-            };
+            //if( target.click && !x && !y) {
+            //    target.click();
+            //    return;
+            //};
             if(!x) x= 0;
             if(!y) y= 0;
             
             var event = target.ownerDocument.createEvent('MouseEvents');
             event.initMouseEvent(name, true, true, target.ownerDocument.defaultView,
-                                 0, x, y, x, y, false, false, false,
+                                 null, 0, 0, x, y, false, false, false,
                                  false, 0, null);
             target.dispatchEvent(event);
         }
@@ -1461,6 +1461,7 @@ JS
     }
 JS
     };
+    #$fn->($self,"mouseup",@args);
     $fn->($self,$type,@args);
 };
 
