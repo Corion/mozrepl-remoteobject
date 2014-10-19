@@ -3,7 +3,7 @@ use strict;
 use Scalar::Util qw(blessed);
 
 use vars qw[$VERSION];
-$VERSION = '0.37';
+$VERSION = '0.38';
 
 =head1 NAME
 

@@ -8,6 +8,10 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
+0.38 20141019
+    . Pass through parameters for ->__event()
+      This allows ->__click() to pass in x,y coordinates
+
 0.37 20130825
     . Fix MozRepl::RemoteObject raising an invalid
       "Continuation prompt detected" error (RT #88100)
