@@ -8,7 +8,7 @@ To-do:
     . Automatically load the AnyEvent backend if needed.
     . Implement ->can() for MozRepl objects
 
-0.38 20141019
+0.38 20141020
     . Pass through parameters for ->__event()
       This allows ->__click() to pass in x,y coordinates
 
