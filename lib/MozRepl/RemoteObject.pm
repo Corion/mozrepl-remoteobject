@@ -1438,15 +1438,15 @@ sub __event {
     if ($type eq 'click') {
         $fn = $self->bridge->declare(<<'JS');
         function(target,name,x,y) {
-            //if( target.click && !x && !y) {
-            //    target.click();
-            //    return;
-            //};
             if(!x) x= 0;
             if(!y) y= 0;
-            
-            var event = target.ownerDocument.createEvent('MouseEvents');
-            event.initMouseEvent(name, true, true, target.ownerDocument.defaultView,
+            var r= target.getBoundingClientRect();
+            x+= r.left;
+            y+= r.top;
+            var d= target.ownerDocument;
+            var container= d.defaultView || window;
+            var event = d.createEvent('MouseEvents');
+            event.initMouseEvent(name, true, true, container,
                                  null, 0, 0, x, y, false, false, false,
                                  false, 0, null);
             target.dispatchEvent(event);
@@ -1461,7 +1461,6 @@ JS
     }
 JS
     };
-    #$fn->($self,"mouseup",@args);
     $fn->($self,$type,@args);
 };
 
