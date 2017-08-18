@@ -12,30 +12,30 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
 
 =head1 SYNOPSIS
 
-    #!perl -w
-    use strict;
-    use MozRepl::RemoteObject;
+  #!perl -w
+  use strict;
+  use MozRepl::RemoteObject;
 
-    # use $ENV{MOZREPL} or localhost:4242
-    my $repl = MozRepl::RemoteObject->install_bridge();
+  # use $ENV{MOZREPL} or localhost:4242
+  my $repl = MozRepl::RemoteObject->install_bridge();
 
-    # get our root object:
-    my $tab = $repl->expr(<<JS);
-        window.getBrowser().addTab()
-    JS
+  # get our root object:
+  my $tab = $repl->expr(<<JS);
+      window.getBrowser().addTab()
+  JS
 
-    # Now use the object:
-    my $body = $tab->{linkedBrowser}
-                ->{contentWindow}
-                ->{document}
-                ->{body}
-                ;
-    $body->{innerHTML} = "<h1>Hello from MozRepl::RemoteObject</h1>";
+  # Now use the object:
+  my $body = $tab->{linkedBrowser}
+              ->{contentWindow}
+              ->{document}
+              ->{body}
+              ;
+  $body->{innerHTML} = "<h1>Hello from MozRepl::RemoteObject</h1>";
 
-    $body->{innerHTML} =~ '/Hello from/'
-        and print "We stored the HTML";
+  $body->{innerHTML} =~ '/Hello from/'
+      and print "We stored the HTML";
 
-    $tab->{linkedBrowser}->loadURI('http://corion.net/');
+  $tab->{linkedBrowser}->loadURI('http://corion.net/');
 
 =cut
 
