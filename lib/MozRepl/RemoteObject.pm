@@ -831,11 +831,14 @@ sub js_call_to_perl_struct {
         # When going async, we would want to turn this into a callback
         my $res = $self->execute_command($js);
         $res =~ s/^(?:\.+\>\s+)+//g;
+        my $i=0;
         while ($res !~ /\S/) {
             # Gobble up continuation prompts
             warn "No result yet from repl";
             $res = $self->execute_command(";"); # no-op
             $res =~ s/^(?:\.+\>\s+)+//g;
+            $i++;
+            last if ($i == 25);
         };
         my $d = $self->to_perl($res);
         if ($d->{status} eq 'ok') {
