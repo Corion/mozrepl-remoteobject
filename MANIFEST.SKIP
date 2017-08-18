@@ -21,3 +21,4 @@ CVS/
 ^cover_db/
 ^MYMETA.*
 ^.*.tmp$
+^.travis.yml$
