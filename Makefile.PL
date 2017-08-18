@@ -18,9 +18,16 @@ my @tests = map { glob $_ } 't/*.t', 't/*/*.t';
 my %module = (
     MIN_PERL_VERSION => '5.006',
     META_MERGE => {
+        "meta-spec" => { version => 2 },
         resources => {
-            repository => 'http://github.com/Corion/mozrepl-remoteobject',
+            repository => {
+                web => 'https://github.com/Corion/mozrepl-remoteobject',
+                url => 'git://github.com/Corion/mozrepl-remoteobject.git',
+                type => 'git',
+            }
         },
+        dynamic_config   => 0, # we promise to keep META.* up-to-date
+        x_static_install => 1, # we are pure Perl and don't do anything fancy
     },
     BUILD_REQUIRES => {
                         'Task::Weaken' => 0, #to be sure that weaken is present
