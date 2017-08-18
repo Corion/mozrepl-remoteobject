@@ -10,10 +10,10 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
     #!perl -w
     use strict;
     use MozRepl::RemoteObject;
-    
+
     # use $ENV{MOZREPL} or localhost:4242
     my $repl = MozRepl::RemoteObject->install_bridge();
-    
+
     # get our root object:
     my $tab = $repl->expr(<<JS);
         window.getBrowser().addTab()
@@ -30,7 +30,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
     $body->{innerHTML} =~ '/Hello from/'
         and print "We stored the HTML";
 
-    $tab->{linkedBrowser}->loadURI('http://corion.net/');
+    $tab->{linkedBrowser}->loadURI('https://corion.net/');
 
 # BRIDGE SETUP
 
@@ -136,7 +136,6 @@ in the object forest.
 
     my $window = $bridge->expr('window');
     print $window->{title};
-    
 
 You can also create Javascript functions and use them from Perl:
 
@@ -310,7 +309,7 @@ As in Javascript, functions are first class objects, the following
 two methods of calling a function are equivalent:
 
     $window->loadURI('http://search.cpan.org/');
-    
+
     $window->{loadURI}->('http://search.cpan.org/');
 
 # EVENTS / CALLBACKS
@@ -319,8 +318,8 @@ This module also implements a rudimentary asynchronous
 event dispatch mechanism. Basically, it allows you
 to write code like this and it will work:
 
-    $window->addEventListener('load', sub { 
-         my ($event) = @_; 
+    $window->addEventListener('load', sub {
+         my ($event) = @_;
          print "I got a " . $event->{type} . " event\n";
          print "on " . $event->{originalTarget};
     });
@@ -358,9 +357,9 @@ official way to access these functions is by using
 ## `$obj->__invoke(METHOD, ARGS)`
 
 The `->__invoke()` object method is an alternate way to
-invoke Javascript methods. It is normally equivalent to 
+invoke Javascript methods. It is normally equivalent to
 `$obj->$method(@ARGS)`. This function must be used if the
-METHOD name contains characters not valid in a Perl variable name 
+METHOD name contains characters not valid in a Perl variable name
 (like foreign language characters).
 To invoke a Javascript objects native `__invoke` method (if such a
 thing exists), please use:
@@ -420,7 +419,6 @@ Read-only accessor to read the property
 of a Javascript object.
 
     $obj->__attr('foo')
-    
 
 is identical to
 
@@ -432,7 +430,6 @@ Write accessor to set a property of a Javascript
 object.
 
     $obj->__setAttr('foo', 'bar')
-    
 
 is identical to
 
@@ -484,7 +481,6 @@ Returns the values of all properties
 as a list.
 
     $obj->values()
-    
 
 is identical to
 
@@ -553,7 +549,6 @@ user entering a value into a field:
     $elt->{value} = 'Hello';
     $elt->__event('change');
     $elt->__event('blur');
-    
 
 ## `MozRepl::RemoteObject::Instance->new( $bridge, $ID, $onDestroy )`
 
@@ -597,7 +592,7 @@ automated, skip.
 Should `Scalar::Util::refaddr` return true whenever
 the Javascript `===` operator returns true?
 
-    Also see [http://perlmonks.org/?node\_id=802912](http://perlmonks.org/?node_id=802912)
+    Also see [https://perlmonks.org/?node\_id=802912](https://perlmonks.org/?node_id=802912)
 
 - Consider whether MozRepl actually always delivers
 UTF-8 as output.
@@ -664,7 +659,6 @@ with other mainloops.
         $bridge->promise( 'window' )
         could return
         sub { $bridge->expr('window') }
-        
 
     but that wouldn't allow for coalescing these promises into Javascript.
 
@@ -685,19 +679,19 @@ rest of FireFox:
                 * Since FF3, we'll have to ask for user permission to execute XPCOM objects.
                 */
               // netscape.security.PrivilegeManager.enablePrivilege("UniversalXPConnect");
-               
+
               // Get the current thread.
               var thread = Components.classes["@mozilla.org/thread-manager;1"].getService(Components.interfaces.nsIThreadManager).currentThread;
-               
+
               // Create an inner property to be used later as a notifier.
               this.delayed = true;
-               
+
               /* Call JavaScript setTimeout function
                 * to execute this.delayed = false
                 * after it finish.
                 */
               setTimeout("this.delayed = false;", delay);
-               
+
               /**
                 * Keep looping until this.delayed = false
                 */
@@ -714,13 +708,13 @@ rest of FireFox:
 
 [Win32::OLE](https://metacpan.org/pod/Win32::OLE) for another implementation of proxy objects
 
-[http://wiki.github.com/bard/mozrepl](http://wiki.github.com/bard/mozrepl) - the MozRepl 
+[https://wiki.github.com/bard/mozrepl](https://wiki.github.com/bard/mozrepl) - the MozRepl
 FireFox plugin homepage
 
 # REPOSITORY
 
-The public repository of this module is 
-[http://github.com/Corion/mozrepl-remoteobject](http://github.com/Corion/mozrepl-remoteobject).
+The public repository of this module is
+[https://github.com/Corion/mozrepl-remoteobject](https://github.com/Corion/mozrepl-remoteobject).
 
 # AUTHOR
 

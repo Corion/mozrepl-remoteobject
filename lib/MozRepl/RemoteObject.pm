@@ -35,7 +35,7 @@ MozRepl::RemoteObject - treat Javascript objects as Perl objects
   $body->{innerHTML} =~ '/Hello from/'
       and print "We stored the HTML";
 
-  $tab->{linkedBrowser}->loadURI('http://corion.net/');
+  $tab->{linkedBrowser}->loadURI('https://corion.net/');
 
 =cut
 
@@ -1698,7 +1698,7 @@ Think more about how to handle object identity.
 Should C<Scalar::Util::refaddr> return true whenever
 the Javascript C<===> operator returns true?
 
-Also see L<http://perlmonks.org/?node_id=802912>
+Also see L<https://perlmonks.org/?node_id=802912>
 
 =item *
 
@@ -1845,13 +1845,13 @@ rest of FireFox:
 
 L<Win32::OLE> for another implementation of proxy objects
 
-L<http://wiki.github.com/bard/mozrepl> - the MozRepl
+L<https://wiki.github.com/bard/mozrepl> - the MozRepl
 FireFox plugin homepage
 
 =head1 REPOSITORY
 
 The public repository of this module is
-L<http://github.com/Corion/mozrepl-remoteobject>.
+L<https://github.com/Corion/mozrepl-remoteobject>.
 
 =head1 AUTHOR
 
