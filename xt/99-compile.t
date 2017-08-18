@@ -16,8 +16,11 @@ plan 'no_plan';
 
 my $last_version = undef;
 
+my $have_anyevent = eval { require AnyEvent; 1 };
+
 sub check {
     return if (! m{(\.pm|\.pl) \z}xmsi);
+    return if /AnyEvent/ and not $have_anyevent;
 
     my ($stdout, $stderr, $exit) = capture(sub {
         system( $^X, '-Mblib', '-wc', $_ );
