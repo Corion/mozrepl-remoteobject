@@ -52,7 +52,7 @@
          "web" : "https://github.com/Corion/mozrepl-remoteobject"
       }
    },
-   "version" : "0.39",
+   "version" : "0.40",
    "x_serialization_backend" : "JSON::PP version 2.94",
    "x_static_install" : 1
 }
